@@ -1,0 +1,312 @@
+/* ==========================================================
+   RESET
+========================================================== */
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+
+    background: var(--bg-primary);
+    color: var(--text-color);
+
+    line-height: 1.5;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================
+   VARIABLES
+========================================================== */
+
+:root {
+    /* Tipografía */
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+    /* Colores Clásicos */
+    --accent-primary: #1e40af; /* Classic Navy Blue */
+    --accent-secondary: #059669; /* Classic Forest Emerald */
+    --accent-danger: #dc2626; /* Crimson Red */
+    --accent-warning: #d97706; /* Classic Amber */
+
+    /* Modo Claro */
+    --bg-primary: #f8fafc;
+    --bg-surface: #ffffff;
+    --text-color: #0f172a;
+    --text-muted: #475569;
+    --border-color: #e2e8f0;
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+
+    --radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Modo Oscuro Clásico */
+        --bg-primary: #0f172a; /* Slate 900 */
+        --bg-surface: #1e293b; /* Slate 800 */
+        --text-color: #f8fafc; /* Slate 50 */
+        --text-muted: #94a3b8; /* Slate 400 */
+        --border-color: #334155; /* Slate 700 */
+    }
+}
+
+/* ==========================================================
+   LINKS
+========================================================== */
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* ==========================================================
+   BOTONES
+========================================================== */
+
+button {
+
+    font-family: inherit;
+
+    border: none;
+
+    outline: none;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn {
+
+    display: inline-flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 12px 20px;
+
+    border-radius: var(--radius);
+
+    font-weight: 600;
+
+    transition: .2s;
+}
+
+.btn-primary {
+
+    background: var(--accent-primary);
+
+    color: white;
+}
+
+.btn-primary:hover {
+
+    background: #1d4ed8;
+}
+
+.btn-secondary {
+
+    background: #64748b;
+
+    color: white;
+}
+
+.btn-secondary:hover {
+
+    background: #475569;
+}
+
+.btn-danger {
+
+    background: var(--accent-danger);
+
+    color: white;
+}
+
+.btn-danger:hover {
+
+    background: #dc2626;
+}
+
+/* ==========================================================
+   INPUTS
+========================================================== */
+
+.input-field {
+
+    width: 100%;
+
+    padding: 12px 14px;
+
+    border-radius: var(--radius);
+
+    border: 1px solid var(--border-color);
+
+    background: var(--bg-primary);
+
+    color: var(--text-color);
+
+    font-size: .95rem;
+
+    transition: .2s;
+}
+
+.input-field:focus {
+
+    outline: none;
+
+    border-color: var(--accent-primary);
+
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+}
+
+label {
+
+    font-weight: 600;
+
+    font-size: .9rem;
+}
+
+/* ==========================================================
+   TARJETAS
+========================================================== */
+
+.card {
+
+    background: var(--bg-surface);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 16px;
+
+    padding: 24px;
+
+    box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================
+   LAYOUT
+========================================================== */
+
+.app-main {
+
+    flex: 1;
+
+    padding: 35px;
+
+    max-width: 1500px;
+
+    width: 100%;
+
+    margin: auto;
+}
+
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
+
+::-webkit-scrollbar {
+
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+
+    background: #cbd5e1;
+
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+
+    background: #94a3b8;
+}
+
+/* ==========================================================
+   UTILIDADES
+========================================================== */
+
+.text-center {
+    text-align: center;
+}
+
+.mt-1 {
+    margin-top: 10px;
+}
+
+.mt-2 {
+    margin-top: 20px;
+}
+
+.mt-3 {
+    margin-top: 30px;
+}
+
+.mb-1 {
+    margin-bottom: 10px;
+}
+
+.mb-2 {
+    margin-bottom: 20px;
+}
+
+.mb-3 {
+    margin-bottom: 30px;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.app-layout {
+    display: flex;
+}
+
+.app-main {
+
+    margin-left: 260px;
+
+    width: calc(100% - 260px);
+
+    min-height: 100vh;
+
+    padding: 35px;
+}

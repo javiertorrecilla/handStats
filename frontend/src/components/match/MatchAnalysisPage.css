@@ -1,0 +1,1142 @@
+/* ==========================================================
+   HANDBALL MATCH ANALYSIS — CLASSICAL SPORTS SYSTEM
+========================================================== */
+
+.match-analysis-page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: var(--text-color);
+    background: var(--bg-primary);
+    min-height: 100vh;
+    padding: 20px;
+    font-family: var(--font-sans);
+}
+
+/* Header bar */
+.analysis-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.analysis-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-color);
+}
+
+.analysis-title svg {
+    color: var(--accent-primary);
+}
+
+.badge-possession-number {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+    background: rgba(30, 64, 175, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(30, 64, 175, 0.15);
+    font-family: var(--font-mono);
+}
+
+/* Scoreboard container */
+.scoreboard-container {
+    display: grid;
+    grid-template-columns: 1fr 260px 1fr;
+    gap: 16px;
+    align-items: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.scoreboard-team {
+    background: var(--bg-primary);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.scoreboard-team.local-side.has-possession {
+    border-color: var(--accent-primary);
+    background: rgba(30, 64, 175, 0.04);
+}
+
+.scoreboard-team.away-side.has-possession {
+    border-color: var(--accent-secondary);
+    background: rgba(5, 150, 105, 0.04);
+}
+
+.team-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.team-score {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1;
+    font-family: var(--font-mono);
+    color: var(--text-color);
+}
+
+.possession-dot {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.has-possession .possession-dot {
+    color: var(--accent-primary);
+    animation: ma-pulse 2s infinite;
+}
+
+.away-side.has-possession .possession-dot {
+    color: var(--accent-secondary);
+}
+
+/* Timer Module */
+.scoreboard-timer-module {
+    text-align: center;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    padding: 14px;
+    border: 1px solid var(--border-color);
+}
+
+.timer-display {
+    font-size: 2.4rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--text-color);
+    margin-bottom: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.timer-display svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.timer-display:hover svg {
+    color: var(--accent-primary);
+    opacity: 1;
+}
+
+.timer-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-time-adjust {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-mono);
+}
+
+.btn-time-adjust:hover {
+    background: var(--bg-primary);
+    color: var(--text-color);
+    border-color: var(--text-muted);
+}
+
+.btn-timer-play {
+    background: var(--accent-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 90px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-timer-play:hover {
+    background: #1e3a8a;
+}
+
+.btn-timer-play.running {
+    background: var(--accent-danger);
+}
+
+.btn-timer-play.running:hover {
+    background: #b91c1c;
+}
+
+/* Initial possession selection */
+.initial-possession-card {
+    text-align: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 36px 20px;
+    max-width: 500px;
+    margin: 20px auto;
+    box-shadow: var(--shadow-sm);
+}
+
+.initial-possession-card h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.initial-possession-card p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-bottom: 20px;
+}
+
+.possession-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ==========================================================
+   PANEL GRID
+========================================================== */
+
+.analysis-panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+}
+
+.roster-selection-card,
+.action-buttons-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    min-height: 460px;
+    box-shadow: var(--shadow-sm);
+}
+
+.roster-selection-card h3,
+.action-buttons-card h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.roster-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+
+/* Players Grid */
+.players-touch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.players-touch-grid::-webkit-scrollbar {
+    width: 4px;
+}
+.players-touch-grid::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.player-touch-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    min-height: 56px;
+}
+
+.player-touch-btn:hover {
+    border-color: var(--text-muted);
+    background: var(--bg-surface);
+}
+
+.player-touch-btn.selected {
+    background: rgba(30, 64, 175, 0.08) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.15);
+}
+
+.player-touch-btn.selected .btn-number {
+    color: var(--accent-primary);
+}
+
+.player-touch-btn.selected .btn-name {
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+.player-touch-btn.goalkeeper-option {
+    border-style: dashed;
+    border-color: var(--accent-secondary);
+}
+
+.player-touch-btn.goalkeeper-option.selected {
+    background: rgba(5, 150, 105, 0.08) !important;
+    border-color: var(--accent-secondary) !important;
+}
+
+.player-touch-btn.goalkeeper-option.selected .btn-number,
+.player-touch-btn.goalkeeper-option.selected .btn-name {
+    color: var(--accent-secondary);
+}
+
+.team-option {
+    border-color: var(--accent-primary);
+}
+
+.btn-number {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-color);
+    font-family: var(--font-mono);
+}
+
+.btn-name {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    margin-top: 2px;
+}
+
+/* Actions Menu */
+.main-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-main-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    background: var(--bg-primary);
+    color: var(--text-color);
+    min-height: 80px;
+}
+
+.btn-main-action:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-main-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.action-lanzamiento {
+    background: rgba(30, 64, 175, 0.08);
+    border-color: rgba(30, 64, 175, 0.2);
+    color: var(--accent-primary);
+}
+.action-lanzamiento:hover:not(:disabled) {
+    background: rgba(30, 64, 175, 0.12);
+}
+
+.action-perdida {
+    color: var(--accent-warning);
+    background: rgba(217, 119, 6, 0.08);
+    border-color: rgba(217, 119, 6, 0.2);
+}
+.action-perdida:hover:not(:disabled) {
+    background: rgba(217, 119, 6, 0.12);
+}
+
+.action-sanciones {
+    color: var(--accent-danger);
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.2);
+}
+.action-sanciones:hover:not(:disabled) {
+    background: rgba(220, 38, 38, 0.12);
+}
+
+.action-timeout {
+    color: var(--text-color);
+}
+
+.action-period {
+    color: var(--text-muted);
+}
+
+/* Submenu container */
+.submenu-container {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.submenu-container h4 {
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+}
+
+.submenu-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.option-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: center;
+}
+
+.option-btn:hover {
+    border-color: var(--text-muted);
+    background: var(--bg-primary);
+}
+
+.btn-back-menu {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    transition: color 0.12s;
+}
+
+.btn-back-menu:hover {
+    color: var(--text-color);
+}
+
+/* Modifiers options */
+.submenu-modifiers {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modifier-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.modifier-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    width: 80px;
+}
+
+.modifier-options {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.modifier-opt-btn {
+    flex: 1;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 6px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+
+.modifier-opt-btn:hover {
+    background: var(--bg-surface);
+    color: var(--text-color);
+}
+
+.modifier-opt-btn.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+/* Roster submenú (sanciones) */
+.team-sanction-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.team-sanction-column h5 {
+    font-size: 0.85rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+/* Manual possession change */
+.manual-control-box {
+    margin-top: 14px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 14px;
+}
+
+.btn-change-possession {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 100%;
+}
+
+/* ==========================================================
+   TIMELINE CARD
+========================================================== */
+
+.timeline-container-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.timeline-container-card h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.no-events-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 14px;
+}
+
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.timeline-list::-webkit-scrollbar {
+    width: 4px;
+}
+.timeline-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.timeline-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    transition: all 0.15s ease-in-out;
+}
+
+.timeline-card.home-event {
+    border-left: 4px solid var(--accent-primary);
+}
+
+.timeline-card.away-event {
+    border-left: 4px solid var(--accent-secondary);
+}
+
+.timeline-card.is-goal {
+    background: rgba(5, 150, 105, 0.03);
+    border-color: rgba(5, 150, 105, 0.15);
+}
+
+.timeline-card.is-stop {
+    background: rgba(30, 64, 175, 0.03);
+    border-color: rgba(30, 64, 175, 0.15);
+}
+
+.timeline-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+}
+
+.timeline-card-time {
+    font-weight: 800;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    background: var(--bg-surface);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.timeline-card-team-badge {
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.timeline-card-team-badge.home-event {
+    color: var(--accent-primary);
+}
+
+.timeline-card-team-badge.away-event {
+    color: var(--accent-secondary);
+}
+
+.timeline-card-meta {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    margin-left: auto;
+}
+
+.timeline-card-body {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timeline-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.badge-goal {
+    background: var(--accent-secondary);
+    color: white;
+}
+
+.badge-stop {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.badge-miss {
+    background: var(--accent-warning);
+    color: white;
+}
+
+.badge-turnover {
+    background: #4b5563;
+    color: white;
+}
+
+.badge-sanction {
+    background: var(--accent-danger);
+    color: white;
+}
+
+.badge-free-throw {
+    background: #2563eb;
+    color: white;
+}
+
+.timeline-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.82rem;
+    text-align: left;
+}
+
+.timeline-card-player {
+    color: var(--text-color);
+    font-weight: 800;
+}
+
+.timeline-card-desc {
+    color: var(--text-muted);
+}
+
+.result-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.result-tag.gol {
+    background: rgba(5, 150, 105, 0.1);
+    color: var(--accent-secondary);
+    border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.result-tag.parada {
+    background: rgba(30, 64, 175, 0.1);
+    color: var(--accent-primary);
+    border: 1px solid rgba(30, 64, 175, 0.2);
+}
+
+.result-tag.poste, .result-tag.fuera {
+    background: rgba(217, 119, 6, 0.1);
+    color: var(--accent-warning);
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+@keyframes ma-pulse {
+    0% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN
+========================================================== */
+
+@media (max-width: 992px) {
+    .scoreboard-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .scoreboard-timer-module {
+        grid-row: 1;
+    }
+
+    .analysis-panel-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .match-analysis-page {
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .scoreboard-container {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .scoreboard-timer-module {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        padding: 8px;
+    }
+
+    .scoreboard-team {
+        padding: 10px;
+    }
+
+    .team-name {
+        font-size: 0.9rem;
+    }
+
+    .team-score {
+        font-size: 2.2rem;
+    }
+
+    .timer-display {
+        font-size: 2rem;
+        margin-bottom: 4px;
+    }
+
+    .btn-time-adjust {
+        padding: 2px 4px;
+        font-size: 0.7rem;
+    }
+
+    .btn-timer-play {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        min-width: 80px;
+    }
+
+    .roster-selection-card,
+    .action-buttons-card {
+        padding: 14px;
+        min-height: auto;
+    }
+
+    .players-touch-grid {
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+        max-height: 280px;
+    }
+
+    .player-touch-btn {
+        min-height: 48px;
+        padding: 4px;
+    }
+
+    .btn-number {
+        font-size: 0.85rem;
+    }
+
+    .btn-name {
+        font-size: 0.65rem;
+    }
+
+    .main-actions-grid {
+        gap: 8px;
+    }
+
+    .btn-main-action {
+        min-height: 60px;
+        padding: 10px;
+        font-size: 0.75rem;
+    }
+
+    .options-grid {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 6px;
+    }
+
+    .option-btn {
+        padding: 8px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Goal selector styling */
+.goal-grid-selector {
+    display: grid;
+    grid-template-columns: 50px 16px 1fr 1fr 1fr 16px 50px;
+    grid-template-rows: 50px 16px 1fr 1fr 1fr;
+    gap: 4px;
+    width: 100%;
+    max-width: 380px;
+    margin: 16px auto;
+    aspect-ratio: 3 / 2;
+    background: transparent;
+    position: relative;
+}
+
+.goal-zone-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 800;
+    transition: all 0.15s ease-in-out;
+    padding: 0;
+    border-radius: 4px;
+}
+
+.goal-zone-btn.disabled {
+    opacity: 0.15;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.02);
+    border-style: dotted;
+    border-color: var(--border-color);
+    color: transparent; /* Oculta el texto para las deshabilitadas */
+}
+
+/* Interior de la portería */
+.goal-zone-btn.zone-inside {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    color: var(--text-muted);
+}
+.goal-zone-btn.zone-inside.enabled {
+    border-color: rgba(30, 64, 175, 0.4);
+    color: var(--text-color);
+}
+.goal-zone-btn.zone-inside.enabled:hover {
+    background: rgba(30, 64, 175, 0.15);
+    border-color: var(--accent-primary);
+    transform: scale(1.03);
+    box-shadow: 0 0 8px rgba(30, 64, 175, 0.2);
+}
+
+/* Palos / Portería física */
+.goal-zone-btn.zone-post {
+    background: #e2e8f0; /* Color poste blanco clásico */
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+}
+.goal-zone-btn.zone-post.enabled {
+    background: #ef4444; /* Rojo llamativo cuando se puede elegir */
+    border-color: #dc2626;
+    color: white;
+}
+.goal-zone-btn.zone-post.enabled:hover {
+    background: #dc2626;
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+/* Fuera de portería */
+.goal-zone-btn.zone-outside {
+    background: transparent;
+    border: 1px dotted rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+}
+.goal-zone-btn.zone-outside.enabled {
+    border-color: rgba(217, 119, 6, 0.3);
+    background: rgba(217, 119, 6, 0.05);
+    color: var(--text-color);
+}
+.goal-zone-btn.zone-outside.enabled:hover {
+    background: rgba(217, 119, 6, 0.15);
+    border-color: var(--accent-warning);
+    transform: scale(1.02);
+}
+
+.zone-label-text {
+    pointer-events: none;
+    font-family: var(--font-mono);
+}
+
+/* Responsivo para móviles pequeños */
+@media (max-width: 480px) {
+    .goal-grid-selector {
+        grid-template-columns: 35px 12px 1fr 1fr 1fr 12px 35px;
+        grid-template-rows: 35px 12px 1fr 1fr 1fr;
+        max-width: 290px;
+    }
+    
+    .goal-zone-btn {
+        font-size: 0.7rem;
+    }
+}
+
+/* Progressive Shot Wizard styling */
+.wizard-container {
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.wizard-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.wizard-step {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding-bottom: 12px;
+    animation: slideDown 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scoreboard-driven team actions styling */
+.team-scoreboard-actions {
+    margin-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 12px;
+}
+
+.scoreboard-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.sb-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sb-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sb-action-btn.btn-lanzamiento {
+    grid-column: span 2;
+    background: rgba(30, 64, 175, 0.12);
+    border-color: rgba(30, 64, 175, 0.3);
+    color: #60a5fa;
+}
+.sb-action-btn.btn-lanzamiento:hover {
+    background: rgba(30, 64, 175, 0.22);
+    border-color: #60a5fa;
+}
+
+.sb-action-btn.btn-golpe-franco {
+    grid-column: span 2;
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(37, 99, 235, 0.3);
+    color: #3b82f6;
+}
+.sb-action-btn.btn-golpe-franco:hover {
+    background: rgba(37, 99, 235, 0.22);
+    border-color: #3b82f6;
+}
+
+.sb-action-btn.btn-perdida {
+    color: var(--accent-warning);
+    background: rgba(217, 119, 6, 0.05);
+    border-color: rgba(217, 119, 6, 0.15);
+}
+.sb-action-btn.btn-perdida:hover {
+    background: rgba(217, 119, 6, 0.12);
+    border-color: var(--accent-warning);
+}
+
+.sb-action-btn.btn-sancion {
+    color: var(--accent-danger);
+    background: rgba(220, 38, 38, 0.05);
+    border-color: rgba(220, 38, 38, 0.15);
+}
+.sb-action-btn.btn-sancion:hover {
+    background: rgba(220, 38, 38, 0.12);
+    border-color: var(--accent-danger);
+}
+
+.sb-action-btn.active {
+    outline: 2px solid var(--accent-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
