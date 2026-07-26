@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMatch } from "../../context/MatchContext";
 import userService from "../../services/userService";
+import MatchStatsModule from "../../stats/MatchStatsModule";
 import "./MatchAnalysisPage.css";
 
 const goalZones = [
@@ -45,7 +46,7 @@ const getZoneLabel = (zoneId) => {
   return labels[zoneId] || zoneId;
 };
 
-export default function MatchAnalysisPage({ user, onBack }) {
+export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }) {
   const {
     currentMatch,
     activePossession,
@@ -55,7 +56,14 @@ export default function MatchAnalysisPage({ user, onBack }) {
     undoLastEvent,
   } = useMatch();
 
-  // Cronómetro
+  // Cronómetro y Vista Principal
+  const [mainViewMode, setMainViewMode] = useState(initialMode); // "live" | "stats"
+
+  useEffect(() => {
+    if (initialMode) {
+      setMainViewMode(initialMode);
+    }
+  }, [initialMode]);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const timerRef = useRef(null);
@@ -152,9 +160,19 @@ export default function MatchAnalysisPage({ user, onBack }) {
         );
         const lastPoss = sorted[0];
 
+        // Determinar el equipo para la posesión activa
+        let nextTeam;
+        if (lastPoss.end_reason === "Fin 1ª Parte") {
+          const firstPoss = currentMatch.possessions.find(p => p.possession_number === 1);
+          const firstTeam = firstPoss ? firstPoss.team : "LOCAL";
+          nextTeam = firstTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
+        } else {
+          nextTeam = lastPoss.team === "LOCAL" ? "VISITANTE" : "LOCAL";
+        }
+
         setActivePossession({
           possession_number: lastPoss.possession_number + 1,
-          team: lastPoss.team === "LOCAL" ? "VISITANTE" : "LOCAL",
+          team: nextTeam,
           start_time: lastPoss.end_time,
           phase: "Posicional",
           situation: "Igualdad",
@@ -162,24 +180,15 @@ export default function MatchAnalysisPage({ user, onBack }) {
         setTime(undoInfo ? undoInfo.targetTime : lastPoss.end_time);
         setPossessionStarted(true);
       } else {
-        const hasEvents = currentMatch.events && currentMatch.events.length > 0;
-        const getPossessionTeamFromEvents = (match) => {
-          if (match.events && match.events.length > 0) {
-            const lastEv = match.events[match.events.length - 1];
-            return lastEv.is_opponent_action ? "VISITANTE" : "LOCAL";
-          }
-          return "LOCAL";
-        };
-
         setActivePossession({
           possession_number: 1,
-          team: getPossessionTeamFromEvents(currentMatch),
+          team: "LOCAL",
           start_time: 0,
           phase: "Posicional",
           situation: "Igualdad",
         });
         setTime(undoInfo ? undoInfo.targetTime : 0);
-        setPossessionStarted(hasEvents);
+        setPossessionStarted(false);
       }
     }
   }, [currentMatch]);
@@ -304,6 +313,44 @@ export default function MatchAnalysisPage({ user, onBack }) {
     setIsRunning(true); // Arranca el tiempo automáticamente al iniciar el partido
   };
 
+  // Finalizar 1ª Parte (Fija crono a 30:00 - 1800s, rota posesión al equipo contrario que inició el partido)
+  const handleEndFirstHalf = async () => {
+    const firstPoss = currentMatch.possessions?.find(p => p.possession_number === 1);
+    const firstPosTeam = firstPoss ? firstPoss.team : activePossession.team;
+    const secondHalfStartingTeam = firstPosTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
+
+    setIsRunning(false);
+    setTime(1800);
+    setActiveActionSubmenu(null);
+    setSelectedTeamAction(null);
+
+    await sendMatchEvent({
+      event_type: "sanction",
+      player_id: "Equipo",
+      is_opponent_action: false,
+      sanction_type: "Fin 1ª Parte"
+    }, 1800);
+
+    await closePossession(1800, "Fin 1ª Parte", secondHalfStartingTeam);
+  };
+
+  // Finalizar 2ª Parte (Fija crono a 60:00 - 3600s)
+  const handleEndSecondHalf = async () => {
+    setIsRunning(false);
+    setTime(3600);
+    setActiveActionSubmenu(null);
+    setSelectedTeamAction(null);
+
+    await sendMatchEvent({
+      event_type: "sanction",
+      player_id: "Equipo",
+      is_opponent_action: false,
+      sanction_type: "Fin 2ª Parte"
+    }, 3600);
+
+    await closePossession(3600, "Fin 2ª Parte");
+  };
+
   // Registrar Evento y Cambiar Posesión (Ataque finalizado)
   const handleAction = async (actionType, details = {}) => {
     // Usar el tiempo capturado al inicio de la acción, o en su defecto el tiempo actual
@@ -321,14 +368,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
 
     let isOpponent = activePossession.team === "VISITANTE";
 
-    // Si es una parada, el actor principal del evento es el portero que lo paró,
-    // y la bandera de oponente corresponde al equipo del portero.
-    if (actionType === "shot" && details.result === "Parada") {
-      if (details.goalkeeper_name) {
-        player_id = `${details.goalkeeper_number} - ${details.goalkeeper_name}`;
-      }
-      isOpponent = activePossession.team === "LOCAL";
-    } else if (actionType === "free_throw") {
+    if (actionType === "free_throw") {
       isOpponent = activePossession.team === "LOCAL";
       player_id = "Equipo";
     }
@@ -410,7 +450,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
     const activeSanc = getActiveSuspensions();
     const homeCount = activeSanc.home.length;
     const awayCount = activeSanc.away.length;
-    
+
     if (activePossession.team === "LOCAL") {
       if (homeCount > awayCount) return "Inferioridad";
       if (homeCount < awayCount) return "Superioridad";
@@ -447,7 +487,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
   // Confirmar detalles de lanzamiento y continuar a la portería
   const handleConfirmShotDetails = (sit) => {
     const finalSit = sit || selectedNumericalSituation || getAutoNumericalSituation();
-    
+
     let typeOfShot = "exterior";
     if (selectedPhase === "1ª Oleada") {
       typeOfShot = "contraataque";
@@ -465,7 +505,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
         assist_position: shotResult === "Gol" ? selectedAssistPosition : "Ninguna"
       }
     });
-    
+
     setActiveActionSubmenu("select_goal_zone");
   };
 
@@ -532,6 +572,9 @@ export default function MatchAnalysisPage({ user, onBack }) {
   );
   const IconClock = () => (
     <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+  );
+  const IconBarChart = () => (
+    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16, display: "inline-block", verticalAlign: "middle" }}><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
   );
   const IconFlag = () => (
     <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" x2="4" y1="22" y2="15" /></svg>
@@ -626,14 +669,29 @@ export default function MatchAnalysisPage({ user, onBack }) {
 
   return (
     <div className="match-analysis-page">
-      {/* HEADER DE MESA */}
+      {/* HEADER DE MESA Y ESTADÍSTICAS */}
       <header className="analysis-header-bar">
         <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Volver a mis partidos">
           <IconArrowLeft /> Volver
         </button>
-        <span className="analysis-title">
-          <IconHandball /> Mesa de Control
-        </span>
+
+        <div className="hs-mode-switcher" style={{ display: "flex", gap: 4, background: "var(--bg-inset)", padding: 4, borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
+          <button
+            type="button"
+            className={`btn btn-sm ${mainViewMode === "live" ? "btn-primary" : "btn-ghost"}`}
+            onClick={() => setMainViewMode("live")}
+          >
+            <IconHandball /> Mesa de Control (Directo)
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${mainViewMode === "stats" ? "btn-primary" : "btn-ghost"}`}
+            onClick={() => setMainViewMode("stats")}
+          >
+            <IconBarChart /> Centro de Inteligencia (Estadísticas)
+          </button>
+        </div>
+
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <button
             className="btn btn-danger btn-sm"
@@ -650,6 +708,15 @@ export default function MatchAnalysisPage({ user, onBack }) {
         </div>
       </header>
 
+      {mainViewMode === "stats" ? (
+        <MatchStatsModule
+          match={currentMatch}
+          activePossession={activePossession}
+          timeSeconds={time}
+        />
+      ) : (
+        <>
+
       {/* MARCADOR Y CRONÓMETRO */}
       <section className="scoreboard-container" aria-label="Marcador del partido">
         {/* EQUIPO LOCAL */}
@@ -657,7 +724,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
           <div className="team-name">{currentMatch.home_team}</div>
           <div className="team-score" role="status" aria-live="polite">{currentMatch.goals_home}</div>
           <div className="possession-dot">{activePossession.team === "LOCAL" ? "ATAQUE" : "DEFENSA"}</div>
-          
+
           {possessionStarted && (
             <div className="team-scoreboard-actions">
               {activePossession.team === "LOCAL" ? (
@@ -716,6 +783,18 @@ export default function MatchAnalysisPage({ user, onBack }) {
                   >
                     <IconShield /> Sanción
                   </button>
+                  <button
+                    type="button"
+                    className="sb-action-btn btn-timeout"
+                    style={{ gridColumn: "span 2" }}
+                    onClick={() => {
+                      handleAction("sanction", { sanction_type: "Tiempo Muerto Local" });
+                      setIsRunning(false);
+                    }}
+                    aria-label="Tiempo muerto local"
+                  >
+                    <IconClock /> T. Muerto
+                  </button>
                 </div>
               )}
             </div>
@@ -769,30 +848,46 @@ export default function MatchAnalysisPage({ user, onBack }) {
               {formatTime(time)} <IconEdit />
             </div>
           )}
-          <div className="timer-controls">
+          {/* FILA 1: AJUSTES DE TIEMPO */}
+          <div className="timer-adjust-row" style={{ display: "flex", gap: "4px", justifyContent: "center", marginBottom: "8px" }}>
             <button className="btn-time-adjust" onClick={() => adjustTime(-60)} aria-label="Restar 1 minuto">-1m</button>
             <button className="btn-time-adjust" onClick={() => adjustTime(-10)} aria-label="Restar 10 segundos">-10s</button>
+            <button className="btn-time-adjust" onClick={() => adjustTime(10)} aria-label="Sumar 10 segundos">+10s</button>
+            <button className="btn-time-adjust" onClick={() => adjustTime(60)} aria-label="Sumar 1 minuto">+1m</button>
+          </div>
+
+          {/* FILA 2: CONTROLES PRINCIPALES (INICIAR/PAUSAR + FIN PERIODEO) */}
+          <div className="timer-main-controls-row" style={{ display: "flex", gap: "6px", justifyContent: "center", alignItems: "center" }}>
             <button
+              type="button"
               className={`btn-timer-play ${isRunning ? "running" : ""}`}
               onClick={() => setIsRunning(!isRunning)}
+              style={{ flex: 1, padding: "8px 12px", fontSize: "0.8rem", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
               aria-label={isRunning ? "Pausar cronómetro" : "Iniciar cronómetro"}
             >
               {isRunning ? <><IconPause /> Pausar</> : <><IconPlay /> Iniciar</>}
             </button>
-            <button className="btn-time-adjust" onClick={() => adjustTime(10)} aria-label="Sumar 10 segundos">+10s</button>
-            <button className="btn-time-adjust" onClick={() => adjustTime(60)} aria-label="Sumar 1 minuto">+1m</button>
+
+            {possessionStarted && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ flex: 1, fontSize: "0.75rem", padding: "8px 8px", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px", whiteSpace: "nowrap" }}
+                onClick={() => {
+                  if (time < 1800) {
+                    handleEndFirstHalf();
+                  } else if (time < 3600) {
+                    handleEndSecondHalf();
+                  } else {
+                    setActiveActionSubmenu("fin_periodo");
+                  }
+                }}
+                aria-label="Controles de fin de periodo"
+              >
+                <IconFlag /> Fin Periodo
+              </button>
+            )}
           </div>
-          {possessionStarted && (
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              style={{ marginTop: "12px", width: "100%", fontSize: "0.75rem", padding: "6px", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
-              onClick={() => setActiveActionSubmenu("fin_periodo")}
-              aria-label="Controles de fin de periodo"
-            >
-              <IconFlag /> Fin de Periodo
-            </button>
-          )}
         </div>
 
         {/* EQUIPO VISITANTE */}
@@ -859,6 +954,18 @@ export default function MatchAnalysisPage({ user, onBack }) {
                   >
                     <IconShield /> Sanción
                   </button>
+                  <button
+                    type="button"
+                    className="sb-action-btn btn-timeout"
+                    style={{ gridColumn: "span 2" }}
+                    onClick={() => {
+                      handleAction("sanction", { sanction_type: "Tiempo Muerto Visitante" });
+                      setIsRunning(false);
+                    }}
+                    aria-label="Tiempo muerto visitante"
+                  >
+                    <IconClock /> T. Muerto
+                  </button>
                 </div>
               )}
             </div>
@@ -883,7 +990,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
       ) : (
         /* PANEL PRINCIPAL DE ACCIONES */
         <div className="analysis-panel-grid" style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "10px" }}>
-          
+
           {selectedTeamAction === null ? (
             /* ESPACIO VACÍO / DE INSTRUCCIONES */
             <div className="empty-workspace-card" style={{ textAlign: "center", padding: "40px", background: "var(--bg-surface)", borderRadius: "var(--radius)", border: "1px dashed var(--border-color)" }}>
@@ -892,7 +999,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
               <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", maxWidth: "450px", margin: "0 auto 20px auto" }}>
                 Selecciona una acción (Lanzamiento, Pérdida, Sanción o Golpe Franco) en el marcador del equipo correspondiente para comenzar a registrar datos en tiempo real.
               </p>
-              
+
               <div className="manual-control-box" style={{ maxWidth: "300px", margin: "0 auto" }}>
                 <button
                   type="button"
@@ -907,7 +1014,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
           ) : (
             /* DETALLES DE ACCIÓN DE EQUIPO SELECCIONADA */
             <div className="active-action-workspace" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-              
+
               {/* COLUMNA IZQUIERDA: SELECCIÓN DE JUGADOR O MODIFICADOR SANCIONES */}
               <section className="roster-selection-card" aria-label="Selección de jugador destinatario">
                 {selectedTeamAction.action === "sancion" ? (
@@ -978,7 +1085,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
                   {/* Listar jugadores del equipo seleccionado */}
                   {(selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || []).map((player, idx) => {
                     const isGk = isGoalkeeper(player);
-                    
+
                     let isBtnDisabled = false;
 
                     const isSelected = selectedPlayer?.number === player.number;
@@ -990,7 +1097,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
                         className={`player-touch-btn ${isSelected ? "selected" : ""} ${isGk ? "goalkeeper-option" : ""} ${isBtnDisabled ? "btn-disabled" : ""}`}
                         onClick={() => {
                           setSelectedPlayer(player);
-                          
+
                           if (selectedTeamAction.action === "sancion") {
                             handleAction("sanction", {
                               sanction_type: selectedSanctionType,
@@ -1061,7 +1168,123 @@ export default function MatchAnalysisPage({ user, onBack }) {
                       <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
                         Por favor, selecciona un jugador del Roster de la izquierda para configurar los detalles del lanzamiento.
                       </div>
+                    ) : activeActionSubmenu === "select_goal_zone" ? (
+                      /* PASO 2: PORTERÍA EN EL MISMO LUGAR */
+                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--text-primary)" }}>
+                            Zona de Portería:
+                          </span>
+                          <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu(null)} aria-label="Modificar opciones de tiro">
+                            <IconArrowLeft /> Modificar opciones
+                          </button>
+                        </div>
+                        <p className="submenu-hint" style={{ marginBottom: "10px" }}>
+                          {shotResult === "Gol" || shotResult === "Parada"
+                            ? "Haz clic en la zona interior de la portería donde fue el balón:"
+                            : shotResult === "Poste"
+                              ? "Haz clic en los postes o larguero de la portería:"
+                              : "Haz clic en la zona exterior del campo donde se marchó el balón:"}
+                        </p>
+
+                        <div style={{ display: "flex", justifyContent: "center", margin: "10px 0" }}>
+                          <div className="goal-grid-selector">
+                            {goalZones.map((zone, zIdx) => {
+                              const isPost = zone.group === "poste";
+                              const isOutside = zone.group === "fuera";
+                              const isInside = zone.group === "interior";
+
+                              let isEnabled = false;
+                              if (isOutside && shotResult === "Fuera") isEnabled = true;
+                              if (isPost && shotResult === "Poste") isEnabled = true;
+                              if (isInside && (shotResult === "Gol" || shotResult === "Parada")) isEnabled = true;
+
+                              let btnClass = "goal-zone-btn ";
+                              if (isPost) btnClass += "zone-post";
+                              else if (isOutside) btnClass += "zone-outside";
+                              else btnClass += "zone-inside";
+
+                              if (isEnabled) btnClass += " enabled";
+                              else btnClass += " disabled";
+
+                              return (
+                                <button
+                                  key={`zone-${zIdx}`}
+                                  type="button"
+                                  disabled={!isEnabled}
+                                  className={btnClass}
+                                  style={zone.style}
+                                  onClick={() => handleSelectGoalZone(zone.id)}
+                                  title={zone.label}
+                                  aria-label={zone.label}
+                                >
+                                  <span className="zone-label-text">{zone.id}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    ) : activeActionSubmenu === "select_opposing_goalkeeper" ? (
+                      /* PASO 3: PORTERO DEFENSOR EN EL MISMO LUGAR */
+                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--text-primary)" }}>
+                            Portero Defensor:
+                          </span>
+                          <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu("select_goal_zone")} aria-label="Volver a portería">
+                            <IconArrowLeft /> Volver
+                          </button>
+                        </div>
+                        <p className="submenu-hint" style={{ marginBottom: "12px" }}>¿Qué portero del equipo contrario estaba en la portería?</p>
+
+                        <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
+                          {defendingGoalkeepers.map((gk, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              className="option-btn btn-parada"
+                              onClick={() => {
+                                const gkDetails = {
+                                  goalkeeper_number: gk.number,
+                                  goalkeeper_name: gk.name,
+                                  shooter_number: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.number : null,
+                                  shooter_name: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.name : (selectedPlayer === "team" ? "Equipo" : null)
+                                };
+                                handleAction("shot", { ...pendingAction.details, ...gkDetails });
+                                setPendingAction(null);
+                                setActiveActionSubmenu(null);
+                              }}
+                              style={{ padding: "12px", fontSize: "0.85rem" }}
+                              aria-label={`Portero número ${gk.number}, ${gk.name}`}
+                            >
+                              #{gk.number} - {gk.name}
+                            </button>
+                          ))}
+
+                          <button
+                            key="unknown-gk"
+                            type="button"
+                            className="option-btn btn-parada"
+                            onClick={() => {
+                              const gkDetails = {
+                                goalkeeper_number: 0,
+                                goalkeeper_name: "Portero Desconocido",
+                                shooter_number: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.number : null,
+                                shooter_name: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.name : (selectedPlayer === "team" ? "Equipo" : null)
+                              };
+                              handleAction("shot", { ...pendingAction.details, ...gkDetails });
+                              setPendingAction(null);
+                              setActiveActionSubmenu(null);
+                            }}
+                            style={{ padding: "12px", fontSize: "0.85rem" }}
+                          >
+                            Portero Desconocido
+                          </button>
+                        </div>
+                      </div>
                     ) : (
+                      /* PASO 1: CONFIGURAR OPCIONES DE LANZAMIENTO */
                       <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
                         <div className="live-modifiers-grid" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                           {/* Fila 1: Resultado */}
@@ -1215,7 +1438,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
                               {["Igualdad", "Superioridad", "Inferioridad"].map((sit) => {
                                 const autoSit = getAutoNumericalSituation();
                                 const isAuto = autoSit === sit;
-                                
+
                                 return (
                                   <button
                                     key={sit}
@@ -1277,7 +1500,7 @@ export default function MatchAnalysisPage({ user, onBack }) {
                           const hasHomeSanc = activeSanc.home.length > 0;
                           const hasAwaySanc = activeSanc.away.length > 0;
                           if (!hasHomeSanc && !hasAwaySanc) return null;
-                          
+
                           return (
                             <div className="active-suspensions-wizard-info" style={{ margin: "12px 0 8px 0", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "6px", fontSize: "0.75rem", border: "1px solid rgba(255,255,255,0.05)" }}>
                               <div style={{ fontWeight: "bold", marginBottom: "4px", color: "var(--text-muted)" }}>
@@ -1363,176 +1586,33 @@ export default function MatchAnalysisPage({ user, onBack }) {
                 )}
               </section>
 
-              {/* OVERLAYS PARA SELECCIONES POSTERIORES */}
-              {activeActionSubmenu === "select_goal_zone" && (
-                <div className="goal-selection-overlay" style={{ gridColumn: "span 2", background: "var(--bg-surface)", border: "1px solid var(--border-color)", borderRadius: "var(--radius)", padding: "20px", marginTop: "10px" }}>
-                  <h4><IconTarget /> Selecciona la Zona de la Portería</h4>
-                  <p className="submenu-hint" style={{ marginBottom: "15px" }}>
-                    {shotResult === "Gol" || shotResult === "Parada"
-                      ? "Haz clic en la zona interior de la portería donde fue el balón:"
-                      : shotResult === "Poste"
-                        ? "Haz clic en los postes o larguero de la portería:"
-                        : "Haz clic en la zona exterior del campo donde se marchó el balón:"}
-                  </p>
-                  
-                  <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
-                    <div className="goal-grid-selector">
-                      {goalZones.map((row, rIdx) =>
-                        row.map((zone, cIdx) => {
-                          const isPost = zone.type === "post";
-                          const isOutside = zone.type === "outside";
-                          const isInside = zone.type === "inside";
 
-                          let isEnabled = false;
-                          if (isOutside && shotResult === "Fuera") isEnabled = true;
-                          if (isPost && shotResult === "Poste") isEnabled = true;
-                          if (isInside && (shotResult === "Gol" || shotResult === "Parada")) isEnabled = true;
-
-                          let btnClass = "goal-zone-btn ";
-                          if (isPost) btnClass += "zone-post";
-                          else if (isOutside) btnClass += "zone-outside";
-                          else btnClass += "zone-net";
-
-                          if (isEnabled) btnClass += " enabled";
-
-                          return (
-                            <button
-                              key={`zone-${rIdx}-${cIdx}`}
-                              type="button"
-                              disabled={!isEnabled}
-                              className={btnClass}
-                              onClick={() => handleSelectGoalZone(zone.id)}
-                              title={zone.label}
-                              aria-label={zone.label}
-                            >
-                              <span className="zone-label-text">{zone.id}</span>
-                            </button>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-
-                  <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu(null)} aria-label="Volver al panel anterior">
-                    <IconArrowLeft /> Atrás
-                  </button>
-                </div>
-              )}
-
-              {activeActionSubmenu === "select_opposing_goalkeeper" && (
-                <div className="gk-selection-overlay" style={{ gridColumn: "span 2", background: "var(--bg-surface)", border: "1px solid var(--border-color)", borderRadius: "var(--radius)", padding: "20px", marginTop: "10px" }}>
-                  <h4><IconGlove /> Selecciona el Portero Defensor</h4>
-                  <p className="submenu-hint" style={{ marginBottom: "15px" }}>¿Qué portero del equipo contrario estaba en la portería?</p>
-                  
-                  <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px" }}>
-                    {defendingGoalkeepers.map((gk, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className="option-btn btn-parada"
-                        onClick={() => {
-                          const gkDetails = {
-                            goalkeeper_number: gk.number,
-                            goalkeeper_name: gk.name,
-                            shooter_number: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.number : null,
-                            shooter_name: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.name : (selectedPlayer === "team" ? "Equipo" : null)
-                          };
-                          handleAction("shot", { ...pendingAction.details, ...gkDetails });
-                          setPendingAction(null);
-                          setActiveActionSubmenu(null);
-                        }}
-                        style={{ padding: "15px", fontSize: "0.95rem" }}
-                        aria-label={`Portero número ${gk.number}, ${gk.name}`}
-                      >
-                        #{gk.number} - {gk.name}
-                      </button>
-                    ))}
-                    
-                    <button
-                      key="unknown-gk"
-                      type="button"
-                      className="option-btn btn-parada"
-                      onClick={() => {
-                        const gkDetails = {
-                          goalkeeper_number: 0,
-                          goalkeeper_name: "Portero Desconocido",
-                          shooter_number: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.number : null,
-                          shooter_name: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.name : (selectedPlayer === "team" ? "Equipo" : null)
-                        };
-                        handleAction("shot", { ...pendingAction.details, ...gkDetails });
-                        setPendingAction(null);
-                        setActiveActionSubmenu(null);
-                      }}
-                      style={{ padding: "15px", fontSize: "0.95rem" }}
-                    >
-                      Portero Desconocido
-                    </button>
-                  </div>
-
-                  <button type="button" className="btn-back-menu" style={{ marginTop: "15px" }} onClick={() => { setPendingAction(null); setActiveActionSubmenu(null); }} aria-label="Cancelar selección de portero">
-                    <IconArrowLeft /> Cancelar
-                  </button>
-                </div>
-              )}
 
               {/* Submenú de fin de periodo */}
               {activeActionSubmenu === "fin_periodo" && (
                 <div className="period-selection-overlay" style={{ gridColumn: "span 2", background: "var(--bg-surface)", border: "1px solid var(--border-color)", borderRadius: "var(--radius)", padding: "20px", marginTop: "10px" }}>
                   <h4><IconFlag /> Fin de Periodo</h4>
                   <p className="submenu-hint" style={{ marginBottom: "15px" }}>Selecciona el periodo que ha finalizado:</p>
-                  
+
                   <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                     <button
                       className="option-btn btn-period"
-                      onClick={async () => {
-                        const firstPosTeam = (currentMatch.possessions && currentMatch.possessions.length > 0)
-                          ? currentMatch.possessions[0].team
-                          : activePossession.team;
-                        const secondHalfStartingTeam = firstPosTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
-
-                        await sendMatchEvent({
-                          event_type: "sanction",
-                          player_id: "Equipo",
-                          is_opponent_action: false,
-                          sanction_type: "Fin 1ª Parte"
-                        }, 1800);
-
-                        await closePossession(1800, "Fin 1ª Parte", secondHalfStartingTeam);
-
-                        setIsRunning(false);
-                        setTime(1800);
-                        setActiveActionSubmenu(null);
-                        setSelectedTeamAction(null);
-                      }}
+                      onClick={handleEndFirstHalf}
                       style={{ padding: "15px", fontSize: "0.9rem" }}
                       aria-label="Finalizar primera parte"
                     >
-                      Fin 1ª Parte
+                      Fin 1ª Parte (30:00)
                     </button>
-                    
+
                     <button
                       className="option-btn btn-period"
-                      onClick={async () => {
-                        await sendMatchEvent({
-                          event_type: "sanction",
-                          player_id: "Equipo",
-                          is_opponent_action: false,
-                          sanction_type: "Fin 2ª Parte"
-                        }, 3600);
-
-                        await closePossession(3600, "Fin 2ª Parte");
-
-                        setIsRunning(false);
-                        setTime(3600);
-                        setActiveActionSubmenu(null);
-                        setSelectedTeamAction(null);
-                      }}
+                      onClick={handleEndSecondHalf}
                       style={{ padding: "15px", fontSize: "0.9rem" }}
                       aria-label="Finalizar segunda parte"
                     >
-                      Fin 2ª Parte
+                      Fin 2ª Parte (60:00)
                     </button>
-                    
+
                     <button
                       className="option-btn btn-period"
                       onClick={async () => {
@@ -1671,6 +1751,8 @@ export default function MatchAnalysisPage({ user, onBack }) {
           </div>
         )}
       </section>
+        </>
+      )}
     </div>
   );
 }

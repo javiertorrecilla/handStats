@@ -1,5 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import userService from "../../services/userService";
+import { calculateTeamCumulativeStats } from "../../stats/engine/teamCumulativeEngine";
+import { KPICard } from "../../stats/components/common/KPICard";
+import { MetricBadge } from "../../stats/components/common/MetricBadge";
+import { HeatmapCourt } from "../../stats/components/charts/HeatmapCourt";
+import {
+  IconBarChart,
+  IconUsers,
+  IconClock
+} from "../../stats/components/common/Icons";
 import "./TeamsPage.css";
 
 const IconTeams = () => (
@@ -11,7 +20,7 @@ const IconTeams = () => (
   </svg>
 );
 
-const IconShield = () => (
+const IconShieldSvg = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 40, height: 40, color: "var(--text-muted)", display: "block", margin: "0 auto 12px" }}>
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
   </svg>
@@ -48,20 +57,16 @@ const IconPlus = () => (
   </svg>
 );
 
-const IconEdit = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 8, width: 18, height: 18, verticalAlign: "middle", display: "inline-block" }}>
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-  </svg>
-);
-
-export default function TeamsPage({ user }) {
+export default function TeamsPage({ user, matchesList = [] }) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estado para la edición / creación
+  // Estado para el panel derecho
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState("stats"); // "stats" | "roster"
+  const [selectedTeamGkNumber, setSelectedTeamGkNumber] = useState("all");
   const [editName, setEditName] = useState("");
   const [editPlayers, setEditPlayers] = useState([]);
 
@@ -86,10 +91,12 @@ export default function TeamsPage({ user }) {
     loadTeams();
   }, [user]);
 
-  // Al seleccionar un equipo para editar
+  // Al seleccionar un equipo de la lista
   const handleSelectTeam = (team) => {
     setIsCreating(false);
     setSelectedTeam(team);
+    setSelectedTeamGkNumber("all");
+    setRightPanelTab("stats");
     setEditName(team.name);
     setEditPlayers([...(team.players || [])]);
     setNewPlayerName("");
@@ -100,6 +107,8 @@ export default function TeamsPage({ user }) {
   const handleStartCreate = () => {
     setSelectedTeam(null);
     setIsCreating(true);
+    setSelectedTeamGkNumber("all");
+    setRightPanelTab("roster");
     setEditName("");
     setEditPlayers([]);
     setNewPlayerName("");
@@ -112,7 +121,6 @@ export default function TeamsPage({ user }) {
     if (!newPlayerName.trim() || newPlayerNumber === "") return;
 
     const numberVal = parseInt(newPlayerNumber, 10);
-    // Evitar dorsales duplicados en el mismo equipo temporal
     if (editPlayers.some((p) => p.number === numberVal)) {
       alert("Ya existe un jugador con ese dorsal.");
       return;
@@ -136,12 +144,10 @@ export default function TeamsPage({ user }) {
     );
   };
 
-  // Eliminar jugador de la lista temporal
   const handleRemovePlayer = (index) => {
     setEditPlayers((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Guardar cambios (crear o actualizar)
   const handleSaveTeam = async (e) => {
     e.preventDefault();
     if (!editName.trim()) {
@@ -151,12 +157,7 @@ export default function TeamsPage({ user }) {
 
     try {
       if (isCreating) {
-        // Comprobar si ya existe uno con ese nombre
-        if (
-          teams.some(
-            (t) => t.name.toLowerCase() === editName.trim().toLowerCase()
-          )
-        ) {
+        if (teams.some((t) => t.name.toLowerCase() === editName.trim().toLowerCase())) {
           alert("Ya existe un equipo con este nombre.");
           return;
         }
@@ -172,7 +173,6 @@ export default function TeamsPage({ user }) {
         });
         alert("Equipo actualizado correctamente.");
       }
-      // Limpiar y recargar
       setSelectedTeam(null);
       setIsCreating(false);
       loadTeams();
@@ -182,7 +182,6 @@ export default function TeamsPage({ user }) {
     }
   };
 
-  // Eliminar equipo
   const handleDeleteTeam = async (teamName) => {
     if (!confirm(`¿Estás seguro de que quieres eliminar el equipo "${teamName}"?`)) return;
 
@@ -199,10 +198,25 @@ export default function TeamsPage({ user }) {
     }
   };
 
-  // Equipos filtrados por búsqueda
+  // CÁLCULO DE ESTADÍSTICAS ACUMULADAS DEL EQUIPO
+  const cumulativeStats = useMemo(() => {
+    if (!selectedTeam?.name) return null;
+    return calculateTeamCumulativeStats(selectedTeam.name, matchesList);
+  }, [selectedTeam?.name, matchesList]);
+
   const filteredTeams = teams.filter((t) =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Porteros del equipo para el filtro
+  const teamGoalkeepers = useMemo(() => {
+    if (!cumulativeStats?.playerStats) return [];
+    return cumulativeStats.playerStats.filter((p) => p.is_goalkeeper === true);
+  }, [cumulativeStats]);
+
+  const activeTeamGk = selectedTeamGkNumber !== "all"
+    ? teamGoalkeepers.find((gk) => String(gk.number) === String(selectedTeamGkNumber))
+    : null;
 
   return (
     <div className="teams-page">
@@ -210,10 +224,10 @@ export default function TeamsPage({ user }) {
         <div>
           <h2 style={{ display: "flex", alignItems: "center" }}>
             <IconTeams />
-            <span>Gestión de Equipos</span>
+            <span>Gestión & Inteligencia de Equipos</span>
           </h2>
           <p className="teams-subtitle">
-            Crea y edita tus plantillas de jugadores para usarlas rápidamente en tus partidos.
+            Estadísticas acumuladas de la temporada y gestión de plantillas de jugadores.
           </p>
         </div>
         <button className="btn btn-primary" onClick={handleStartCreate} style={{ display: "inline-flex", alignItems: "center" }}>
@@ -223,7 +237,7 @@ export default function TeamsPage({ user }) {
       </div>
 
       <div className="teams-layout">
-        {/* COLUMNA IZQUIERDA: LISTADO */}
+        {/* COLUMNA IZQUIERDA: LISTADO DE EQUIPOS */}
         <div className="teams-list-column">
           <div className="search-box">
             <input
@@ -239,7 +253,7 @@ export default function TeamsPage({ user }) {
             <div className="teams-loading">Cargando equipos...</div>
           ) : filteredTeams.length === 0 ? (
             <div className="teams-empty-state">
-              <IconShield />
+              <IconShieldSvg />
               <p>No se encontraron equipos.</p>
             </div>
           ) : (
@@ -247,9 +261,7 @@ export default function TeamsPage({ user }) {
               {filteredTeams.map((team, idx) => (
                 <div
                   key={idx}
-                  className={`team-card ${
-                    selectedTeam?.name === team.name ? "active" : ""
-                  }`}
+                  className={`team-card ${selectedTeam?.name === team.name ? "active" : ""}`}
                   onClick={() => handleSelectTeam(team)}
                 >
                   <div className="team-card-info">
@@ -272,19 +284,328 @@ export default function TeamsPage({ user }) {
           )}
         </div>
 
-        {/* COLUMNA DERECHA: EDITOR / DETALLE */}
+        {/* COLUMNA DERECHA: DASHBOARD DE RENDIMIENTO O EDITOR DE PLANTILLA */}
         <div className="teams-editor-column">
-          {selectedTeam || isCreating ? (
+          {selectedTeam && !isCreating ? (
+            <div className="team-editor-card">
+              {/* NAVEGACIÓN ENTRE DASHBOARD DE EQUIPO Y PLANTILLA */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-24)", borderBottom: "1px solid var(--border-color)", paddingBottom: "var(--space-16)" }}>
+                <div>
+                  <h3 style={{ margin: 0 }}>{selectedTeam.name}</h3>
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
+                    {cumulativeStats?.totalMatches || 0} partidos analizados en HandStats
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: "var(--space-4)", background: "var(--bg-inset)", padding: "4px", borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${rightPanelTab === "stats" ? "btn-primary" : "btn-ghost"}`}
+                    onClick={() => setRightPanelTab("stats")}
+                  >
+                    <IconBarChart size={14} /> Dashboard Global
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${rightPanelTab === "roster" ? "btn-primary" : "btn-ghost"}`}
+                    onClick={() => setRightPanelTab("roster")}
+                  >
+                    <IconUsers size={14} /> Plantilla ({editPlayers.length})
+                  </button>
+                </div>
+              </div>
+
+              {/* VISTA 1: DASHBOARD GLOBAL DE RENDIMIENTO DEL EQUIPO */}
+              {rightPanelTab === "stats" && cumulativeStats && (
+                <div className="team-stats-dashboard" style={{ display: "flex", flexDirection: "column", gap: "var(--space-32)" }}>
+                  {/* KPIS DE TEMPORADA */}
+                  <div className="hs-kpi-grid">
+                    <KPICard
+                      title="PARTIDOS Y RÉCORD"
+                      value={`${cumulativeStats.wins}V - ${cumulativeStats.draws}E - ${cumulativeStats.losses}D`}
+                      subtitle={`Total partidos: ${cumulativeStats.totalMatches}`}
+                    />
+                    <KPICard
+                      title="GOLES A FAVOR / EN CONTRA"
+                      value={`${cumulativeStats.goalsFor} - ${cumulativeStats.goalsAgainst}`}
+                      subtitle={`Promedios: ${cumulativeStats.avgGoalsFor} / ${cumulativeStats.avgGoalsAgainst}`}
+                    />
+                    <KPICard
+                      title="xG Y xGA ACUMULADO"
+                      value={`${cumulativeStats.totalXG} / ${cumulativeStats.totalXGA}`}
+                      subtitle={`Prom. xG: ${cumulativeStats.avgXG} por partido`}
+                    />
+                    <KPICard
+                      title="EFICACIA LANZAMIENTO"
+                      value={`${cumulativeStats.shotEfficiency}%`}
+                      subtitle={`Goles: ${cumulativeStats.goalsFor} / ${cumulativeStats.totalShots} tiros`}
+                    />
+                    <KPICard
+                      title={activeTeamGk ? `PORTERÍA (#${activeTeamGk.number} ${activeTeamGk.name.toUpperCase()})` : "PORTERÍA (% PARADAS TEMPORADA)"}
+                      value={activeTeamGk ? `${activeTeamGk.savePct}%` : `${cumulativeStats.savePct}%`}
+                      subtitle={activeTeamGk ? `${activeTeamGk.saves} paradas en ${activeTeamGk.shotsFaced} tiros` : `Paradas: ${cumulativeStats.totalSaves} / ${cumulativeStats.totalShotsFaced}`}
+                    />
+                    <KPICard
+                      title="PÉRDIDAS POR PARTIDO"
+                      value={cumulativeStats.avgTurnovers}
+                      subtitle={`Total pérdidas: ${cumulativeStats.totalTurnovers}`}
+                    />
+                  </div>
+
+                  {/* HISTORIAL DE PARTIDOS DEL EQUIPO */}
+                  <div className="hs-card">
+                    <h4 className="hs-card-title"><IconClock size={15} /> HISTORIAL DE PARTIDOS Y RESULTADOS DEL EQUIPO</h4>
+                    {cumulativeStats.matchHistory.length === 0 ? (
+                      <p style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", margin: 0 }}>
+                        No hay partidos registrados aún con este equipo.
+                      </p>
+                    ) : (
+                      <div className="hs-table-container">
+                        <table className="hs-data-table">
+                          <thead>
+                            <tr>
+                              <th>Fecha</th>
+                              <th>Rival</th>
+                              <th>Condición</th>
+                              <th>Resultado Final</th>
+                              <th>xG Favor</th>
+                              <th>xG Rival</th>
+                              <th>Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cumulativeStats.matchHistory.map((m, idx) => (
+                              <tr key={idx}>
+                                <td>{m.date ? new Date(m.date).toLocaleDateString("es-ES") : "—"}</td>
+                                <td><strong>{m.opponent}</strong></td>
+                                <td>{m.isHome ? "Casa (Local)" : "Fuera (Visitante)"}</td>
+                                <td><strong>{m.goalsFor} - {m.goalsAgainst}</strong></td>
+                                <td>{m.xg}</td>
+                                <td>{m.xga}</td>
+                                <td>
+                                  <MetricBadge
+                                    value={m.result === "W" ? "VICTORIA" : m.result === "D" ? "EMPATE" : "DERROTA"}
+                                    variant={m.result === "W" ? "success" : m.result === "D" ? "warning" : "danger"}
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ESTADÍSTICAS ACUMULADAS DE LA PLANTILLA EN LA TEMPORADA */}
+                  <div className="hs-card">
+                    <h4 className="hs-card-title"><IconUsers size={15} /> RENDIMIENTO ACUMULADO DE LA PLANTILLA EN LA TEMPORADA</h4>
+                    {cumulativeStats.playerStats.length === 0 ? (
+                      <p style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", margin: 0 }}>
+                        No hay estadísticas de jugadores acumuladas todavía.
+                      </p>
+                    ) : (
+                      <div className="hs-table-container">
+                        <table className="hs-data-table">
+                          <thead>
+                            <tr>
+                              <th>Dorsal</th>
+                              <th>Jugador</th>
+                              <th>PJ</th>
+                              <th>Tiros</th>
+                              <th>Goles</th>
+                              <th>% Eficacia</th>
+                              <th>xG Acumulado</th>
+                              <th>Pérdidas</th>
+                              <th>Robos</th>
+                              <th>Rating Medio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cumulativeStats.playerStats.map((p, idx) => (
+                              <tr key={idx}>
+                                <td><strong>#{p.number}</strong></td>
+                                <td>{p.name} {p.is_goalkeeper ? "(PO)" : ""}</td>
+                                <td>{p.matchesPlayed}</td>
+                                <td>{p.shotsCount}</td>
+                                <td><strong>{p.goals}</strong></td>
+                                <td>
+                                  <MetricBadge value={`${p.efficiency}%`} variant={p.efficiency >= 60 ? "success" : p.efficiency >= 40 ? "info" : "danger"} />
+                                </td>
+                                <td>{p.xg}</td>
+                                <td>{p.turnovers}</td>
+                                <td>{p.steals}</td>
+                                <td>
+                                  <MetricBadge value={p.avgRating} variant={p.avgRating >= 7.5 ? "success" : p.avgRating >= 6.0 ? "info" : "warning"} />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* MAPA ACUMULADO DE LANZAMIENTOS Y PARADAS DE PORTERÍA EN LA TEMPORADA CON FILTRO DE PORTERO */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)" }}>
+                    {teamGoalkeepers.length > 0 && (
+                      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--space-8)", background: "var(--bg-surface)", padding: "var(--space-12) var(--space-16)", borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
+                        <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", marginRight: "var(--space-4)" }}>
+                          FILTRAR PARADAS DE PORTERÍA DE LA TEMPORADA:
+                        </span>
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${selectedTeamGkNumber === "all" ? "btn-primary" : "btn-ghost"}`}
+                          onClick={() => setSelectedTeamGkNumber("all")}
+                        >
+                          Todos los Porteros del Equipo
+                        </button>
+                        {teamGoalkeepers.map((gk) => (
+                          <button
+                            key={gk.number}
+                            type="button"
+                            className={`btn btn-sm ${String(selectedTeamGkNumber) === String(gk.number) ? "btn-primary" : "btn-ghost"}`}
+                            onClick={() => setSelectedTeamGkNumber(gk.number)}
+                          >
+                            #{gk.number} {gk.name} ({gk.savePct}%)
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <HeatmapCourt
+                      events={cumulativeStats.allTeamShotsEvents || []}
+                      gkEvents={cumulativeStats.allTeamGkShotsFaced || []}
+                      selectedGkNumber={selectedTeamGkNumber}
+                      title={`MAPA ACUMULADO DE LANZAMIENTOS Y PARADAS DE PORTERÍA DE LA TEMPORADA — ${activeTeamGk ? `#${activeTeamGk.number} ${activeTeamGk.name.toUpperCase()}` : selectedTeam.name.toUpperCase()}`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* VISTA 2: EDICIÓN DE PLANTILLA */}
+              {rightPanelTab === "roster" && (
+                <form onSubmit={handleSaveTeam} className="team-editor-form">
+                  <div className="form-group">
+                    <label htmlFor="team-name">Nombre del Equipo</label>
+                    <input
+                      id="team-name"
+                      type="text"
+                      className="input-field"
+                      placeholder="Ej. BM Málaga"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="team-roster-section">
+                    <h4>Jugadores ({editPlayers.length})</h4>
+
+                    {editPlayers.length === 0 ? (
+                      <p className="no-players-text">
+                        No hay jugadores en la plantilla. ¡Añade el primero abajo!
+                      </p>
+                    ) : (
+                      <div className="roster-table">
+                        <div className="roster-header">
+                          <span className="col-num">#</span>
+                          <span className="col-name" style={{ width: "50%" }}>Nombre</span>
+                          <span className="col-role" style={{ width: "30%", textAlign: "center" }}>Rol</span>
+                          <span className="col-action"></span>
+                        </div>
+                        <div className="roster-rows">
+                          {editPlayers.map((player, index) => {
+                            const isGk = player.is_goalkeeper === true || player.is_goalkeeper === "true";
+                            return (
+                              <div key={index} className="roster-row">
+                                <span className="col-num">{player.number}</span>
+                                <span className="col-name" style={{ width: "50%" }}>{player.name}</span>
+                                <span
+                                  className="col-role"
+                                  style={{
+                                    width: "30%",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                    userSelect: "none"
+                                  }}
+                                  onClick={() => handleToggleGoalkeeper(index)}
+                                  title="Haz clic para cambiar rol"
+                                >
+                                  {isGk ? "Portero" : "Jugador"}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="btn-remove-player"
+                                  onClick={() => handleRemovePlayer(index)}
+                                  title="Eliminar de la plantilla"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* FORMULARIO AGREGAR JUGADOR */}
+                    <div className="add-player-form-inline">
+                      <input
+                        type="number"
+                        className="input-field player-num-input"
+                        placeholder="Dorsal"
+                        min="0"
+                        max="99"
+                        value={newPlayerNumber}
+                        onChange={(e) => setNewPlayerNumber(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="input-field player-name-input"
+                        placeholder="Nombre del jugador"
+                        value={newPlayerName}
+                        onChange={(e) => setNewPlayerName(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={handleAddPlayer}
+                      >
+                        Añadir
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="editor-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setSelectedTeam(null);
+                        setIsCreating(false);
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                    <button type="submit" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center" }}>
+                      <IconSave />
+                      <span>Guardar Equipo</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ) : isCreating ? (
             <div className="team-editor-card">
               <h3 style={{ display: "flex", alignItems: "center" }}>
-                {isCreating ? <><IconPlus /><span>Crear Nuevo Equipo</span></> : <><IconEdit /><span>Editar Equipo</span></>}
+                <IconPlus /><span>Crear Nuevo Equipo</span>
               </h3>
 
               <form onSubmit={handleSaveTeam} className="team-editor-form">
                 <div className="form-group">
-                  <label htmlFor="team-name">Nombre del Equipo</label>
+                  <label htmlFor="team-name-create">Nombre del Equipo</label>
                   <input
-                    id="team-name"
+                    id="team-name-create"
                     type="text"
                     className="input-field"
                     placeholder="Ej. BM Málaga"
@@ -393,8 +714,8 @@ export default function TeamsPage({ user }) {
           ) : (
             <div className="editor-placeholder">
               <IconHandball />
-              <h3>Gestión de Plantillas</h3>
-              <p>Selecciona un equipo de la lista o crea uno nuevo para empezar a editar sus jugadores.</p>
+              <h3>Gestión de Equipos & Dashboard Global</h3>
+              <p>Selecciona un equipo de la lista para ver su Dashboard de Rendimiento Acumulado o editar su plantilla.</p>
             </div>
           )}
         </div>

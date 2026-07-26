@@ -37,6 +37,7 @@ function App() {
   // --------------------------------------------------
 
   const [view, setView] = useState("list"); // "list" | "create"
+  const [initialAnalyzeMode, setInitialAnalyzeMode] = useState("live");
   const [matchesList, setMatchesList] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
 
@@ -195,8 +196,10 @@ function App() {
       alert("Error al eliminar el partido.");
     }
   };
-  const handleLoadMatch = async (matchId) => {
+
+  const handleLoadMatch = async (matchId, initialMode = "live") => {
     await loadMatch(matchId);
+    setInitialAnalyzeMode(initialMode || "live");
     setView("analyze");
   };
   return (
@@ -236,10 +239,12 @@ function App() {
         ) : view === "teams" ? (
           <TeamsPage
             user={user}
+            matchesList={matchesList}
           />
         ) : view === "analyze" ? (
           <MatchAnalysisPage
             user={user}
+            initialMode={initialAnalyzeMode}
             onBack={() => setView("list")}
           />
         ) : (

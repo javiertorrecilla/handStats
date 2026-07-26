@@ -1,3 +1,7 @@
+/* ==========================================================
+   SIDEBAR — HANDSTATS DESIGN SYSTEM
+   ========================================================== */
+
 .sidebar {
     position: fixed;
     top: 0;
@@ -8,11 +12,14 @@
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    z-index: 50;
+    z-index: var(--z-sidebar);
+    transition: transform var(--duration) var(--easing);
 }
 
+/* ---- Header ---- */
+
 .sidebar-top {
-    padding: 24px 20px 16px;
+    padding: var(--space-24) var(--space-24) var(--space-16);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -20,8 +27,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-primary);
-    margin-bottom: 8px;
+    color: var(--color-primary);
+    margin-bottom: var(--space-8);
 }
 
 .sidebar-logo-svg {
@@ -30,83 +37,99 @@
 }
 
 .sidebar-top h2 {
-    font-size: 1.25rem;
+    font-size: var(--text-lg);
     font-weight: 800;
-    color: var(--text-color);
+    color: var(--text-primary);
     letter-spacing: -0.3px;
     margin-bottom: 2px;
 }
 
 .sidebar-tagline {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
+    font-weight: 500;
 }
+
+/* ---- Navigation ---- */
 
 .sidebar-nav {
     flex: 1;
-    padding: 16px 12px;
+    padding: var(--space-16) var(--space-12);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-4);
 }
 
 .sidebar-item {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: var(--space-12);
+    padding: 10px var(--space-16);
     border-radius: var(--radius);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     background: none;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     border: 1px solid transparent;
-    transition: all 0.15s ease-in-out;
+    transition: all var(--duration) var(--easing);
 }
 
 .sidebar-item-svg {
     width: 18px;
     height: 18px;
     color: var(--text-muted);
-    transition: color 0.15s ease-in-out;
+    transition: color var(--duration) var(--easing);
 }
 
 .sidebar-item:hover {
     background: var(--bg-primary);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
 }
 
 .sidebar-item:hover .sidebar-item-svg {
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .sidebar-item.active {
-    background: rgba(30, 64, 175, 0.08); /* light navy tint */
-    color: var(--accent-primary);
-    border-color: rgba(30, 64, 175, 0.15);
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    border-color: var(--color-primary-border);
 }
 
 .sidebar-item.active .sidebar-item-svg {
-    color: var(--accent-primary);
+    color: var(--color-primary);
 }
 
 .sidebar-item:focus-visible {
-    outline: 2px solid var(--accent-primary);
+    outline: 2px solid var(--color-primary);
     outline-offset: -2px;
 }
 
+/* ---- Bottom Section ---- */
+
 .sidebar-bottom {
-    padding: 16px 20px;
+    padding: var(--space-16) var(--space-24);
     border-top: 1px solid var(--border-color);
-    background: var(--bg-primary);
+    background: var(--bg-inset);
 }
 
 .sidebar-user {
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
-    margin-bottom: 12px;
+    margin-bottom: var(--space-12);
     word-break: break-all;
     font-weight: 500;
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-xl);
+    }
 }

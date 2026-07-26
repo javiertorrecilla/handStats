@@ -1,6 +1,6 @@
 /* ==========================================================
-   TEAMS MANAGEMENT — CLASSICAL SPORTS SYSTEM
-========================================================== */
+   TEAMS PAGE — HANDSTATS DESIGN SYSTEM
+   ========================================================== */
 
 .teams-page {
     max-width: 1000px;
@@ -12,36 +12,36 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-24);
 }
 
 .teams-header h2 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     font-weight: 800;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .teams-subtitle {
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     margin-top: 2px;
 }
 
 .teams-layout {
     display: grid;
     grid-template-columns: 320px 1fr;
-    gap: 24px;
+    gap: var(--space-24);
     align-items: start;
 }
 
 /* ==========================================================
    LIST COLUMN
-========================================================== */
+   ========================================================== */
 
 .teams-list-column {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-16);
 }
 
 .search-box {
@@ -49,16 +49,16 @@
 }
 
 .teams-loading {
-    padding: 24px;
+    padding: var(--space-24);
     text-align: center;
     color: var(--text-muted);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
 }
 
 .teams-empty-state {
     text-align: center;
-    padding: 36px 20px;
+    padding: var(--space-32) var(--space-24);
     background: var(--bg-surface);
     border: 1px dashed var(--border-color);
     border-radius: var(--radius);
@@ -68,55 +68,56 @@
 .teams-grid {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-8);
     max-height: 65vh;
     overflow-y: auto;
-    padding-right: 4px;
+    padding-right: var(--space-4);
 }
 
-/* Custom Scrollbar */
 .teams-grid::-webkit-scrollbar {
     width: 4px;
 }
+
 .teams-grid::-webkit-scrollbar-thumb {
     background: var(--border-color);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
 }
+
+/* ---- Team Card ---- */
 
 .team-card {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 14px 18px;
+    padding: var(--space-16);
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.15s ease-in-out;
-    box-shadow: var(--shadow-sm);
+    transition: all var(--duration) var(--easing);
 }
 
 .team-card:hover {
-    border-color: var(--accent-primary);
+    border-color: var(--color-primary);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
 
 .team-card.active {
-    border-color: var(--accent-primary);
-    background: rgba(30, 64, 175, 0.04);
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle);
     box-shadow: var(--shadow-md);
 }
 
 .team-card-info h3 {
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
     font-weight: 700;
-    color: var(--text-color);
+    color: var(--text-primary);
     margin-bottom: 2px;
 }
 
 .team-card-info span {
-    font-size: 0.8rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
     font-weight: 500;
 }
@@ -125,23 +126,23 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
+    padding: var(--space-8);
+    border-radius: var(--radius);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
-    transition: all 0.15s;
+    transition: all var(--duration) var(--easing);
 }
 
 .btn-delete-team:hover {
-    background: rgba(220, 38, 38, 0.08);
-    color: var(--accent-danger);
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
 }
 
 /* ==========================================================
    EDITOR COLUMN
-========================================================== */
+   ========================================================== */
 
 .teams-editor-column {
     min-height: 480px;
@@ -151,59 +152,64 @@
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
+    padding: var(--space-24);
 }
 
 .team-editor-card h3 {
-    font-size: 1.15rem;
+    font-size: var(--text-base);
     font-weight: 800;
-    color: var(--text-color);
-    margin-bottom: 16px;
+    color: var(--text-primary);
+    margin-bottom: var(--space-16);
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
+    padding-bottom: var(--space-12);
 }
 
 .team-editor-form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-16);
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-4);
 }
 
 .form-group label {
     font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--text-color);
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
+
+/* ---- Roster Section ---- */
 
 .team-roster-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-12);
 }
 
 .team-roster-section h4 {
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
     font-weight: 700;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 6px;
-    color: var(--text-color);
+    padding-bottom: var(--space-8);
+    color: var(--text-primary);
 }
 
 .no-players-text {
-    padding: 20px;
+    padding: var(--space-24);
     text-align: center;
-    background: var(--bg-primary);
+    background: var(--bg-inset);
     border-radius: var(--radius);
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-size: var(--text-xs);
 }
+
+/* ---- Roster Table (SofaScore style) ---- */
 
 .roster-table {
     border: 1px solid var(--border-color);
@@ -213,10 +219,10 @@
 
 .roster-header {
     display: flex;
-    padding: 8px 12px;
-    background: var(--bg-primary);
+    padding: var(--space-8) var(--space-12);
+    background: var(--bg-inset);
     font-weight: 700;
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -226,42 +232,44 @@
     max-height: 200px;
     overflow-y: auto;
 }
+
 .roster-rows::-webkit-scrollbar {
     width: 4px;
 }
+
 .roster-rows::-webkit-scrollbar-thumb {
     background: var(--border-color);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
 }
 
 .roster-row {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
-    border-top: 1px solid var(--border-color);
-    font-size: 0.88rem;
-    transition: background 0.1s;
+    padding: var(--space-8) var(--space-12);
+    border-top: 1px solid var(--border-subtle);
+    font-size: var(--text-sm);
+    transition: background var(--duration) var(--easing);
 }
 
 .roster-row:hover {
-    background: rgba(30, 64, 175, 0.02);
+    background: var(--color-primary-subtle);
 }
 
 .col-num {
     width: 50px;
     font-weight: 800;
-    color: var(--accent-primary);
+    color: var(--color-primary);
     font-family: var(--font-mono);
 }
 
 .col-name {
     flex: 1;
     font-weight: 600;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .col-role {
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     color: var(--text-muted);
 }
@@ -272,8 +280,8 @@
 }
 
 .btn-remove-player {
-    background: rgba(220, 38, 38, 0.08);
-    color: var(--accent-danger);
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
     border: none;
     width: 24px;
     height: 24px;
@@ -283,20 +291,22 @@
     font-size: 11px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all var(--duration) var(--easing);
 }
 
 .btn-remove-player:hover {
-    background: var(--accent-danger);
-    color: white;
+    background: var(--color-danger);
+    color: var(--text-inverse);
 }
+
+/* ---- Add Player Form ---- */
 
 .add-player-form-inline {
     display: flex;
-    gap: 8px;
+    gap: var(--space-8);
     align-items: center;
-    background: var(--bg-primary);
-    padding: 12px;
+    background: var(--bg-inset);
+    padding: var(--space-12);
     border-radius: var(--radius);
     border: 1px solid var(--border-color);
 }
@@ -313,15 +323,15 @@
 .editor-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 12px;
-    padding-top: 16px;
+    gap: var(--space-12);
+    margin-top: var(--space-12);
+    padding-top: var(--space-16);
     border-top: 1px solid var(--border-color);
 }
 
 /* ==========================================================
    PLACEHOLDER STATE
-========================================================== */
+   ========================================================== */
 
 .editor-placeholder {
     display: flex;
@@ -332,28 +342,27 @@
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 48px 24px;
+    padding: var(--space-48) var(--space-24);
     min-height: 480px;
-    box-shadow: var(--shadow-sm);
     color: var(--text-muted);
 }
 
 .editor-placeholder h3 {
-    font-size: 1.2rem;
+    font-size: var(--text-lg);
     font-weight: 800;
-    color: var(--text-color);
-    margin-bottom: 6px;
+    color: var(--text-primary);
+    margin-bottom: var(--space-8);
 }
 
 .editor-placeholder p {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     max-width: 280px;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* ==========================================================
-   RESPONSIVE DESIGN
-========================================================== */
+   RESPONSIVE
+   ========================================================== */
 
 @media (max-width: 992px) {
     .teams-layout {
@@ -369,7 +378,7 @@
     .teams-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: var(--space-12);
     }
 
     .teams-header button {
@@ -379,7 +388,7 @@
     .add-player-form-inline {
         flex-direction: column;
         align-items: stretch;
-        gap: 8px;
+        gap: var(--space-8);
     }
 
     .player-num-input {
