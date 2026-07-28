@@ -998,6 +998,10 @@
     gap: var(--space-8);
 }
 
+.scoreboard-actions-grid.defense-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
 .sb-action-btn {
     display: flex;
     align-items: center;

@@ -593,20 +593,20 @@
    ========================================================== */
 
 .hs-heatmap-court-wrapper {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: var(--space-20);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: var(--space-20);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .hs-heatmap-court-wrapper h4 {
-    font-size: var(--text-xs);
-    font-weight: 800;
-    margin-bottom: var(--space-12);
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  font-size: var(--text-xs);
+  font-weight: 800;
+  margin-bottom: var(--space-12);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .hs-heatmap-split-container {

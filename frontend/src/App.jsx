@@ -11,6 +11,7 @@ import Sidebar from "./components/layout/SideBar";
 import MatchesPage from "./components/match/MatchesPage";
 import CreateMatchPage from "./components/match/CreateMatchPage";
 import TeamsPage from "./components/team/TeamsPage";
+import SettingsPage from "./components/settings/SettingsPage";
 import MatchAnalysisPage from "./components/match/MatchAnalysisPage";
 
 function App() {
@@ -36,7 +37,7 @@ function App() {
   // ESTADOS
   // --------------------------------------------------
 
-  const [view, setView] = useState("list"); // "list" | "create"
+  const [view, setView] = useState("list"); // "list" | "create" | "teams" | "settings" | "analyze"
   const [initialAnalyzeMode, setInitialAnalyzeMode] = useState("live");
   const [matchesList, setMatchesList] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
@@ -202,6 +203,7 @@ function App() {
     setInitialAnalyzeMode(initialMode || "live");
     setView("analyze");
   };
+
   return (
     <div className="app-layout">
       {view !== "analyze" && (
@@ -241,8 +243,21 @@ function App() {
             user={user}
             matchesList={matchesList}
           />
+        ) : view === "settings" ? (
+          <SettingsPage matchesList={matchesList} />
         ) : view === "analyze" ? (
           <MatchAnalysisPage
+            currentMatch={currentMatch}
+            onUpdateMatchEvents={async (updatedMatch) => {
+              setCurrentMatch(updatedMatch);
+              try {
+                if (updatedMatch?._id) {
+                  await matchService.update(updatedMatch._id, updatedMatch);
+                }
+              } catch (err) {
+                console.error("Error al actualizar evento de partido:", err);
+              }
+            }}
             user={user}
             initialMode={initialAnalyzeMode}
             onBack={() => setView("list")}

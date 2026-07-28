@@ -9,7 +9,7 @@ import { calculateTeamCumulativeStats } from "../../engine/teamCumulativeEngine"
 export function StatsDashboardView({ metrics, teamFilter = "home", matchesList = [] }) {
   if (!metrics) return null;
 
-  const { overview, momentumTimeline } = metrics;
+  const { overview, momentumTimeline, scoreTimeline } = metrics;
   const isAway = teamFilter === "away";
   const targetTeam = isAway ? overview.awayTeam : overview.homeTeam;
 
@@ -177,7 +177,7 @@ export function StatsDashboardView({ metrics, teamFilter = "home", matchesList =
 
         <div className="hs-card">
           <h4 className="hs-card-title">EVOLUCIÓN DE MARCADOR</h4>
-          <EvolutionChart data={momentumTimeline} homeTeam={overview.homeTeam} awayTeam={overview.awayTeam} />
+          <EvolutionChart data={scoreTimeline || momentumTimeline} homeTeam={overview.homeTeam} awayTeam={overview.awayTeam} />
         </div>
       </div>
 

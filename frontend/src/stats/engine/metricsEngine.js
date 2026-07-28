@@ -4,6 +4,8 @@
    ========================================================== */
 
 import { calculateShotXG } from "./xgModel";
+import { getSettings } from "../../services/settingsService";
+import { PlayerRatingCalculator } from "./playerRatingEngine";
 
 /**
  * Calcula todas las métricas procesadas a partir de los datos del partido.
@@ -62,79 +64,90 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
   const awayGKSaves = awayStopsByGK;
   const awayGKSavePct = awayGKShotsFaced.length > 0 ? Math.round((awayGKSaves / awayGKShotsFaced.length) * 100) : 0;
 
-  // Expected Saves (xSaves)
+  // xSaves acumulado
   const homeGKExpectedSaves = Math.round(awayShots.reduce((acc, e) => acc + (1 - calculateShotXG(e)), 0) * 10) / 10;
   const awayGKExpectedSaves = Math.round(homeShots.reduce((acc, e) => acc + (1 - calculateShotXG(e)), 0) * 10) / 10;
 
-  // Pérdidas y Recuperaciones
+  // Pérdidas y Robos
   const homeTurnovers = homeEvents.filter((e) => e.event_type === "turnover").length;
   const awayTurnovers = awayEvents.filter((e) => e.event_type === "turnover").length;
-
   const homeSteals = homeEvents.filter((e) => e.event_type === "steal").length;
   const awaySteals = awayEvents.filter((e) => e.event_type === "steal").length;
 
-  // Exclusiones y Sanciones
+  // Sanciones y 2 minutos
   const homeSanctions = homeEvents.filter((e) => e.event_type === "sanction");
   const awaySanctions = awayEvents.filter((e) => e.event_type === "sanction");
-
   const home2Min = homeSanctions.filter((e) => e.sanction_type === "2 Minutos").length;
   const away2Min = awaySanctions.filter((e) => e.sanction_type === "2 Minutos").length;
 
   // Golpes Franco
-  const homeFreeThrows = homeEvents.filter((e) => {
-    const t = (e.event_type || "").toLowerCase();
-    return t === "free_throw" || t.includes("golpe") || t.includes("franco");
-  }).length;
-
-  const awayFreeThrows = awayEvents.filter((e) => {
-    const t = (e.event_type || "").toLowerCase();
-    return t === "free_throw" || t.includes("golpe") || t.includes("franco");
-  }).length;
-
-  // Ritmo de partido
-  const durationMins = Math.max(0.5, (currentTimeSeconds || 1) / 60);
-  const totalPossessions = possessions.length;
-  const pacePerMin = Math.round((totalPossessions / durationMins) * 10) / 10;
-
-  // Tiempos de posesión
-  const homeTotalPossDuration = homePossessions.reduce((acc, p) => acc + (p.duration || 0), 0);
-  const awayTotalPossDuration = awayPossessions.reduce((acc, p) => acc + (p.duration || 0), 0);
-
-  const homeAvgPossDuration = homePossessions.length > 0
-    ? Math.round(homeTotalPossDuration / homePossessions.length)
-    : 0;
-
-  const awayAvgPossDuration = awayPossessions.length > 0
-    ? Math.round(awayTotalPossDuration / awayPossessions.length)
-    : 0;
+  const homeFreeThrows = homeEvents.filter((e) => e.event_type === "free_throw").length;
+  const awayFreeThrows = awayEvents.filter((e) => e.event_type === "free_throw").length;
 
   // ---------------------------------------------------------
-  // 2. MOMENTUM FLOW & SCORE EVOLUTION
+  // 2. RITMO Y TIEMPO DE POSESIÓN
   // ---------------------------------------------------------
-  const momentumTimeline = buildMomentumTimeline(events, currentTimeSeconds);
-  const currentMomentumValue = momentumTimeline.length > 0 ? momentumTimeline[momentumTimeline.length - 1].value : 0;
-  const dominantTeam = currentMomentumValue > 15 ? homeTeam : currentMomentumValue < -15 ? awayTeam : "Partido Igualado";
+  const getPossessionDuration = (p) => {
+    if (typeof p.duration === "number" && p.duration > 0) return p.duration;
+    if (typeof p.duration_seconds === "number" && p.duration_seconds > 0) return p.duration_seconds;
+    if (typeof p.end_time === "number" && typeof p.start_time === "number") {
+      return Math.max(0, p.end_time - p.start_time);
+    }
+    return 0;
+  };
+
+  const homeTotalPossDuration = homePossessions.reduce((acc, p) => acc + getPossessionDuration(p), 0);
+  const awayTotalPossDuration = awayPossessions.reduce((acc, p) => acc + getPossessionDuration(p), 0);
+
+  const homeValidPossessions = homePossessions.filter((p) => getPossessionDuration(p) > 0);
+  const awayValidPossessions = awayPossessions.filter((p) => getPossessionDuration(p) > 0);
+
+  const homeAvgPossDuration = homeValidPossessions.length > 0
+    ? Math.round(homeTotalPossDuration / homeValidPossessions.length)
+    : (homePossCount > 0 ? Math.round(homeTotalPossDuration / homePossCount) : 0);
+
+  const awayAvgPossDuration = awayValidPossessions.length > 0
+    ? Math.round(awayTotalPossDuration / awayValidPossessions.length)
+    : (awayPossCount > 0 ? Math.round(awayTotalPossDuration / awayPossCount) : 0);
+
+  const totalMinutesPassed = Math.max(1, (currentTimeSeconds || 60) / 60);
+  const totalPossCount = homePossCount + awayPossCount;
+  const pacePerMin = Math.round((totalPossCount / totalMinutesPassed) * 10) / 10;
 
   // ---------------------------------------------------------
-  // 3. DESGLOSE DE TIROS Y EFICIENCIA POR TIPO / ZONA / FASE
+  // 3. DESGLOSE DE TIROS Y EFICIENCIA (DESGLOSADO)
   // ---------------------------------------------------------
   const attackBreakdownHome = calculateAttackBreakdown(homeShots);
   const attackBreakdownAway = calculateAttackBreakdown(awayShots);
 
   // ---------------------------------------------------------
-  // 4. ESTADÍSTICAS INDIVIDUALES DE JUGADORES Y PORTEROS
+  // 4. JUGADORES Y PORTEROS
   // ---------------------------------------------------------
-  const homePlayerStats = calculatePlayerStatsList(homePlayers, homeEvents, awayShots, false);
-  const awayPlayerStats = calculatePlayerStatsList(awayPlayers, awayEvents, homeShots, true);
+  const homePlayerStats = calculatePlayerStatsList(homePlayers, homeEvents, awayShots, false, awayEvents);
+  const awayPlayerStats = calculatePlayerStatsList(awayPlayers, awayEvents, homeShots, true, homeEvents);
 
-  // Porteros obtienen métricas estrictamente según configuración del equipo
   const homeGoalkeeperStats = calculateGoalkeeperStatsList(homePlayers, awayShots);
   const awayGoalkeeperStats = calculateGoalkeeperStatsList(awayPlayers, homeShots);
 
-  // Jugadores destacados
-  const topScorerHome = [...homePlayerStats].filter(p => !p.isGoalkeeper).sort((a, b) => b.goals - a.goals)[0];
-  const topEfficientHome = [...homePlayerStats].filter(p => !p.isGoalkeeper && p.shotsCount >= 2).sort((a, b) => b.efficiency - a.efficiency)[0];
-  const worstEfficientHome = [...homePlayerStats].filter(p => !p.isGoalkeeper && p.shotsCount >= 3).sort((a, b) => a.efficiency - b.efficiency)[0];
+  // ---------------------------------------------------------
+  // 5. CRONOLOGÍA DE MOMENTUM E INICIATIVA TÁCTICA
+  // ---------------------------------------------------------
+  const momentumTimeline = buildMomentumTimeline(events, currentTimeSeconds);
+  const scoreTimeline = buildScoreTimeline(events, currentTimeSeconds);
+
+  // Equipo dominante en los últimos 5 minutos
+  const recentTimeline = momentumTimeline.slice(-5);
+  const avgRecentMomentum = recentTimeline.length > 0
+    ? recentTimeline.reduce((acc, p) => acc + p.momentum, 0) / recentTimeline.length
+    : 0;
+
+  const dominantTeam = avgRecentMomentum > 15 ? homeTeam : avgRecentMomentum < -15 ? awayTeam : "Equilibrado";
+  const currentMomentumValue = momentumTimeline.length > 0 ? momentumTimeline[momentumTimeline.length - 1].momentum : 0;
+
+  // Top Performers
+  const topScorerHome = [...homePlayerStats].sort((a, b) => b.goals - a.goals)[0] || null;
+  const topEfficientHome = [...homePlayerStats].filter(p => p.shotsCount >= 3).sort((a, b) => b.efficiency - a.efficiency)[0] || null;
+  const worstEfficientHome = [...homePlayerStats].filter(p => p.shotsCount >= 3).sort((a, b) => a.efficiency - b.efficiency)[0] || null;
 
   return {
     overview: {
@@ -142,10 +155,10 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
       awayTeam,
       homeGoals,
       awayGoals,
-      homeXG,
-      awayXG,
       homeOffEfficiency,
       awayOffEfficiency,
+      homeXG,
+      awayXG,
       homeDefEfficiency: 100 - awayOffEfficiency,
       awayDefEfficiency: 100 - homeOffEfficiency,
       homeGKSaves,
@@ -178,6 +191,7 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
       worstEfficientHome
     },
     momentumTimeline,
+    scoreTimeline,
     attackBreakdownHome,
     attackBreakdownAway,
     homePlayerStats,
@@ -225,9 +239,41 @@ function calculateAttackBreakdown(shots) {
 }
 
 /**
+ * Verifica de forma exacta si un campo de evento (cadena o número) coincide con un jugador.
+ * Evita que el dorsal 1 coincida erróneamente con "10 - Nombre", "11 - Nombre", etc.
+ */
+function matchesPlayer(fieldStr, fieldNum, player) {
+  if (!player) return false;
+  const pNum = String(player.number);
+  const pName = player.name ? String(player.name).trim() : "";
+
+  // 1. Coincidencia por número directo si está presente en el evento
+  if (fieldNum !== undefined && fieldNum !== null && fieldNum !== 0 && fieldNum !== "0") {
+    if (String(fieldNum) === pNum) return true;
+  }
+
+  // 2. Coincidencia por campo de texto
+  if (!fieldStr || typeof fieldStr !== "string") return false;
+  const str = fieldStr.trim();
+
+  // Coincidencia por ID o dorsal exacto
+  if (player._id && str === String(player._id)) return true;
+  if (str === pNum) return true;
+  if (pName && str === `${pNum} - ${pName}`) return true;
+
+  // Coincidencia exacta de prefijo "DORSAL - " (asegura que "10 - ..." NO coincida con "1 - ")
+  if (str.startsWith(`${pNum} - `)) return true;
+
+  return false;
+}
+
+/**
  * Filtra y calcula únicamente los porteros configurados explícitamente en el equipo (is_goalkeeper === true).
  */
 function calculateGoalkeeperStatsList(players, shotsFacedByTeam) {
+  const settings = getSettings();
+  const ratingCalc = new PlayerRatingCalculator(settings);
+
   const onTargetShots = shotsFacedByTeam.filter(
     (e) => e.event_type === "shot" && (e.result === "Gol" || e.result === "Parada")
   );
@@ -244,10 +290,14 @@ function calculateGoalkeeperStatsList(players, shotsFacedByTeam) {
     const gkNum = String(gk.number);
 
     let gkShotsFaced = onTargetShots.filter((e) => {
-      if (e.goalkeeper_number !== undefined && e.goalkeeper_number !== null && e.goalkeeper_number !== 0) {
+      if (e.goalkeeper_number !== undefined && e.goalkeeper_number !== null && e.goalkeeper_number !== 0 && e.goalkeeper_number !== "0") {
         return String(e.goalkeeper_number) === gkNum;
       }
-      return true;
+      if (e.goalkeeper_id) {
+        return matchesPlayer(e.goalkeeper_id, e.goalkeeper_number, gk);
+      }
+      if (gks.length === 1) return true;
+      return false;
     });
 
     let gkSaves = gkShotsFaced.filter((e) => e.result === "Parada").length;
@@ -260,19 +310,23 @@ function calculateGoalkeeperStatsList(players, shotsFacedByTeam) {
     const savePct = shotsFacedCount > 0 ? Math.round((gkSaves / shotsFacedCount) * 100) : 0;
     const goalsConceded = shotsFacedCount - gkSaves;
 
-    let rating = 6.0 + gkSaves * 0.6 + (gkSaves - xSaves) * 0.8 - goalsConceded * 0.2;
-    rating = Math.min(10.0, Math.max(1.0, Math.round(rating * 10) / 10));
+    const ratingResult = ratingCalc.calculateRating(
+      {
+        gkShotsFaced
+      },
+      true
+    );
 
     return {
       number: gk.number,
       name: gk.name,
-      isGoalkeeper: true,
       goalkeeperShotsFaced: shotsFacedCount,
       goalkeeperSaves: gkSaves,
       goalkeeperSavePct: savePct,
       expectedSaves: xSaves,
       goalsConceded,
-      rating
+      rating: ratingResult.rating,
+      nps: ratingResult.nps
     };
   });
 }
@@ -280,16 +334,16 @@ function calculateGoalkeeperStatsList(players, shotsFacedByTeam) {
 /**
  * Calcula métricas individuales por jugador.
  */
-function calculatePlayerStatsList(players, teamEvents, opposingShots, isOpponent) {
+function calculatePlayerStatsList(players, teamEvents, opposingShots, isOpponent, opposingEvents = []) {
+  const settings = getSettings();
+  const ratingCalc = new PlayerRatingCalculator(settings);
+
   return players.map((player) => {
     const pNumber = String(player.number);
-    const pName = player.name;
-
     const isGk = player.is_goalkeeper === true || player.is_goalkeeper === "true";
 
     const playerEvents = teamEvents.filter((e) => {
-      if (!e.player_id) return false;
-      return e.player_id.includes(`${pNumber} -`) || e.player_id === `${pNumber} - ${pName}`;
+      return matchesPlayer(e.player_id, e.player_number, player);
     });
 
     const shots = isGk ? [] : playerEvents.filter((e) => e.event_type === "shot");
@@ -298,15 +352,37 @@ function calculatePlayerStatsList(players, teamEvents, opposingShots, isOpponent
     const misses = isGk ? 0 : shots.filter((e) => e.result === "Fuera" || e.result === "Poste").length;
     const xg = isGk ? 0 : Math.round(shots.reduce((acc, e) => acc + calculateShotXG(e), 0) * 100) / 100;
 
-    const turnovers = playerEvents.filter((e) => e.event_type === "turnover").length;
+    // Pérdidas segmentadas
+    const turnoverEvents = playerEvents.filter((e) => e.event_type === "turnover");
+    const badPass = turnoverEvents.filter((e) => e.end_reason === "Mal Pase").length;
+    const double = turnoverEvents.filter((e) => e.end_reason === "Dobles" || e.end_reason === "Dobles / Pasos").length;
+    const travel = turnoverEvents.filter((e) => e.end_reason === "Pasos").length;
+    const passive = turnoverEvents.filter((e) => e.end_reason === "Pasivo").length;
+    const offensiveFoul = turnoverEvents.filter((e) => e.end_reason === "Falta Ataque" || e.end_reason === "Falta en ataque").length;
+    const turnovers = turnoverEvents.length;
+
     const steals = playerEvents.filter((e) => e.event_type === "steal").length;
     const sanctions = playerEvents.filter((e) => e.event_type === "sanction");
+    const yellowCards = sanctions.filter((e) => e.sanction_type === "Tarjeta Amarilla").length;
     const twoMins = sanctions.filter((e) => e.sanction_type === "2 Minutos").length;
+    const redCards = sanctions.filter((e) => e.sanction_type === "Tarjeta Roja" || e.sanction_type === "Tarjeta Azul").length;
+
+    // Acciones defensivas y de provocación
+    const freeThrowsDrawn = teamEvents.filter((e) => e.event_type === "free_throw" && matchesPlayer(e.player_id, e.player_number, player)).length;
+
+    const offFoulsDrawn = opposingEvents.filter((e) => e.event_type === "turnover" && (e.end_reason === "Falta Ataque" || e.end_reason === "Falta en ataque") && matchesPlayer(e.defender_id, e.defender_number, player)).length;
+
+    const penaltiesCommitted = opposingEvents.filter((e) => e.event_type === "sanction" && e.sanction_type === "7m Provocado" && matchesPlayer(e.player_id, e.player_number, player)).length;
+
+    const drawn7mCount = teamEvents.filter((e) => e.event_type === "sanction" && e.sanction_type === "7m Provocado" && matchesPlayer(e.drawn_by_player, e.drawn_by_number, player)).length;
 
     const gkShots = isGk
       ? opposingShots.filter((e) => {
-          if (e.goalkeeper_number !== undefined && e.goalkeeper_number !== null && e.goalkeeper_number !== 0) {
+          if (e.goalkeeper_number !== undefined && e.goalkeeper_number !== null && e.goalkeeper_number !== 0 && e.goalkeeper_number !== "0") {
             return String(e.goalkeeper_number) === pNumber;
+          }
+          if (e.goalkeeper_id) {
+            return matchesPlayer(e.goalkeeper_id, e.goalkeeper_number, player);
           }
           return true;
         })
@@ -329,11 +405,32 @@ function calculatePlayerStatsList(players, teamEvents, opposingShots, isOpponent
     const shotsCount = shots.length;
     const efficiency = shotsCount > 0 ? Math.round((goals / shotsCount) * 100) : 0;
 
-    let rating = 6.0 + goals * 0.4 + steals * 0.5 - turnovers * 0.4 - twoMins * 0.3;
-    if (isGk) {
-      rating = 6.0 + goalkeeperSaves * 0.6 + (goalkeeperSaves - goalkeeperXSaves) * 0.8 - (goalkeeperShotsFaced - goalkeeperSaves) * 0.2;
-    }
-    rating = Math.min(10.0, Math.max(1.0, Math.round(rating * 10) / 10));
+    // Calcular Rating mediante PlayerRatingCalculator
+    const ratingResult = ratingCalc.calculateRating(
+      {
+        shots,
+        drawn7mCount,
+        turnovers: {
+          badPass,
+          double,
+          travel,
+          passive,
+          offensiveFoul
+        },
+        defense: {
+          freeThrowsDrawn,
+          offFoulsDrawn,
+          penaltiesCommitted
+        },
+        gkShotsFaced: isGk ? gkShots : [],
+        discipline: {
+          yellowCards,
+          twoMinSuspensions: twoMins,
+          redCards
+        }
+      },
+      isGk
+    );
 
     return {
       number: player.number,
@@ -352,7 +449,8 @@ function calculatePlayerStatsList(players, teamEvents, opposingShots, isOpponent
       goalkeeperShotsFaced,
       goalkeeperSavePct,
       goalkeeperXSaves,
-      rating
+      rating: ratingResult.rating,
+      nps: ratingResult.nps
     };
   });
 }
@@ -398,12 +496,44 @@ function buildMomentumTimeline(events, totalSeconds) {
     });
   });
 
-  if (totalSeconds > 0 && points[points.length - 1].time !== totalSeconds) {
+  return points;
+}
+
+/**
+ * Cronología de Evolución del Marcador únicamente para los goles anotados.
+ */
+function buildScoreTimeline(events, totalSeconds) {
+  let scoreLocal = 0;
+  let scoreAway = 0;
+
+  const points = [{ time: 0, local: 0, away: 0, isGoal: false }];
+
+  (events || []).forEach((ev) => {
+    if (ev.event_type === "shot" && ev.result === "Gol") {
+      const time = ev.match_time_seconds || 0;
+      if (ev.is_opponent_action) {
+        scoreAway += 1;
+      } else {
+        scoreLocal += 1;
+      }
+
+      points.push({
+        time,
+        local: scoreLocal,
+        away: scoreAway,
+        teamScored: ev.is_opponent_action ? "away" : "local",
+        isGoal: true
+      });
+    }
+  });
+
+  const lastTime = points[points.length - 1].time;
+  if (totalSeconds && totalSeconds > lastTime) {
     points.push({
       time: totalSeconds,
       local: scoreLocal,
       away: scoreAway,
-      momentum: momentumVal
+      isGoal: false
     });
   }
 

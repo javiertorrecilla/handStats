@@ -98,7 +98,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
   const [selectedNumericalSituation, setSelectedNumericalSituation] = useState("Igualdad"); // "Igualdad" | "Superioridad" | "Inferioridad"
   const [selectedAssistPosition, setSelectedAssistPosition] = useState("Ninguna"); // "Ninguna" | "Portero" | "Extremo Izquierdo" | ...
   const [selectedSanctionType, setSelectedSanctionType] = useState("Tarjeta Amarilla"); // "Tarjeta Amarilla" | "2 Minutos" | "Tarjeta Roja" | "Tarjeta Azul"
-  const [selectedTeamAction, setSelectedTeamAction] = useState(null); // null | { team: "LOCAL" | "VISITANTE", action: "lanzamiento" | "perdida" | "sancion" | "free_throw" }
+  const [selectedTeamAction, setSelectedTeamAction] = useState(null); // null | { team: "LOCAL" | "VISITANTE", action: "lanzamiento" | "perdida" | "sancion" | "free_throw" | "penalty_7m" | "falta_en_ataque" }
+  const [pending7mDetails, setPending7mDetails] = useState({ defender: null, attacker: null });
+  const [pendingFaltaAtaqueDetails, setPendingFaltaAtaqueDetails] = useState({ attacker: null, defender: null });
 
   const [actionCaptureTime, setActionCaptureTime] = useState(null); // Captura el tiempo en el momento del click inicial
 
@@ -519,11 +521,73 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     setSelectedAssistPosition("Ninguna");
   };
 
+  // Confirmar 7m provocado en defensa
+  const handleConfirm7mPenalty = async (defender, attacker) => {
+    const eventTime = actionCaptureTime !== null ? actionCaptureTime : time;
+    setActionCaptureTime(null);
+
+    const isOpponent = selectedTeamAction.team === "VISITANTE";
+    const defenderId = defender === "team" ? "Equipo" : `${defender.number} - ${defender.name}`;
+    const attackerId = attacker === "team" ? "Equipo" : `${attacker.number} - ${attacker.name}`;
+
+    await sendMatchEvent({
+      event_type: "sanction",
+      sanction_type: "7m Provocado",
+      player_id: defenderId,
+      drawn_by_player: attackerId,
+      is_opponent_action: isOpponent
+    }, eventTime);
+
+    setPending7mDetails({ defender: null, attacker: null });
+    setSelectedPlayer(null);
+    setSelectedTeamAction(null);
+  };
+
+  // Confirmar Falta en Ataque (atacante provoca, defensa la sufre)
+  const handleConfirmFaltaAtaque = async (attacker, defender) => {
+    const eventTime = actionCaptureTime !== null ? actionCaptureTime : time;
+    setActionCaptureTime(null);
+
+    const isOpponent = selectedTeamAction.team === "VISITANTE";
+    const attackerId = attacker === "team" ? "Equipo" : (attacker ? `${attacker.number} - ${attacker.name}` : "No especificado");
+    const defenderId = defender === "team" ? "Equipo" : (defender ? `${defender.number} - ${defender.name}` : null);
+
+    const details = {
+      end_reason: "Falta en ataque"
+    };
+
+    if (defender && defender !== "team") {
+      details.defender_number = defender.number;
+      details.defender_name = defender.name;
+      details.defender_id = defenderId;
+    } else if (defender === "team") {
+      details.defender_name = "Equipo";
+      details.defender_id = "Equipo";
+    }
+
+    await sendMatchEvent({
+      event_type: "turnover",
+      player_id: attackerId,
+      is_opponent_action: isOpponent,
+      ...details
+    }, eventTime);
+
+    await closePossession(eventTime, "Pérdida");
+
+    setPendingFaltaAtaqueDetails({ attacker: null, defender: null });
+    setSelectedPlayer(null);
+    setSelectedTeamAction(null);
+  };
+
   // Seleccionar acción desde el marcador de un equipo
   const handleSelectTeamAction = (team, action) => {
     setSelectedTeamAction({ team, action });
     setActionCaptureTime(time);
     setSelectedPlayer(null);
+    setActiveActionSubmenu(null);
+    setPending7mDetails({ defender: null, attacker: null });
+    setPendingFaltaAtaqueDetails({ attacker: null, defender: null });
+
     if (action === "lanzamiento") {
       resetShotWizard();
     } else if (action === "sancion") {
@@ -777,23 +841,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                   </button>
                   <button
                     type="button"
+                    className={`sb-action-btn btn-lanzamiento ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "penalty_7m" ? "active" : ""}`}
+                    onClick={() => handleSelectTeamAction("LOCAL", "penalty_7m")}
+                    aria-label="Registrar 7m cometido por local en defensa"
+                  >
+                    <IconTarget /> 7m Penalti
+                  </button>
+                  <button
+                    type="button"
                     className={`sb-action-btn btn-sancion ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "sancion" ? "active" : ""}`}
                     onClick={() => handleSelectTeamAction("LOCAL", "sancion")}
                     aria-label="Registrar sanción local en defensa"
                   >
                     <IconShield /> Sanción
-                  </button>
-                  <button
-                    type="button"
-                    className="sb-action-btn btn-timeout"
-                    style={{ gridColumn: "span 2" }}
-                    onClick={() => {
-                      handleAction("sanction", { sanction_type: "Tiempo Muerto Local" });
-                      setIsRunning(false);
-                    }}
-                    aria-label="Tiempo muerto local"
-                  >
-                    <IconClock /> T. Muerto
                   </button>
                 </div>
               )}
@@ -948,23 +1008,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                   </button>
                   <button
                     type="button"
+                    className={`sb-action-btn btn-lanzamiento ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "penalty_7m" ? "active" : ""}`}
+                    onClick={() => handleSelectTeamAction("VISITANTE", "penalty_7m")}
+                    aria-label="Registrar 7m cometido por visitante en defensa"
+                  >
+                    <IconTarget /> 7m Penalti
+                  </button>
+                  <button
+                    type="button"
                     className={`sb-action-btn btn-sancion ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "sancion" ? "active" : ""}`}
                     onClick={() => handleSelectTeamAction("VISITANTE", "sancion")}
                     aria-label="Registrar sanción visitante en defensa"
                   >
                     <IconShield /> Sanción
-                  </button>
-                  <button
-                    type="button"
-                    className="sb-action-btn btn-timeout"
-                    style={{ gridColumn: "span 2" }}
-                    onClick={() => {
-                      handleAction("sanction", { sanction_type: "Tiempo Muerto Visitante" });
-                      setIsRunning(false);
-                    }}
-                    aria-label="Tiempo muerto visitante"
-                  >
-                    <IconClock /> T. Muerto
                   </button>
                 </div>
               )}
@@ -1045,9 +1101,31 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
 
                 <h3>
                   <IconUsers /> Roster:{" "}
-                  {selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team}
+                  {selectedTeamAction.action === "penalty_7m" ? (
+                    !pending7mDetails.defender
+                      ? `${selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team} (Defensa)`
+                      : `${selectedTeamAction.team === "LOCAL" ? currentMatch.away_team : currentMatch.home_team} (Ataque)`
+                  ) : selectedTeamAction.action === "falta_en_ataque" ? (
+                    !pendingFaltaAtaqueDetails.attacker
+                      ? `${selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team} (Ataque)`
+                      : `${selectedTeamAction.team === "LOCAL" ? currentMatch.away_team : currentMatch.home_team} (Defensa)`
+                  ) : (
+                    selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team
+                  )}
                 </h3>
-                <p className="roster-hint">Selecciona el jugador que realiza/recibe la acción:</p>
+                <p className="roster-hint">
+                  {selectedTeamAction.action === "penalty_7m" ? (
+                    !pending7mDetails.defender
+                      ? "1º Selecciona el defensor que COMETIÓ / PROVOCÓ el 7m:"
+                      : "2º Selecciona el atacante que SUFRIÓ / RECIBIÓ el 7m:"
+                  ) : selectedTeamAction.action === "falta_en_ataque" ? (
+                    !pendingFaltaAtaqueDetails.attacker
+                      ? "1º Selecciona el atacante que COMETIÓ / PROVOCÓ la falta en ataque:"
+                      : "2º Selecciona el defensa A QUIEN SE LA PROVOCARON:"
+                  ) : (
+                    "Selecciona el jugador que realiza/recibe la acción:"
+                  )}
+                </p>
 
                 <div className="players-touch-grid" role="radiogroup" aria-label="Jugadores disponibles">
                   {/* Botón de Equipo (General) - no disponible para Lanzamiento */}
@@ -1055,22 +1133,36 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                     <button
                       className={`player-touch-btn team-option ${selectedPlayer === "team" ? "selected" : ""}`}
                       onClick={() => {
-                        setSelectedPlayer("team");
-                        if (selectedTeamAction.action === "sancion") {
-                          handleAction("sanction", {
-                            sanction_type: selectedSanctionType,
-                            player_id: "Equipo",
-                            is_opponent_action: selectedTeamAction.team === "VISITANTE"
-                          });
-                        } else if (selectedTeamAction.action === "free_throw") {
-                          const isOpp = selectedTeamAction.team === "VISITANTE";
-                          sendMatchEvent({
-                            event_type: "free_throw",
-                            player_id: "Equipo",
-                            is_opponent_action: isOpp
-                          }, time);
-                          setSelectedPlayer(null);
-                          setSelectedTeamAction(null);
+                        if (selectedTeamAction.action === "penalty_7m") {
+                          if (!pending7mDetails.defender) {
+                            setPending7mDetails({ defender: "team", attacker: null });
+                          } else {
+                            handleConfirm7mPenalty(pending7mDetails.defender, "team");
+                          }
+                        } else if (selectedTeamAction.action === "falta_en_ataque") {
+                          if (!pendingFaltaAtaqueDetails.attacker) {
+                            setPendingFaltaAtaqueDetails({ attacker: "team", defender: null });
+                          } else {
+                            handleConfirmFaltaAtaque(pendingFaltaAtaqueDetails.attacker, "team");
+                          }
+                        } else {
+                          setSelectedPlayer("team");
+                          if (selectedTeamAction.action === "sancion") {
+                            handleAction("sanction", {
+                              sanction_type: selectedSanctionType,
+                              player_id: "Equipo",
+                              is_opponent_action: selectedTeamAction.team === "VISITANTE"
+                            });
+                          } else if (selectedTeamAction.action === "free_throw") {
+                            const isOpp = selectedTeamAction.team === "VISITANTE";
+                            sendMatchEvent({
+                              event_type: "free_throw",
+                              player_id: "Equipo",
+                              is_opponent_action: isOpp
+                            }, time);
+                            setSelectedPlayer(null);
+                            setSelectedTeamAction(null);
+                          }
                         }
                       }}
                       role="radio"
@@ -1082,8 +1174,20 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                     </button>
                   )}
 
-                  {/* Listar jugadores del equipo seleccionado */}
-                  {(selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || []).map((player, idx) => {
+                  {/* Listar jugadores del equipo correspondiente */}
+                  {(
+                    selectedTeamAction.action === "penalty_7m" ? (
+                      !pending7mDetails.defender
+                        ? (selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || [])
+                        : (selectedTeamAction.team === "LOCAL" ? currentMatch.away_players || [] : currentMatch.home_players || [])
+                    ) : selectedTeamAction.action === "falta_en_ataque" ? (
+                      !pendingFaltaAtaqueDetails.attacker
+                        ? (selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || [])
+                        : (selectedTeamAction.team === "LOCAL" ? currentMatch.away_players || [] : currentMatch.home_players || [])
+                    ) : (
+                      selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || []
+                    )
+                  ).map((player, idx) => {
                     const isGk = isGoalkeeper(player);
 
                     let isBtnDisabled = false;
@@ -1096,23 +1200,37 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                         disabled={isBtnDisabled}
                         className={`player-touch-btn ${isSelected ? "selected" : ""} ${isGk ? "goalkeeper-option" : ""} ${isBtnDisabled ? "btn-disabled" : ""}`}
                         onClick={() => {
-                          setSelectedPlayer(player);
+                          if (selectedTeamAction.action === "penalty_7m") {
+                            if (!pending7mDetails.defender) {
+                              setPending7mDetails({ defender: player, attacker: null });
+                            } else {
+                              handleConfirm7mPenalty(pending7mDetails.defender, player);
+                            }
+                          } else if (selectedTeamAction.action === "falta_en_ataque") {
+                            if (!pendingFaltaAtaqueDetails.attacker) {
+                              setPendingFaltaAtaqueDetails({ attacker: player, defender: null });
+                            } else {
+                              handleConfirmFaltaAtaque(pendingFaltaAtaqueDetails.attacker, player);
+                            }
+                          } else {
+                            setSelectedPlayer(player);
 
-                          if (selectedTeamAction.action === "sancion") {
-                            handleAction("sanction", {
-                              sanction_type: selectedSanctionType,
-                              player_id: `${player.number} - ${player.name}`,
-                              is_opponent_action: selectedTeamAction.team === "VISITANTE"
-                            });
-                          } else if (selectedTeamAction.action === "free_throw") {
-                            const isOpp = selectedTeamAction.team === "VISITANTE";
-                            sendMatchEvent({
-                              event_type: "free_throw",
-                              player_id: `${player.number} - ${player.name}`,
-                              is_opponent_action: isOpp
-                            }, time);
-                            setSelectedPlayer(null);
-                            setSelectedTeamAction(null);
+                            if (selectedTeamAction.action === "sancion") {
+                              handleAction("sanction", {
+                                sanction_type: selectedSanctionType,
+                                player_id: `${player.number} - ${player.name}`,
+                                is_opponent_action: selectedTeamAction.team === "VISITANTE"
+                              });
+                            } else if (selectedTeamAction.action === "free_throw") {
+                              const isOpp = selectedTeamAction.team === "VISITANTE";
+                              sendMatchEvent({
+                                event_type: "free_throw",
+                                player_id: `${player.number} - ${player.name}`,
+                                is_opponent_action: isOpp
+                              }, time);
+                              setSelectedPlayer(null);
+                              setSelectedTeamAction(null);
+                            }
                           }
                         }}
                         style={{
@@ -1143,6 +1261,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                       <><IconAlertTriangle /> Detalles de la Pérdida</>
                     ) : selectedTeamAction.action === "sancion" ? (
                       <><IconShield /> Detalles de la Sanción</>
+                    ) : selectedTeamAction.action === "penalty_7m" ? (
+                      <><IconTarget /> 7m Cometido en Defensa</>
+                    ) : selectedTeamAction.action === "falta_en_ataque" ? (
+                      <><IconAlertTriangle /> Falta en Ataque</>
                     ) : (
                       <><IconHandball /> Detalles Golpe Franco</>
                     )}
@@ -1153,6 +1275,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                     onClick={() => {
                       setSelectedPlayer(null);
                       setSelectedTeamAction(null);
+                      setActiveActionSubmenu(null);
+                      setPending7mDetails({ defender: null, attacker: null });
+                      setPendingFaltaAtaqueDetails({ attacker: null, defender: null });
                       resetShotWizard();
                     }}
                     aria-label="Cancelar acción"
@@ -1542,12 +1667,64 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                       <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
                         Por favor, selecciona un jugador o "Equipo (General)" de la izquierda para configurar los detalles de la pérdida.
                       </div>
+                    ) : activeActionSubmenu === "select_defender_falta_ataque" ? (
+                      /* PASO SECUNDARIO PARA FALTA EN ATAQUE: SELECCIONAR DEFENSOR */
+                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--text-primary)" }}>
+                            Defensa a quien se la provocaron:
+                          </span>
+                          <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu(null)} aria-label="Volver">
+                            <IconArrowLeft /> Volver
+                          </button>
+                        </div>
+                        <p className="submenu-hint" style={{ marginBottom: "12px" }}>
+                          ¿A qué defensa del equipo contrario le provocaron la falta en ataque?
+                        </p>
+
+                        <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
+                          {(selectedTeamAction.team === "LOCAL" ? currentMatch.away_players || [] : currentMatch.home_players || []).map((def, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              className="option-btn btn-perdida"
+                              onClick={() => {
+                                handleAction("turnover", {
+                                  end_reason: "Falta en ataque",
+                                  defender_number: def.number,
+                                  defender_name: def.name,
+                                  defender_id: `${def.number} - ${def.name}`
+                                });
+                                setActiveActionSubmenu(null);
+                              }}
+                              style={{ padding: "12px", fontSize: "0.85rem" }}
+                              aria-label={`Defensa número ${def.number}, ${def.name}`}
+                            >
+                              #{def.number} - {def.name}
+                            </button>
+                          ))}
+
+                          <button
+                            key="no-defender"
+                            type="button"
+                            className="option-btn btn-perdida"
+                            onClick={() => {
+                              handleAction("turnover", { end_reason: "Falta en ataque" });
+                              setActiveActionSubmenu(null);
+                            }}
+                            style={{ padding: "12px", fontSize: "0.85rem" }}
+                          >
+                            Sin Defensor / Desconocido
+                          </button>
+                        </div>
+                      </div>
                     ) : (
+                      /* OPCIONES DE PÉRDIDA DE BALÓN */
                       <div className="submenu-container" style={{ border: "none", padding: 0 }}>
                         <p className="submenu-hint" style={{ marginBottom: "12px" }}>Selecciona la causa de la pérdida de balón:</p>
                         <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                           {[
-                            { reason: "Falta Técnica", label: "Falta Técnica" },
+                            { reason: "Falta en ataque", label: "Falta en ataque" },
                             { reason: "Mal Pase", label: "Mal Pase" },
                             { reason: "Pasivo", label: "Pasivo" },
                             { reason: "Dobles / Pasos", label: "Dobles / Pasos" }
@@ -1557,7 +1734,18 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                               type="button"
                               className="option-btn btn-perdida"
                               onClick={() => {
-                                handleAction("turnover", { end_reason: item.reason });
+                                if (item.reason === "Falta en ataque") {
+                                  setPendingFaltaAtaqueDetails({
+                                    attacker: selectedPlayer,
+                                    defender: null
+                                  });
+                                  setSelectedTeamAction({
+                                    team: selectedTeamAction.team,
+                                    action: "falta_en_ataque"
+                                  });
+                                } else {
+                                  handleAction("turnover", { end_reason: item.reason });
+                                }
                               }}
                               style={{ padding: "12px", fontSize: "0.85rem" }}
                               aria-label={`Pérdida por ${item.label}`}
@@ -1582,6 +1770,69 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                 {selectedTeamAction.action === "free_throw" && (
                   <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
                     Haz clic en cualquier jugador o en "Equipo (General)" de la izquierda para registrar el Golpe Franco cometido en defensa.
+                  </div>
+                )}
+
+                {/* Subvista de Falta en Ataque */}
+                {selectedTeamAction.action === "falta_en_ataque" && (
+                  <div>
+                    {!pendingFaltaAtaqueDetails.attacker ? (
+                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
+                        1º Haz clic en el roster de la izquierda en el atacante que <strong>cometió / provocó la falta en ataque</strong>.
+                      </div>
+                    ) : (
+                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-primary)", background: "rgba(16,185,129,0.06)", borderRadius: "6px", border: "1px solid rgba(16,185,129,0.3)" }}>
+                        <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>
+                          Atacante: #{pendingFaltaAtaqueDetails.attacker === "team" ? "Equipo" : `${pendingFaltaAtaqueDetails.attacker.number} - ${pendingFaltaAtaqueDetails.attacker.name}`}
+                        </p>
+                        <p style={{ margin: "0 0 15px 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                          2º Ahora haz clic en el roster de la izquierda en el defensa <strong>a quien se la provocaron</strong> para completar el registro.
+                        </p>
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setPendingFaltaAtaqueDetails({ attacker: null, defender: null })}
+                          >
+                            <IconArrowLeft /> Cambiar Atacante
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleConfirmFaltaAtaque(pendingFaltaAtaqueDetails.attacker, null)}
+                          >
+                            Sin Defensor / Omitir
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Subvista de 7m Cometido en Defensa */}
+                {selectedTeamAction.action === "penalty_7m" && (
+                  <div>
+                    {!pending7mDetails.defender ? (
+                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
+                        1º Haz clic en el roster de la izquierda en el defensor que <strong>cometió / provocó el 7m</strong>.
+                      </div>
+                    ) : (
+                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-primary)", background: "rgba(16,185,129,0.06)", borderRadius: "6px", border: "1px solid rgba(16,185,129,0.3)" }}>
+                        <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>
+                          Defensor: #{pending7mDetails.defender === "team" ? "Equipo" : `${pending7mDetails.defender.number} - ${pending7mDetails.defender.name}`}
+                        </p>
+                        <p style={{ margin: "0 0 15px 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                          2º Ahora haz clic en el roster de la izquierda en el atacante que <strong>sufrió / recibió el 7m</strong> para completar el registro.
+                        </p>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setPending7mDetails({ defender: null, attacker: null })}
+                        >
+                          <IconArrowLeft /> Cambiar Defensor
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </section>
@@ -1682,7 +1933,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                 eventIcon = <IconAlertTriangle />;
                 badgeColorClass = "badge-turnover";
               } else if (event.event_type === "sanction") {
-                eventTypeText = "Sanción";
+                eventTypeText = event.sanction_type === "7m Provocado" ? "7m Penalti" : "Sanción";
                 eventIcon = <IconShield />;
                 badgeColorClass = "badge-sanction";
               } else if (event.event_type === "free_throw") {
@@ -1732,6 +1983,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                         ) : event.event_type === "turnover" ? (
                           <>
                             perdió el balón por <strong>{event.end_reason || "Causa no especificada"}</strong>
+                            {event.defender_name && (
+                              <> (Forzada por defensor: <strong>#{event.defender_number} {event.defender_name}</strong>)</>
+                            )}
                           </>
                         ) : event.event_type === "free_throw" ? (
                           <>
@@ -1739,7 +1993,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
                           </>
                         ) : (
                           <>
-                            recibió sanción: <strong>{event.sanction_type || "Amonestación"}</strong>
+                            sanción / acción: <strong>{event.sanction_type || "Amonestación"}</strong>
+                            {event.drawn_by_player && (
+                              <> (Recibido por: <strong>{event.drawn_by_player}</strong>)</>
+                            )}
                           </>
                         )}
                       </span>

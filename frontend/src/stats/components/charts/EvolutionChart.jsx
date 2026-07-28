@@ -19,13 +19,15 @@ export function EvolutionChart({ data = [], height = 200, homeTeam = "Local", aw
   const pointsHome = data.map((d) => ({
     x: padding + (d.time / maxTime) * graphWidth,
     y: height - padding - (d.local / maxScore) * graphHeight,
-    val: d.local
+    val: d.local,
+    isGoal: d.teamScored === "local" || (d.isGoal && d.teamScored !== "away")
   }));
 
   const pointsAway = data.map((d) => ({
     x: padding + (d.time / maxTime) * graphWidth,
     y: height - padding - (d.away / maxScore) * graphHeight,
-    val: d.away
+    val: d.away,
+    isGoal: d.teamScored === "away"
   }));
 
   const pathHomeD = pointsHome.reduce((acc, p, idx) => `${acc} ${idx === 0 ? "M" : "L"} ${p.x} ${p.y}`, "");
@@ -48,12 +50,12 @@ export function EvolutionChart({ data = [], height = 200, homeTeam = "Local", aw
         {/* Línea Visitante */}
         <path d={pathAwayD} fill="none" stroke="var(--color-info)" strokeWidth="3" />
 
-        {/* Puntos del marcador */}
-        {pointsHome.map((p, i) => (
-          <circle key={`h-${i}`} cx={p.x} cy={p.y} r="3.5" fill="var(--color-primary)" />
+        {/* Puntos del marcador: se dibujan únicamente en los momentos que hay gol */}
+        {pointsHome.filter((p) => p.isGoal).map((p, i) => (
+          <circle key={`h-${i}`} cx={p.x} cy={p.y} r="4" fill="var(--color-primary)" stroke="#ffffff" strokeWidth="1.5" />
         ))}
-        {pointsAway.map((p, i) => (
-          <circle key={`a-${i}`} cx={p.x} cy={p.y} r="3.5" fill="var(--color-info)" />
+        {pointsAway.filter((p) => p.isGoal).map((p, i) => (
+          <circle key={`a-${i}`} cx={p.x} cy={p.y} r="4" fill="var(--color-info)" stroke="#ffffff" strokeWidth="1.5" />
         ))}
       </svg>
     </div>

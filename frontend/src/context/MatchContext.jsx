@@ -76,11 +76,12 @@ export const MatchProvider = ({ children }) => {
   const closePossession = async (endTime, endReason, overrideNextTeam = null) => {
     if (!currentMatch) return;
 
-    const duration = endTime - activePossession.start_time;
+    const duration = Math.max(0, endTime - activePossession.start_time);
     const finalPossession = {
       ...activePossession,
       end_time: endTime,
-      duration: duration >= 0 ? duration : 0,
+      duration: duration,
+      duration_seconds: duration,
       end_reason: endReason
     };
 

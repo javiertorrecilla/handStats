@@ -1,10 +1,12 @@
 import React from "react";
 import { InsightAlert } from "../common/InsightAlert";
 import { KPICard } from "../common/KPICard";
+import { getSettings } from "../../../services/settingsService";
 
 export function TrendsStatsView({ metrics, match, teamFilter = "home" }) {
   if (!metrics) return null;
 
+  const settings = getSettings();
   const { overview } = metrics;
   const isAway = teamFilter === "away";
   const targetTeam = isAway ? overview.awayTeam : overview.homeTeam;
@@ -45,11 +47,11 @@ export function TrendsStatsView({ metrics, match, teamFilter = "home" }) {
   const teamTurnovers = isAway ? overview.awayTurnovers : overview.homeTurnovers;
   const team2Min = isAway ? overview.away2Min : overview.home2Min;
 
-  // 4. Generación dinámica de alertas e insights tácticos específicos para el equipo seleccionado
+  // 4. Generación dinámica de alertas e insights tácticos específicos según umbrales configurables
   const teamInsights = [];
 
   // A) Eficiencia Ofensiva del Equipo
-  if (teamOffEff < 42 && teamPossessions.length >= 4) {
+  if (teamOffEff < settings.thresholdLowOffEff && teamPossessions.length >= 4) {
     teamInsights.push({
       id: "team_low_off_eff",
       type: "warning",
@@ -58,7 +60,7 @@ export function TrendsStatsView({ metrics, match, teamFilter = "home" }) {
       message: `${targetTeam} registra un ${teamOffEff}% de eficacia ofensiva (${teamGoals} goles en ${teamPossessions.length} ataques).`,
       recommendation: "Pausar la circulación rápida y estructurar jugadas de mayor efectividad hacia pivote o penetración."
     });
-  } else if (teamOffEff >= 60 && teamPossessions.length >= 4) {
+  } else if (teamOffEff >= settings.thresholdHighOffEff && teamPossessions.length >= 4) {
     teamInsights.push({
       id: "team_high_off_eff",
       type: "success",
@@ -70,7 +72,7 @@ export function TrendsStatsView({ metrics, match, teamFilter = "home" }) {
   }
 
   // B) Rendimiento de Portería del Equipo
-  if (teamGKSavePct >= 35 && teamGKSaves >= 2) {
+  if (teamGKSavePct >= settings.thresholdGkWallPct && teamGKSaves >= 2) {
     teamInsights.push({
       id: "team_gk_wall",
       type: "success",
@@ -79,7 +81,7 @@ export function TrendsStatsView({ metrics, match, teamFilter = "home" }) {
       message: `La portería de ${targetTeam} alcanza un ${teamGKSavePct}% de paradas acumuladas (${teamGKSaves} paradas).`,
       recommendation: "Armar la transición y el contraataque directo tras cada parada defensiva."
     });
-  } else if (teamGKSavePct < 22 && (teamGoals + teamGKSaves) >= 5) {
+  } else if (teamGKSavePct < settings.thresholdGkStrugglePct && (teamGoals + teamGKSaves) >= 5) {
     teamInsights.push({
       id: "team_gk_struggle",
       type: "warning",
@@ -92,7 +94,7 @@ export function TrendsStatsView({ metrics, match, teamFilter = "home" }) {
 
   // C) Rachas de Pérdidas Recientes del Equipo
   const recentTeamTurnovers = teamEvents.slice(-8).filter((e) => e.event_type === "turnover").length;
-  if (recentTeamTurnovers >= 2) {
+  if (recentTeamTurnovers >= settings.thresholdTurnoverStreak) {
     teamInsights.push({
       id: "team_turnover_streak",
       type: "danger",

@@ -6,7 +6,6 @@ import { DefenseStatsView } from "./components/views/DefenseStatsView";
 import { GoalkeeperStatsView } from "./components/views/GoalkeeperStatsView";
 import { PlayersStatsView } from "./components/views/PlayersStatsView";
 import { ChronologyStatsView } from "./components/views/ChronologyStatsView";
-import { TrendsStatsView } from "./components/views/TrendsStatsView";
 import { ReportStatsView } from "./components/views/ReportStatsView";
 import {
   IconDashboard,
@@ -15,7 +14,6 @@ import {
   IconGlove,
   IconUsers,
   IconClock,
-  IconTrendingUp,
   IconFileText
 } from "./components/common/Icons";
 import "./MatchStatsModule.css";
@@ -58,7 +56,6 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
     { id: "goalkeeper", label: "Portería", icon: <IconGlove size={15} />, view: <GoalkeeperStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} /> },
     { id: "players", label: "Jugadores", icon: <IconUsers size={15} />, view: <PlayersStatsView metrics={metrics} teamFilter={teamFilter} /> },
     { id: "chronology", label: "Cronología", icon: <IconClock size={15} />, view: <ChronologyStatsView match={match} teamFilter={teamFilter} /> },
-    { id: "trends", label: "Tendencias", icon: <IconTrendingUp size={15} />, view: <TrendsStatsView metrics={metrics} insights={insights} match={match} teamFilter={teamFilter} /> },
     { id: "report", label: "Informe", icon: <IconFileText size={15} />, view: <ReportStatsView metrics={metrics} insights={insights} match={match} teamFilter={teamFilter} /> }
   ];
 
