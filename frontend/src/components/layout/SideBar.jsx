@@ -1,13 +1,5 @@
+import isotipo from "../../assets/isotipo.png";
 import "./Sidebar.css";
-
-const IconHandball = () => (
-  <svg className="sidebar-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 2a14.5 14.5 0 0 0 0 22" />
-    <path d="M12 2a14.5 14.5 0 0 1 0 22" />
-    <path d="M2 12h20" />
-  </svg>
-);
 
 const IconCalendar = () => (
   <svg className="sidebar-item-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -34,6 +26,20 @@ const IconSettings = () => (
   </svg>
 );
 
+const IconChevronRight = () => (
+  <svg className="sidebar-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+const IconLogout = () => (
+  <svg className="sidebar-logout-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
 export default function Sidebar({
   user,
   guestMatches,
@@ -46,13 +52,15 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="sidebar-top">
-        <div className="sidebar-logo">
-          <IconHandball />
+        <div className="sidebar-brand-header">
+          <div className="sidebar-logo-glow-wrapper">
+            <img src={isotipo} alt="HandStats Emblem" className="sidebar-brand-logo" />
+          </div>
+          <div className="sidebar-brand-details">
+            <h1 className="sidebar-brand-title">HAND<span>STATS</span></h1>
+            <span className="sidebar-brand-tagline">ANALYZE. IMPROVE. WIN.</span>
+          </div>
         </div>
-        <h2>HandStats</h2>
-        <span className="sidebar-tagline">
-          Analizador de partidos
-        </span>
       </div>
 
       <nav className="sidebar-nav">
@@ -60,8 +68,11 @@ export default function Sidebar({
           className={`sidebar-item ${isMatchesActive ? "active" : ""}`}
           onClick={() => setView("list")}
         >
-          <IconCalendar />
-          <span>Mis Partidos</span>
+          <div className="sidebar-icon-box">
+            <IconCalendar />
+          </div>
+          <span className="sidebar-item-label">Mis Partidos</span>
+          <IconChevronRight />
         </button>
 
         {user.role !== "guest" && (
@@ -69,8 +80,11 @@ export default function Sidebar({
             className={`sidebar-item ${view === "teams" ? "active" : ""}`}
             onClick={() => setView("teams")}
           >
-            <IconTeams />
-            <span>Equipos</span>
+            <div className="sidebar-icon-box">
+              <IconTeams />
+            </div>
+            <span className="sidebar-item-label">Equipos</span>
+            <IconChevronRight />
           </button>
         )}
 
@@ -78,23 +92,43 @@ export default function Sidebar({
           className={`sidebar-item ${view === "settings" ? "active" : ""}`}
           onClick={() => setView("settings")}
         >
-          <IconSettings />
-          <span>Ajustes de Parámetros</span>
+          <div className="sidebar-icon-box">
+            <IconSettings />
+          </div>
+          <span className="sidebar-item-label">Ajustes de Parámetros</span>
+          <IconChevronRight />
         </button>
       </nav>
 
       <div className="sidebar-bottom">
-        <div className="sidebar-user">
-          {user.role === "guest"
-            ? `Invitado (${guestMatches}/3)`
-            : user.displayName || user.email}
+        <div className="sidebar-user-card">
+          <div className="sidebar-avatar-container">
+            <div className="sidebar-user-avatar">
+              {user.role === "guest" ? "G" : (user.displayName?.[0] || user.email?.[0] || "U").toUpperCase()}
+            </div>
+            <span className="status-dot-online" title="Conectado"></span>
+          </div>
+
+          <div className="sidebar-user-info">
+            <span className="sidebar-user-name">
+              {user.role === "guest"
+                ? "Usuario Invitado"
+                : user.displayName || user.email?.split("@")[0]}
+            </span>
+            <span className="user-role-badge">
+              {user.role === "guest" ? `Demo (${guestMatches}/3 partidos)` : "Entrenador / Analista"}
+            </span>
+          </div>
         </div>
 
         <button
-          className="btn btn-danger w-100"
+          type="button"
+          className="sidebar-logout-btn"
           onClick={logout}
+          title="Cerrar sesión"
         >
-          Salir
+          <IconLogout />
+          <span>Cerrar Sesión</span>
         </button>
       </div>
     </aside>

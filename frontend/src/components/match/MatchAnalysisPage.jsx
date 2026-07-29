@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useMatch } from "../../context/MatchContext";
 import userService from "../../services/userService";
 import MatchStatsModule from "../../stats/MatchStatsModule";
+import isotipo from "../../assets/isotipo.png";
 import "./MatchAnalysisPage.css";
 
 const goalZones = [
@@ -735,9 +736,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     <div className="match-analysis-page">
       {/* HEADER DE MESA Y ESTADÍSTICAS */}
       <header className="analysis-header-bar">
-        <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Volver a mis partidos">
-          <IconArrowLeft /> Volver
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Volver a mis partidos">
+            <IconArrowLeft /> Volver
+          </button>
+          <img src={isotipo} alt="HandStats" style={{ height: 28, width: "auto", objectFit: "contain" }} />
+        </div>
 
         <div className="hs-mode-switcher" style={{ display: "flex", gap: 4, background: "var(--bg-inset)", padding: 4, borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
           <button
