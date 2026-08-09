@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, BeforeValidator
-from typing import List, Optional, Annotated
+from typing import List, Optional, Annotated, Any
 from datetime import datetime, timezone
 from bson import ObjectId
 
@@ -79,29 +79,41 @@ class DisciplinaryStats(BaseModel):
 class MatchEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: str(ObjectId()))
     event_type: str  
-    player_id: Optional[str] = None  
+    player_id: Optional[Any] = None  
+    player_number: Optional[Any] = None
+    player_name: Optional[str] = None
+    team: Optional[str] = None
     is_opponent_action: bool = False
-    match_time_seconds: int
+    match_time_seconds: int = 0
     
-    possession_number: int
-    play_phase: str  
-    numerical_situation: str  
+    possession_number: Optional[int] = 1
+    play_phase: Optional[str] = "Posicional"  
+    numerical_situation: Optional[str] = "Igualdad"  
     
     shot_type: Optional[str] = None  
     shot_position: Optional[str] = None  
+    shot_zone: Optional[str] = None
+    is_penetration: Optional[bool] = False
+    goal_zone: Optional[str] = None
     result: Optional[str] = None  
     target_zone: Optional[str] = None  
     assist_position: Optional[str] = None  
     
-    goalkeeper_number: Optional[int] = None
+    goalkeeper_id: Optional[Any] = None
+    goalkeeper_number: Optional[Any] = None
     goalkeeper_name: Optional[str] = None
-    shooter_number: Optional[int] = None
+    shooter_number: Optional[Any] = None
     shooter_name: Optional[str] = None
+    rebound: Optional[str] = None
+    turnover_type: Optional[str] = None
     
     sanction_type: Optional[str] = None  
     
     turnover_zone_row: Optional[str] = None  
     turnover_zone_col: Optional[str] = None  
+
+    class Config:
+        extra = "allow"
 
 class MatchPossession(BaseModel):
     possession_number: int
