@@ -39,12 +39,25 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
   const homePossessions = possessions.filter((p) => p.team === "LOCAL");
   const awayPossessions = possessions.filter((p) => p.team === "VISITANTE");
 
-  const homePossCount = Math.max(1, homePossessions.length || (activePossession?.team === "LOCAL" ? 1 : 0));
-  const awayPossCount = Math.max(1, awayPossessions.length || (activePossession?.team === "VISITANTE" ? 1 : 0));
+  // Conteo real y exacto de posesiones por equipo sin forzar mínimos ficticios
+  let homePossCount = homePossessions.length;
+  let awayPossCount = awayPossessions.length;
+
+  if (possessions.length === 0) {
+    homePossCount = activePossession?.team === "LOCAL" ? 1 : 0;
+    awayPossCount = activePossession?.team === "VISITANTE" ? 1 : 0;
+  } else {
+    // Si hay una posesión activa que aún no se ha cerrado en el historial:
+    if (activePossession?.team === "LOCAL" && !possessions.some(p => p.possession_number === activePossession?.possession_number)) {
+      homePossCount += 1;
+    } else if (activePossession?.team === "VISITANTE" && !possessions.some(p => p.possession_number === activePossession?.possession_number)) {
+      awayPossCount += 1;
+    }
+  }
 
   // Eficiencia Ofensiva = (Goles / Posesiones) * 100
-  const homeOffEfficiency = Math.min(100, Math.round((homeGoals / homePossCount) * 100));
-  const awayOffEfficiency = Math.min(100, Math.round((awayGoals / awayPossCount) * 100));
+  const homeOffEfficiency = homePossCount > 0 ? Math.min(100, Math.round((homeGoals / homePossCount) * 100)) : 0;
+  const awayOffEfficiency = awayPossCount > 0 ? Math.min(100, Math.round((awayGoals / awayPossCount) * 100)) : 0;
 
   // xG acumulado
   const homeXG = Math.round(homeShots.reduce((acc, e) => acc + calculateShotXG(e), 0) * 100) / 100;
@@ -465,9 +478,10 @@ function buildMomentumTimeline(events, totalSeconds) {
 
   const points = [{ time: 0, local: 0, away: 0, momentum: 0 }];
 
-  events.forEach((ev) => {
+  (events || []).forEach((ev) => {
     const time = ev.match_time_seconds || 0;
     let delta = 0;
+    const isGoal = ev.event_type === "shot" && ev.result === "Gol";
 
     if (ev.event_type === "shot") {
       if (ev.result === "Gol") {
@@ -492,7 +506,9 @@ function buildMomentumTimeline(events, totalSeconds) {
       time,
       local: scoreLocal,
       away: scoreAway,
-      momentum: momentumVal
+      momentum: momentumVal,
+      isGoal,
+      isOpponent: ev.is_opponent_action
     });
   });
 
