@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, BeforeValidator
-from typing import List, Optional, Annotated, Any
+from typing import List, Optional, Annotated, Any, Dict
 from datetime import datetime, timezone
 from bson import ObjectId
 
@@ -26,6 +26,7 @@ class SavedPlayer(BaseModel):
 class SavedTeam(BaseModel):
     """Equipo guardado en el perfil del usuario para reutilización."""
     name: str
+    logo_url: Optional[str] = None
     players: List[SavedPlayer] = []
 
 class MatchPlayer(BaseModel):
@@ -57,6 +58,27 @@ class PositionStats(BaseModel):
     centro: ShotDetail = ShotDetail()
     derecha: ShotDetail = ShotDetail()
     muy_derecha: ShotDetail = ShotDetail()
+
+class PlayerDetailedStats(BaseModel):
+    player_id: str
+    player_name: str
+    player_number: int
+    is_goalkeeper: bool = False
+    goals: int = 0
+    shots: int = 0
+    assists: int = 0
+    turnovers: int = 0
+    steals: int = 0
+    blocks: int = 0
+    yellow_cards: int = 0
+    two_min_suspensions: int = 0
+    red_cards: int = 0
+    blue_cards: int = 0
+    saves: int = 0
+    goals_conceded: int = 0
+    shots_faced: int = 0
+    zones: ZoneStats = ZoneStats()
+    positions: PositionStats = PositionStats()
 
 class SituationStats(BaseModel):
     posicional: ShotDetail = ShotDetail()
@@ -111,6 +133,15 @@ class MatchEvent(BaseModel):
     
     turnover_zone_row: Optional[str] = None  
     turnover_zone_col: Optional[str] = None  
+    
+    # Coordenadas espaciales (0-100%) para Mapas de Calor
+    court_x: Optional[float] = None
+    court_y: Optional[float] = None
+    goal_x: Optional[float] = None
+    goal_y: Optional[float] = None
+    court_coord: Optional[Dict[str, Any]] = None
+    goal_coord: Optional[Dict[str, Any]] = None
+    rebound: Optional[str] = None
 
     class Config:
         extra = "allow"

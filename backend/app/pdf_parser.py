@@ -8,31 +8,131 @@ Compatible con actas de la RFEBM y formatos de federaciones territoriales.
 """
 
 import re
+import base64
 import fitz  # PyMuPDF
+
+
+def extract_team_logos(doc):
+    """
+    Extrae los escudos de los dos equipos desde la cabecera superior del acta PDF.
+    Devuelve un diccionario {"home_logo": str, "away_logo": str}.
+    """
+    if len(doc) == 0:
+        return {"home_logo": None, "away_logo": None}
+
+    header_images = []
+    pages_to_check = doc[:min(2, len(doc))]
+
+    for page_idx, page in enumerate(pages_to_check):
+        header_max_y = page.rect.height * 0.48
+
+        try:
+            image_list = page.get_images(full=True)
+        except Exception:
+            image_list = []
+
+        for img in image_list:
+            xref = img[0]
+            rects = page.get_image_rects(xref)
+            if not rects:
+                continue
+
+            for bbox in rects:
+                x0, y0, x1, y1 = bbox
+                w = x1 - x0
+                h = y1 - y0
+
+                # Filtrar gráficos no relevantes (demasiado pequeños o marcas de agua gigantes)
+                if w < 12 or h < 12 or w > 450 or h > 450 or y0 > header_max_y:
+                    continue
+
+                cx = (x0 + x1) / 2
+
+                try:
+                    base_img = doc.extract_image(xref)
+                    img_bytes = base_img.get("image")
+                    img_ext = base_img.get("ext", "png")
+                    if img_bytes and len(img_bytes) > 200:
+                        b64 = base64.b64encode(img_bytes).decode("utf-8")
+                        data_uri = f"data:image/{img_ext};base64,{b64}"
+                        
+                        header_images.append({
+                            "page": page_idx,
+                            "y0": y0,
+                            "cx": cx,
+                            "area": w * h,
+                            "data_uri": data_uri
+                        })
+                except Exception as e:
+                    print("Error extrayendo logo xref", xref, e)
+
+    # Eliminar duplicados por data_uri
+    unique_images = []
+    seen_uris = set()
+    for img in header_images:
+        if img["data_uri"] not in seen_uris:
+            seen_uris.add(img["data_uri"])
+            unique_images.append(img)
+
+    if not unique_images:
+        return {"home_logo": None, "away_logo": None}
+
+    # AGRUPAR POR MISMA ALTURA Y0 (Ambos escudos de los equipos comparten la misma altura Y0 en la hoja)
+    y_groups = []
+    for img in unique_images:
+        placed = False
+        for group in y_groups:
+            if abs(group[0]["y0"] - img["y0"]) <= 20:
+                group.append(img)
+                placed = True
+                break
+        if not placed:
+            y_groups.append([img])
+
+    # 1. Buscar preferiblemente el grupo que contenga exactamente 2 escudos al mismo nivel de Y0 (Local y Visitante)
+    two_logo_group = None
+    for group in y_groups:
+        if len(group) == 2:
+            two_logo_group = group
+            break
+
+    if two_logo_group:
+        sorted_pair = sorted(two_logo_group, key=lambda x: x["cx"])
+        return {
+            "home_logo": sorted_pair[0]["data_uri"],
+            "away_logo": sorted_pair[1]["data_uri"]
+        }
+
+    # 2. Si un grupo tiene más de 2 imágenes (ej. Escudo Local, Logo Federación Centro, Escudo Visitante)
+    for group in y_groups:
+        if len(group) >= 2:
+            sorted_by_x = sorted(group, key=lambda x: x["cx"])
+            return {
+                "home_logo": sorted_by_x[0]["data_uri"],
+                "away_logo": sorted_by_x[-1]["data_uri"]
+            }
+
+    # 3. Fallback general ordenando por X
+    sorted_all = sorted(unique_images, key=lambda x: x["cx"])
+    home_logo = sorted_all[0]["data_uri"]
+    away_logo = sorted_all[-1]["data_uri"] if len(sorted_all) > 1 else None
+
+    return {"home_logo": home_logo, "away_logo": away_logo}
 
 
 def parse_acta_pdf(pdf_bytes: bytes) -> dict:
     """
-    Parsea un PDF de acta de balonmano y devuelve los equipos y jugadores.
-
-    Returns:
-        {
-            "home_team": str,
-            "away_team": str,
-            "home_players": [{"name": str, "number": int}, ...],
-            "away_players": [{"name": str, "number": int}, ...]
-        }
+    Parsea un PDF de acta de balonmano y devuelve los equipos, logos y jugadores.
     """
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+
+    # Extraer logos de escudos desde la cabecera del acta
+    logos = extract_team_logos(doc)
 
     # Extraer el texto completo sin modificar nada para depuración / impresión
     full_text = ""
     for page in doc:
         full_text += page.get_text() + "\n"
-
-    print("=== TEXTO COMPLETO EXTRAÍDO ===")
-    print(full_text)
-    print("===============================")
 
     home_team = ""
     away_team = ""
@@ -43,10 +143,7 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
         width = page.rect.width
         mid_x = width / 2
 
-        # Obtener bloques: lista de (x0, y0, x1, y1, "text", block_no, block_type)
         blocks = page.get_text("blocks")
-
-        # Ordenar bloques por coordenada Y (de arriba a abajo)
         blocks.sort(key=lambda b: b[1])
 
         left_lines = []
@@ -54,19 +151,17 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
 
         for b in blocks:
             x0, y0, x1, y1, text, block_no, block_type = b
-            if block_type != 0:  # Omitir bloques de imagen
+            if block_type != 0:
                 continue
 
             block_lines = [line.strip() for line in text.split("\n") if line.strip()]
 
-            # Determinar si el bloque está en la mitad izquierda o derecha
             center_x = (x0 + x1) / 2
             if center_x < mid_x:
                 left_lines.extend(block_lines)
             else:
                 right_lines.extend(block_lines)
 
-        # Limpiar líneas vacías
         left_lines = [l for l in left_lines if l]
         right_lines = [l for l in right_lines if l]
 
@@ -78,7 +173,6 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
 
         def extract_team_name(lines_list):
             for idx, line in enumerate(lines_list):
-                # Buscamos la línea que sea el marcador (dígitos del marcador, ej: "32")
                 if line.strip().isdigit() and 0 <= int(line.strip()) <= 99:
                     for k in range(1, 4):
                         if idx - k >= 0:
@@ -95,23 +189,18 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
                                 )
                             ):
                                 return clean_team_name(cand)
-            return ""
-
         def extract_players(lines_list):
             players = []
-            
-            # Encontrar dónde empezar: después del marcador
             start_idx = 0
             for idx, line in enumerate(lines_list):
                 if line.strip().isdigit() and 0 <= int(line.strip()) <= 99:
                     start_idx = idx + 1
                     break
-                    
+
             i = start_idx
             while i < len(lines_list):
                 line = lines_list[i].strip()
-                
-                # Detenerse si encontramos palabras clave del staff técnico
+
                 if any(
                     kw in line.lower()
                     for kw in [
@@ -120,13 +209,26 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
                     ]
                 ):
                     break
-                    
-                # Buscar dorsal
+
+                # Caso 1: Dorsal y nombre en la misma línea (ej. "12 JUAN PEREZ")
+                m = re.match(r"^(\d{1,2})\s+([A-ZÁÉÍÓÚÑa-zácéíóúñ\s,\.\'-]+)$", line)
+                if m:
+                    num = int(m.group(1))
+                    name = m.group(2).strip()
+                    if len(name) >= 3 and not any(kw in name.lower() for kw in ["oficial", "entrenador", "delegado", "medico", "responsable"]):
+                        is_gk = num in [1, 12, 16]
+                        if re.search(r"\s*[\(\[]?(?:p|po|gk|portero|goalkeeper)[\)\]]?\s*$", name, re.IGNORECASE):
+                            is_gk = True
+                            name = re.sub(r"\s*[\(\[]?(?:p|po|gk|portero|goalkeeper)[\)\]]?\s*$", "", name, flags=re.IGNORECASE)
+                        players.append({"name": name.strip(), "number": num, "is_goalkeeper": is_gk})
+                        i += 1
+                        continue
+
+                # Caso 2: Dorsal en una línea y nombre en la siguiente
                 dorsal_match = re.match(r"^\s*(\d{1,2})(?:\s*\*|\s+\*)?\s*$", line)
                 if dorsal_match:
                     if i + 1 < len(lines_list):
                         next_line = lines_list[i + 1].strip()
-                        # Detenerse si la siguiente línea es el inicio del staff
                         if any(
                             kw in next_line.lower()
                             for kw in [
@@ -135,10 +237,9 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
                             ]
                         ):
                             break
-                        # Validar si el siguiente es el nombre
                         if (
                             re.search(r"[a-zA-ZáéíóúñüÁÉÍÓÚÑÜ]", next_line)
-                            and not ":" in next_line
+                            and ":" not in next_line
                             and next_line.lower() not in ["nº", "nombre y apellidos", "jugadores", "g", "a", "d", "dd"]
                             and len(next_line) >= 3
                         ):
@@ -188,6 +289,8 @@ def parse_acta_pdf(pdf_bytes: bytes) -> dict:
     return {
         "home_team": home_team,
         "away_team": away_team,
+        "home_logo": logos.get("home_logo"),
+        "away_logo": logos.get("away_logo"),
         "home_players": home_players,
         "away_players": away_players,
     }
