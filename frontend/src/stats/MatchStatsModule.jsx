@@ -3,6 +3,7 @@ import { useMatchStats } from "./hooks/useMatchStats";
 import { StatsDashboardView } from "./components/views/StatsDashboardView";
 import { AttackStatsView } from "./components/views/AttackStatsView";
 import { DefenseStatsView } from "./components/views/DefenseStatsView";
+import { HeatmapsStatsView } from "./components/views/HeatmapsStatsView";
 import { GoalkeeperStatsView } from "./components/views/GoalkeeperStatsView";
 import { PlayersStatsView } from "./components/views/PlayersStatsView";
 import { ChronologyStatsView } from "./components/views/ChronologyStatsView";
@@ -11,6 +12,7 @@ import {
   IconDashboard,
   IconTarget,
   IconShield,
+  IconFlame,
   IconGlove,
   IconUsers,
   IconClock,
@@ -50,13 +52,54 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
   }
 
   const tabs = [
-    { id: "dashboard", label: "Dashboard", icon: <IconDashboard size={15} />, view: <StatsDashboardView metrics={metrics} insights={insights} teamFilter={teamFilter} matchesList={matchesList} /> },
-    { id: "attack", label: "Ataque & xG", icon: <IconTarget size={15} />, view: <AttackStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} /> },
-    { id: "defense", label: "Defensa", icon: <IconShield size={15} />, view: <DefenseStatsView metrics={metrics} teamFilter={teamFilter} /> },
-    { id: "goalkeeper", label: "Portería", icon: <IconGlove size={15} />, view: <GoalkeeperStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} /> },
-    { id: "players", label: "Jugadores", icon: <IconUsers size={15} />, view: <PlayersStatsView metrics={metrics} teamFilter={teamFilter} /> },
-    { id: "chronology", label: "Cronología", icon: <IconClock size={15} />, view: <ChronologyStatsView match={match} teamFilter={teamFilter} /> },
-    { id: "report", label: "Informe", icon: <IconFileText size={15} />, view: <ReportStatsView metrics={metrics} insights={insights} match={match} teamFilter={teamFilter} /> }
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: <IconDashboard size={15} />,
+      view: <StatsDashboardView metrics={metrics} insights={insights} teamFilter={teamFilter} matchesList={matchesList} />
+    },
+    {
+      id: "attack",
+      label: "Ataque",
+      icon: <IconTarget size={15} />,
+      view: <AttackStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} />
+    },
+    {
+      id: "defense",
+      label: "Defensa",
+      icon: <IconShield size={15} />,
+      view: <DefenseStatsView metrics={metrics} teamFilter={teamFilter} />
+    },
+    {
+      id: "heatmaps",
+      label: "Mapas de Calor",
+      icon: <IconFlame size={15} />,
+      view: <HeatmapsStatsView match={match} teamFilter={teamFilter} />
+    },
+    {
+      id: "goalkeeper",
+      label: "Portería",
+      icon: <IconGlove size={15} />,
+      view: <GoalkeeperStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} />
+    },
+    {
+      id: "players",
+      label: "Jugadores",
+      icon: <IconUsers size={15} />,
+      view: <PlayersStatsView metrics={metrics} teamFilter={teamFilter} />
+    },
+    {
+      id: "chronology",
+      label: "Cronología",
+      icon: <IconClock size={15} />,
+      view: <ChronologyStatsView match={match} teamFilter={teamFilter} />
+    },
+    {
+      id: "report",
+      label: "Informe",
+      icon: <IconFileText size={15} />,
+      view: <ReportStatsView metrics={metrics} insights={insights} match={match} teamFilter={teamFilter} />
+    }
   ];
 
   const currentTab = tabs.find((t) => t.id === activeTab) || tabs[0];
@@ -94,7 +137,7 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
         </div>
       </div>
 
-      {/* NAVEGACIÓN DE PESTAÑAS DEL CENTRO DE INTELIGENCIA */}
+      {/* NAVEGACIÓN DE TODAS LAS PESTAÑAS */}
       <nav className="hs-stats-tabs" aria-label="Navegación de módulos estadísticos">
         {tabs.map((tab) => (
           <button
