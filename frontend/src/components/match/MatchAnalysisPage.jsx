@@ -1,7 +1,50 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+// HandStats Match Analysis Page - Cleaned Icon Imports
+import {
+  ArrowLeft as IconArrowLeft,
+  Undo2 as IconUndo,
+  Goal as IconGoalNet,
+  Target as IconGoal7m,
+  XCircle as IconMiss,
+  Shield as IconSaveGlove,
+  ShieldAlert as IconSave7m,
+  Square as IconPost,
+  ArrowUpRight as IconFuera,
+  TimerReset as IconTimeout,
+  ArrowRightLeft as IconBadPass,
+  Repeat2 as IconDoubleDribble,
+  Footprints as IconFootsteps,
+  Hand as IconPassivePlay,
+  Timer as IconTimer2m,
+  BarChart2 as IconBarChart,
+  Flag as IconFlag,
+  Briefcase as IconBriefcase,
+  Check as IconCheck,
+  Play as IconPlay,
+  Pause as IconPause,
+  Megaphone as IconMegaphone,
+  Users as IconUsers,
+  Shield as IconShield,
+  Clock as IconClock,
+  AlertTriangle as IconAlertTriangle,
+  Disc as IconBall,
+  ChevronRight as IconArrowRight,
+  Eye as IconEye,
+  EyeOff as IconEyeOff,
+  Zap as IconZap,
+  Flame as IconFlame,
+  User as IconUser,
+  MousePointerClick as IconClick,
+  X as IconX,
+  Swords as IconSwords,
+  Info as IconInfo,
+  Target as IconTarget
+} from 'lucide-react';
 import { useMatch } from "../../context/MatchContext";
 import userService from "../../services/userService";
 import MatchStatsModule from "../../stats/MatchStatsModule";
+import { getEventCategory, formatCourtZoneName, formatGoalZoneName } from "../../stats/engine/types";
+import { calculateShotXG, calculateShotXSaves } from "../../stats/engine/xgModel";
 import isotipo from "../../assets/isotipo.png";
 import "./MatchAnalysisPage.css";
 
@@ -47,7 +90,110 @@ const getZoneLabel = (zoneId) => {
   return labels[zoneId] || zoneId;
 };
 
-export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }) {
+function IconUserCheck({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <polyline points="16 11 18 13 22 9" />
+    </svg>
+  );
+}
+
+function IconMatch({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
+    </svg>
+  );
+}
+
+function IconChartBar({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="20" x2="12" y2="10" />
+      <line x1="18" y1="20" x2="18" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="16" />
+    </svg>
+  );
+}
+
+function IconClipboard({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    </svg>
+  );
+}
+
+function IconFolder({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function IconSettings({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function IconSun({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  );
+}
+
+function IconMoon({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+function IconSoccerBall({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))", display: "block" }}>
+      <circle cx="12" cy="12" r="10" fill="#ffffff" stroke="#000000" strokeWidth="1.5" />
+      <polygon points="12,7.2 14.8,9.2 13.7,12.5 10.3,12.5 9.2,9.2" fill="#000000" />
+      <line x1="12" y1="7.2" x2="12" y2="2" stroke="#000000" strokeWidth="1.4" />
+      <line x1="14.8" y1="9.2" x2="19.5" y2="7.7" stroke="#000000" strokeWidth="1.4" />
+      <line x1="13.7" y1="12.5" x2="16.5" y2="17.2" stroke="#000000" strokeWidth="1.4" />
+      <line x1="10.3" y1="12.5" x2="7.5" y2="17.2" stroke="#000000" strokeWidth="1.4" />
+      <line x1="9.2" y1="9.2" x2="4.5" y2="7.7" stroke="#000000" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+function IconFreeThrow({ size = 26 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+export default function MatchAnalysisPage({ user, onBack, initialMode = "live", theme, toggleTheme }) {
   const {
     currentMatch,
     activePossession,
@@ -57,8 +203,248 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     undoLastEvent,
   } = useMatch();
 
-  // Cronómetro y Vista Principal
+  // Estado y Toggle de Tema (Claro / Oscuro)
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return theme || document.documentElement.getAttribute("data-theme") || "dark";
+  });
+
+  useEffect(() => {
+    if (theme) {
+      setCurrentTheme(theme);
+    }
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    if (toggleTheme) {
+      toggleTheme();
+    } else {
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      localStorage.setItem("hs_theme", nextTheme);
+      setCurrentTheme(nextTheme);
+    }
+  };
+
+  // Cronómetro, Periodo, Vista Principal y Selección Táctica Exacta
   const [mainViewMode, setMainViewMode] = useState(initialMode); // "live" | "stats"
+  const [currentPeriod, setCurrentPeriod] = useState("1ª PARTE");
+  const [courtCoord, setCourtCoord] = useState({ x: 50, y: 40 }); // Coordenadas % en Media Pista
+  const [goalCoord, setGoalCoord] = useState({ x: 22, y: 22 }); // Coordenadas % en Portería
+  // Estado para la Acción Activa de Interacción Directa en Pista y Portería (SIN POPUPS)
+  const [activeActionFlow, setActiveActionFlow] = useState(null);
+
+  const getDistanceToGoal = (svgX, svgY) => {
+    if (svgY <= 8) return 0;
+    if (svgX < 165) {
+      const dx = svgX - 165;
+      const dy = svgY - 8;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    if (svgX > 235) {
+      const dx = svgX - 235;
+      const dy = svgY - 8;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    return svgY - 8;
+  };
+
+  const getCourtZoneLabel = (coord) => {
+    if (!coord) return "9M Central";
+    const { x, y } = coord;
+    const svgX = x * 4.0;
+    const svgY = y * 3.0;
+
+    // 1. Modificador de 1ª Oleada / Contraataque
+    if (activeActionFlow?.isFirstWave) {
+      return x < 35 ? "Contraataque Izquierdo" : x > 65 ? "Contraataque Derecho" : "Contraataque Central";
+    }
+
+    // 2. EXTREMO IZQUIERDO (COLOR NARANJA IZQ: X 0-10%, Y 0-21%)
+    if (svgX <= 40 && svgY <= 63) {
+      return "Extremo Izquierdo";
+    }
+    // 3. EXTREMO DERECHO (COLOR NARANJA DER: X 90-100%, Y 0-21%)
+    if (svgX >= 360 && svgY <= 63) {
+      return "Extremo Derecho";
+    }
+
+    // Calcular la distancia radial r a la línea de gol / postes
+    const r = getDistanceToGoal(svgX, svgY);
+
+    // 4. ÁREA DE PORTERÍA DE 6M (SIN COLOR: R < 135)
+    if (r < 135) {
+      return "Área de Portería (Sin Posición)";
+    }
+
+    // Determinar el límite exterior exacto de la franja curva azul de Pivote / Penetración:
+    // En la zona central el límite es r <= 198. En las bandas laterales el límite ajustado a la cinta azul es r <= 176.
+    const maxBlueRadius = (svgX >= 145 && svgX <= 255) ? 198 : 176;
+
+    // 5. ZONA AZUL COMPLETA (MEDIA LUNA AZUL: 135 <= R <= maxBlueRadius)
+    if (r <= maxBlueRadius) {
+      if (activeActionFlow?.isPenetration) {
+        return svgX < 200 ? "Penetración Izquierda" : "Penetración Derecha";
+      }
+      return "Pivote 6M";
+    }
+
+    // 6. SECTORES POR DETRÁS DE LA LÍNEA CURVA DE 9M (R > maxBlueRadius)
+    // COLOR ROSA (9M LATERAL IZQUIERDO: X <= 31%)
+    if (svgX <= 124) return "9M Lateral Izquierdo";
+
+    // COLOR BLANCO (9M LATERAL DERECHO: X >= 69%)
+    if (svgX >= 276) return "9M Lateral Derecho";
+
+    // COLOR VERDE (9M CENTRAL: 31% < X < 69%)
+    return "9M Central";
+  };
+
+  const getGoalZoneLabel = (coord, isPostAction = false, isOutAction = false) => {
+    if (!coord) return "Escuadra Superior Izquierda";
+    const { x, y } = coord;
+
+    // Fuera: zonas exteriores claramente separadas
+    if (isOutAction || y < 11 || x < 8.5 || x > 91.5) {
+      if (y < 14) return "Fuera Arriba";
+      if (x < 15) return "Fuera Izquierda";
+      return "Fuera Derecha";
+    }
+
+    // Postes y Larguero
+    if (isPostAction || (y >= 10 && y <= 18) || (x >= 8 && x <= 13) || (x >= 87 && x <= 92)) {
+      if (y >= 10 && y <= 18 && x >= 13 && x <= 87) return "Larguero Superior";
+      if (x <= 13) return "Poste Izquierdo";
+      if (x >= 87) return "Poste Derecho";
+    }
+
+    // Zonas interiores de portería
+    let horiz = x < 38 ? "Escuadra Sup. Izquierda" : x > 62 ? "Escuadra Sup. Derecha" : "Superior Centro";
+    if (y > 45 && y < 75) {
+      horiz = x < 38 ? "Medio Izquierda" : x > 62 ? "Medio Derecha" : "Centro Portería";
+    } else if (y >= 75) {
+      horiz = x < 38 ? "Inferior Izquierda (Raso)" : x > 62 ? "Inferior Derecha (Raso)" : "Inferior Centro (Raso)";
+    }
+    return horiz;
+  };
+
+  const handleCourtClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+    const y = Math.min(100, Math.max(0, Math.round(((e.clientY - rect.top) / rect.height) * 100)));
+    setCourtCoord({ x, y });
+
+    const courtZone = getCourtZoneLabel({ x, y });
+
+    if (activeActionFlow && activeActionFlow.step === "AWAITING_COURT_CLICK") {
+      if (activeActionFlow.actionKey.startsWith("perdida")) {
+        executeDirectAction({
+          ...activeActionFlow,
+          courtCoord: { x, y },
+          shotZone: courtZone
+        });
+        return;
+      }
+
+      // SI SE HACE CLIC EN LA ZONA DE PIVOTE (MEDIA LUNA AZUL) -> MOSTRAR POPUP EXCLUSIVO DE SELECCIÓN
+      if (courtZone === "Pivote 6M" || courtZone.startsWith("Pivote")) {
+        setPendingPivotFlow({
+          ...activeActionFlow,
+          courtCoord: { x, y },
+          baseZone: courtZone
+        });
+        setShowPivotOptionModal(true);
+        return;
+      }
+
+      // PARA CUALQUIER OTRA ZONA (EXTREMOS, 9M LATERALES, 9M CENTRAL) -> SIN POPUP, AVANZA DIRECTAMENTE A PORTERÍA
+      setActiveActionFlow(prev => ({
+        ...prev,
+        courtCoord: { x, y },
+        shotZone: courtZone,
+        step: "AWAITING_GOAL_CLICK"
+      }));
+    }
+  };
+
+  const handleGoalClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+    const y = Math.min(100, Math.max(0, Math.round(((e.clientY - rect.top) / rect.height) * 100)));
+    setGoalCoord({ x, y });
+
+    const isPost = activeActionFlow?.actionKey === "poste";
+    const isOut = activeActionFlow?.actionKey === "fuera";
+    const goalZone = getGoalZoneLabel({ x, y }, isPost, isOut);
+
+    if (activeActionFlow && activeActionFlow.step === "AWAITING_GOAL_CLICK") {
+      if (activeActionFlow.actionKey === "gol" || activeActionFlow.actionKey === "gol_7m" || activeActionFlow.actionKey === "fuera") {
+        executeDirectAction({
+          ...activeActionFlow,
+          goalCoord: { x, y },
+          goalZone
+        });
+        return;
+      }
+
+      setActiveActionFlow(prev => ({
+        ...prev,
+        goalCoord: { x, y },
+        goalZone,
+        step: "AWAITING_REBOUND"
+      }));
+    }
+  };
+
+  const calculatedHomeGoals = useMemo(() => {
+    if (!currentMatch) return 0;
+    if (typeof currentMatch.goals_home === "number") return currentMatch.goals_home;
+    if (!currentMatch.events) return 0;
+    return currentMatch.events.filter(e => e.event_type === "shot" && e.result === "Gol" && !e.is_opponent_action).length;
+  }, [currentMatch]);
+
+  const calculatedAwayGoals = useMemo(() => {
+    if (!currentMatch) return 0;
+    if (typeof currentMatch.goals_away === "number") return currentMatch.goals_away;
+    if (!currentMatch.events) return 0;
+    return currentMatch.events.filter(e => e.event_type === "shot" && e.result === "Gol" && e.is_opponent_action).length;
+  }, [currentMatch]);
+
+  const [firstPeriodPossession, setFirstPeriodPossession] = useState(() => {
+    return currentMatch.first_period_possession || null;
+  });
+
+  const [showInitialPossessionModal, setShowInitialPossessionModal] = useState(() => {
+    return !currentMatch.first_period_possession && (!currentMatch.events || currentMatch.events.length === 0);
+  });
+
+  const handleSelectInitialPossession = (team) => {
+    setFirstPeriodPossession(team);
+    setShowInitialPossessionModal(false);
+    if (setActivePossession) {
+      setActivePossession(prev => ({ ...prev, team, situation: "Igualdad" }));
+    }
+  };
+
+  const handleEndPeriod = () => {
+    setIsRunning(false);
+    if (currentPeriod === "1ª PARTE") {
+      setCurrentPeriod("2ª PARTE");
+      // Saque inicial de la 2ª Parte: Cambia automáticamente al equipo contrario
+      const startTeam = firstPeriodPossession || activePossession.team || "LOCAL";
+      const secondHalfTeam = startTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
+      if (setActivePossession) {
+        setActivePossession(prev => ({ ...prev, team: secondHalfTeam, situation: "Igualdad" }));
+      }
+    } else if (currentPeriod === "2ª PARTE") {
+      setCurrentPeriod("PRÓRROGA");
+      const startTeam = firstPeriodPossession || "LOCAL";
+      if (setActivePossession) {
+        setActivePossession(prev => ({ ...prev, team: startTeam, situation: "Igualdad" }));
+      }
+    } else {
+      setCurrentPeriod("FINAL");
+    }
+  };
 
   useEffect(() => {
     if (initialMode) {
@@ -77,6 +463,46 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
   const [inputMinutes, setInputMinutes] = useState("");
   const [inputSeconds, setInputSeconds] = useState("");
 
+  // Modal exclusivo de opciones para la zona de pivote
+  const [showPivotOptionModal, setShowPivotOptionModal] = useState(false);
+  const [pendingPivotFlow, setPendingPivotFlow] = useState(null);
+
+  // Estado para visibilidad de zonas en pista y filtro de historial
+  const [showCourtZones, setShowCourtZones] = useState(true);
+  const [historyFilter, setHistoryFilter] = useState("TODOS");
+
+  const handleCancelAction = () => {
+    setActiveActionFlow(null);
+    setCourtCoord(null);
+    setGoalCoord(null);
+    setSelectedPlayer(null);
+  };
+
+  const handleSelectPivotOption = (optionType) => {
+    let finalShotZone = "Pivote 6M";
+    let isPen = false;
+    let isFirstWave = false;
+
+    if (optionType === "penetración") {
+      finalShotZone = "Penetración 6M";
+      isPen = true;
+    } else if (optionType === "contraataque") {
+      finalShotZone = "Contraataque 6M";
+      isFirstWave = true;
+    }
+
+    setActiveActionFlow({
+      ...pendingPivotFlow,
+      shotZone: finalShotZone,
+      isPenetration: isPen,
+      isFirstWave: isFirstWave,
+      step: "AWAITING_GOAL_CLICK"
+    });
+
+    setShowPivotOptionModal(false);
+    setPendingPivotFlow(null);
+  };
+
   // Inicialización de Posesión
   const [possessionStarted, setPossessionStarted] = useState(false);
 
@@ -87,6 +513,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
   const [shotType, setShotType] = useState("exterior"); // extremo | pivote | exterior | penetracion | siete_metros
   const [numericalSituation, setNumericalSituation] = useState("Igualdad"); // Igualdad | Superioridad | Inferioridad
   const [playPhase, setPlayPhase] = useState("Posicional"); // Posicional | Contraataque
+  const [showZoneOverlay, setShowZoneOverlay] = useState(true); // Esquema zonal visible de la media pista
 
   // Menú y subvistas de acciones
   const [activeActionSubmenu, setActiveActionSubmenu] = useState(null); // null | "gol" | "parada" | "fuera" | "perdida" | "sanciones" | "tiempo_muerto" | "fin_periodo" | "select_opposing_goalkeeper" | "select_opposing_shooter"
@@ -141,58 +568,71 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     setIsEditingTime(false);
   };
 
-  // Efecto para inicializar la posesión a partir del historial del partido
+  const isTimeInitializedRef = useRef(false);
+
+  // Efecto para inicializar la posesión a partir del historial del partido (Únicamente la primera vez o en cambio de partido)
   useEffect(() => {
     if (!currentMatch) return;
 
-    const matchIdStr = String(currentMatch._id || currentMatch.id || "");
-    const currentPossessionsLength = currentMatch.possessions?.length || 0;
+    const matchIdStr = currentMatch._id ? String(currentMatch._id) : (currentMatch.id ? String(currentMatch.id) : "");
 
-    // Sincronizamos si es un partido nuevo (ID diferente en mount/cambio)
-    // O si se forzó la desincronización en handleUndo (lastMatchIdRef.current === null)
-    if (lastMatchIdRef.current !== matchIdStr) {
-      lastMatchIdRef.current = matchIdStr;
-      lastPossessionsLengthRef.current = currentPossessionsLength;
+    // Si ya fue inicializado para el partido actual y no estamos deshaciendo una acción, no reseteamos
+    if (isTimeInitializedRef.current && lastMatchIdRef.current === matchIdStr && !isUndoingRef.current) {
+      return;
+    }
 
-      const undoInfo = isUndoingRef.current;
-      isUndoingRef.current = null; // Limpiar el flag
+    lastMatchIdRef.current = matchIdStr;
+    isTimeInitializedRef.current = true;
 
-      if (currentMatch.possessions && currentMatch.possessions.length > 0) {
-        const sorted = [...currentMatch.possessions].sort(
-          (a, b) => b.possession_number - a.possession_number
-        );
-        const lastPoss = sorted[0];
+    const undoInfo = isUndoingRef.current;
+    isUndoingRef.current = null; // Limpiar el flag
 
-        // Determinar el equipo para la posesión activa
-        let nextTeam;
+    if (currentMatch.possessions && currentMatch.possessions.length > 0) {
+      const sorted = [...currentMatch.possessions].sort(
+        (a, b) => b.possession_number - a.possession_number
+      );
+      const lastPoss = sorted[0];
+
+      let targetTeam = lastPoss.team;
+      let targetPossNumber = lastPoss.possession_number;
+
+      if (undoInfo && undoInfo.eventTeam) {
+        // Al deshacer una acción, se restaura automáticamente la posesión al equipo que ejecutó la acción
+        targetTeam = undoInfo.eventTeam;
+      } else if (lastPoss.end_reason) {
         if (lastPoss.end_reason === "Fin 1ª Parte") {
           const firstPoss = currentMatch.possessions.find(p => p.possession_number === 1);
           const firstTeam = firstPoss ? firstPoss.team : "LOCAL";
-          nextTeam = firstTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
+          targetTeam = firstTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
         } else {
-          nextTeam = lastPoss.team === "LOCAL" ? "VISITANTE" : "LOCAL";
+          targetTeam = lastPoss.team === "LOCAL" ? "VISITANTE" : "LOCAL";
         }
-
-        setActivePossession({
-          possession_number: lastPoss.possession_number + 1,
-          team: nextTeam,
-          start_time: lastPoss.end_time,
-          phase: "Posicional",
-          situation: "Igualdad",
-        });
-        setTime(undoInfo ? undoInfo.targetTime : lastPoss.end_time);
-        setPossessionStarted(true);
-      } else {
-        setActivePossession({
-          possession_number: 1,
-          team: "LOCAL",
-          start_time: 0,
-          phase: "Posicional",
-          situation: "Igualdad",
-        });
-        setTime(undoInfo ? undoInfo.targetTime : 0);
-        setPossessionStarted(false);
+        targetPossNumber = lastPoss.possession_number + 1;
       }
+
+      setActivePossession({
+        possession_number: targetPossNumber,
+        team: targetTeam,
+        start_time: undoInfo ? undoInfo.targetTime : (lastPoss.end_time || lastPoss.start_time || 0),
+        phase: "Posicional",
+        situation: "Igualdad",
+      });
+      setTime(undoInfo ? undoInfo.targetTime : (lastPoss.end_time || 0));
+      setPossessionStarted(true);
+    } else {
+      setActivePossession({
+        possession_number: 1,
+        team: firstPeriodPossession || "LOCAL",
+        start_time: 0,
+        phase: "Posicional",
+        situation: "Igualdad",
+      });
+      if (undoInfo) {
+        setTime(undoInfo.targetTime);
+      } else {
+        setTime(prev => (prev > 0 ? prev : 0));
+      }
+      setPossessionStarted(false);
     }
   }, [currentMatch]);
 
@@ -291,15 +731,23 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
   ).filter(p => isGoalkeeper(p));
 
   const handleUndo = async () => {
-    if (currentMatch.events && currentMatch.events.length > 0) {
+    if (currentMatch?.events && currentMatch.events.length > 0) {
       const lastEvent = currentMatch.events[currentMatch.events.length - 1];
       if (lastEvent) {
+        const targetTime = typeof lastEvent.match_time_seconds === "number" ? lastEvent.match_time_seconds : time;
+        setTime(targetTime);
+        if (lastEvent.team) {
+          setActivePossession(prev => ({
+            ...prev,
+            team: lastEvent.team
+          }));
+        }
         isUndoingRef.current = {
-          targetTime: lastEvent.match_time_seconds || 0
+          targetTime,
+          eventTeam: lastEvent.team
         };
       }
     }
-    lastMatchIdRef.current = null; // Fuerza al useEffect a sincronizar al recibir el nuevo estado del partido
     await undoLastEvent();
   };
 
@@ -328,10 +776,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     setSelectedTeamAction(null);
 
     await sendMatchEvent({
-      event_type: "sanction",
+      event_type: "period_change",
+      action_key: "fin_1_parte",
       player_id: "Equipo",
       is_opponent_action: false,
-      sanction_type: "Fin 1ª Parte"
+      result: "Fin 1ª Parte",
+      sanction_type: null
     }, 1800);
 
     await closePossession(1800, "Fin 1ª Parte", secondHalfStartingTeam);
@@ -345,10 +795,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     setSelectedTeamAction(null);
 
     await sendMatchEvent({
-      event_type: "sanction",
+      event_type: "period_change",
+      action_key: "fin_2_parte",
       player_id: "Equipo",
       is_opponent_action: false,
-      sanction_type: "Fin 2ª Parte"
+      result: "Fin 2ª Parte",
+      sanction_type: null
     }, 3600);
 
     await closePossession(3600, "Fin 2ª Parte");
@@ -425,18 +877,25 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
   };
 
   // Obtener sanciones activas de 2 minutos
-  const getActiveSuspensions = () => {
+  const getActiveSuspensions = (atTime = time) => {
     if (!currentMatch?.events) return { home: [], away: [] };
     const home = [];
     const away = [];
+    const targetTime = atTime !== undefined && atTime !== null ? Number(atTime) : time;
+
     currentMatch.events.forEach((ev) => {
-      if (ev.event_type === "sanction" && ev.sanction_type === "2 Minutos") {
-        const start = ev.match_time_seconds;
+      const isSanction = ev.event_type === "sanction";
+      const sType = String(ev.sanction_type || "").toLowerCase();
+      const is2Min = sType.includes("2 min") || sType.includes("exclusion") || sType.includes("2min") || sType.includes("dos minutos");
+
+      if (isSanction && is2Min) {
+        const start = Number(ev.match_time_seconds) || 0;
         const end = start + 120;
-        if (time >= start && time < end) {
-          const remaining = end - time;
-          const player_id = ev.player_id || "Jugador";
-          if (ev.is_opponent_action) {
+        if (targetTime >= start && targetTime < end) {
+          const remaining = end - targetTime;
+          const player_id = ev.player_id || ev.player_number || "Jugador";
+          const isAway = ev.team === "VISITANTE" || ev.is_opponent_action === true || ev.is_opponent_action === "true";
+          if (isAway) {
             away.push({ player_id, remaining, end });
           } else {
             home.push({ player_id, remaining, end });
@@ -447,14 +906,14 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     return { home, away };
   };
 
-  // Calcular automáticamente la situación numérica actual
-  const getAutoNumericalSituation = () => {
-    if (!activePossession) return "Igualdad";
-    const activeSanc = getActiveSuspensions();
+  // Calcular automáticamente la situación numérica actual según exclusiones activas
+  const getAutoNumericalSituation = (team = activePossession?.team || "LOCAL", atTime = time) => {
+    const activeSanc = getActiveSuspensions(atTime);
     const homeCount = activeSanc.home.length;
     const awayCount = activeSanc.away.length;
 
-    if (activePossession.team === "LOCAL") {
+    const isHome = team === "LOCAL";
+    if (isHome) {
       if (homeCount > awayCount) return "Inferioridad";
       if (homeCount < awayCount) return "Superioridad";
       return "Igualdad";
@@ -601,70 +1060,27 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
     .slice(-5)
     .reverse();
 
-  // ─── SVG ICON COMPONENTS ───────────────────────────────────
-  const IconArrowLeft = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16, display: "inline-block", verticalAlign: "middle" }}><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+  // ─── COLOR CARD HELPER COMPONENTS ────────────────────────────
+  const IconCardYellow = ({ size = 28 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#eab308" stroke="#ca8a04" strokeWidth="1.5" style={{ borderRadius: 3, display: "inline-block", verticalAlign: "middle" }}>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+    </svg>
   );
-  const IconUndo = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16, display: "inline-block", verticalAlign: "middle" }}><path d="M3 7v6h6" /><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" /></svg>
+
+  const IconCardRed = ({ size = 28 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#ef4444" stroke="#dc2626" strokeWidth="1.5" style={{ borderRadius: 3, display: "inline-block", verticalAlign: "middle" }}>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+    </svg>
   );
-  const IconHandball = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 22" /><path d="M12 2a14.5 14.5 0 0 1 0 22" /><path d="M2 12h20" /></svg>
+
+  const IconCardBlue = ({ size = 28 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#3b82f6" stroke="#2563eb" strokeWidth="1.5" style={{ borderRadius: 3, display: "inline-block", verticalAlign: "middle" }}>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+    </svg>
   );
-  const IconEdit = () => (
-    <svg className="icon icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
-  );
-  const IconPlay = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
-  );
-  const IconPause = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
-  );
-  const IconMegaphone = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="m3 11 18-5v12L3 13v-2z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
-  );
-  const IconUsers = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-  );
-  const IconShield = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z" /></svg>
-  );
-  const IconTarget = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
-  );
-  const IconAlertTriangle = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
-  );
-  const IconClock = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-  );
-  const IconBarChart = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16, display: "inline-block", verticalAlign: "middle" }}><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
-  );
-  const IconFlag = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" x2="4" y1="22" y2="15" /></svg>
-  );
-  const IconGlove = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="M12 22c-4.97 0-9-2.24-9-5v-7a2 2 0 0 1 4 0v1a2 2 0 0 1 4 0V9a2 2 0 0 1 4 0v2a2 2 0 0 1 4 0v5c0 2.76-4.03 5-9 5z" /></svg>
-  );
-  const IconX = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-  );
-  const IconRefresh = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16, display: "inline-block", verticalAlign: "middle" }}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
-  );
-  const IconHistory = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
-  );
-  const IconBriefcase = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /><rect width="20" height="14" x="2" y="6" rx="2" /></svg>
-  );
-  const IconCheck = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><polyline points="20 6 9 17 4 12" /></svg>
-  );
-  const IconGoalNet = () => (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, display: "inline-block", verticalAlign: "middle" }}><rect x="2" y="6" width="20" height="14" rx="2" /><path d="M12 6v14" /><path d="M2 13h20" /><path d="M7 6v14" /><path d="M17 6v14" /></svg>
-  );
+  const IconGlove = IconSaveGlove;
+  const IconX = IconMiss;
+  const IconRefresh = IconBadPass;
 
   // Render de selectores de fase y situación numérica
   const renderModifiers = () => (
@@ -731,1288 +1147,1502 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live" }
       </div>
     </div>
   );
+  // Rosters con gestión de titulares, porteros y suplentes
+  const [homeRoster, setHomeRoster] = useState([]);
+  const [awayRoster, setAwayRoster] = useState([]);
+
+  useEffect(() => {
+    const rawHome = (currentMatch.home_players && currentMatch.home_players.length > 0)
+      ? currentMatch.home_players
+      : [
+        { number: 12, name: "A. Gómez", position: "PORTERO" },
+        { number: 4, name: "M. Ruiz", position: "LATERAL DERECHO" },
+        { number: 7, name: "J. López", position: "LATERAL IZQUIERDO" },
+        { number: 15, name: "M. Pérez", position: "CENTRAL" },
+        { number: 9, name: "P. Martín", position: "LATERAL DERECHO" },
+        { number: 23, name: "D. Silva", position: "LÍNEA" },
+        { number: 8, name: "C. Nilsen", position: "PIVOTE" },
+        { number: 1, name: "R. Torres", position: "PORTERO" },
+        { number: 6, name: "E. Jordán", position: "LATERAL DERECHO" },
+        { number: 10, name: "S. Vega", position: "CENTRAL" },
+        { number: 11, name: "L. Romero", position: "LATERAL IZQUIERDO" },
+        { number: 14, name: "I. Fernández", position: "PIVOTE" },
+        { number: 19, name: "H. Santos", position: "LÍNEA" },
+        { number: 22, name: "G. Díaz", position: "LÍNEA" }
+      ];
+
+    setHomeRoster(rawHome.map((p, idx) => ({ ...p, is_starter: p.is_starter ?? (idx < 7) })));
+
+    const rawAway = (currentMatch.away_players && currentMatch.away_players.length > 0)
+      ? currentMatch.away_players
+      : [
+        { number: 16, name: "J. García", position: "PORTERO" },
+        { number: 2, name: "A. Fernández", position: "LATERAL DERECHO" },
+        { number: 7, name: "L. Martínez", position: "LATERAL IZQUIERDO" },
+        { number: 10, name: "S. Rodríguez", position: "CENTRAL" },
+        { number: 11, name: "D. González", position: "LATERAL DERECHO" },
+        { number: 3, name: "P. Sánchez", position: "LÍNEA" },
+        { number: 5, name: "M. Alonso", position: "PIVOTE" },
+        { number: 1, name: "B. López", position: "PORTERO" },
+        { number: 6, name: "R. Ruiz", position: "LATERAL DERECHO" },
+        { number: 8, name: "C. Hernández", position: "CENTRAL" },
+        { number: 13, name: "V. Romero", position: "LATERAL IZQUIERDO" },
+        { number: 14, name: "F. Navarro", position: "PIVOTE" },
+        { number: 17, name: "J. Morales", position: "LÍNEA" },
+        { number: 18, name: "Á. Vega", position: "LÍNEA" }
+      ];
+
+    setAwayRoster(rawAway.map((p, idx) => ({ ...p, is_starter: p.is_starter ?? (idx < 7) })));
+  }, [currentMatch.id, currentMatch.home_players, currentMatch.away_players]);
+
+  // Filtrado estricto por campo
+  // 1. PORTEROS: Solo jugadores con posición PORTERO/POR o is_goalkeeper
+  const isGk = (p) => p.position === "PORTERO" || p.position === "POR" || p.is_goalkeeper;
+
+  const homeGoalkeepers = homeRoster.filter(p => isGk(p) && p.is_starter);
+  const homeActiveGk = homeGoalkeepers.length > 0
+    ? homeGoalkeepers.slice(0, 1)
+    : (homeRoster.filter(isGk).length > 0 ? homeRoster.filter(isGk).slice(0, 1) : homeRoster.slice(0, 1));
+  const homeFieldStarters = homeRoster.filter(p => p.is_starter && !homeActiveGk.some(gk => gk.number === p.number)).slice(0, 6);
+  const homeBenchPlayers = homeRoster.filter(p => !homeActiveGk.some(gk => gk.number === p.number) && !homeFieldStarters.some(s => s.number === p.number));
+
+  const awayGoalkeepers = awayRoster.filter(p => isGk(p) && p.is_starter);
+  const awayActiveGk = awayGoalkeepers.length > 0
+    ? awayGoalkeepers.slice(0, 1)
+    : (awayRoster.filter(isGk).length > 0 ? awayRoster.filter(isGk).slice(0, 1) : awayRoster.slice(0, 1));
+  const awayFieldStarters = awayRoster.filter(p => p.is_starter && !awayActiveGk.some(gk => gk.number === p.number)).slice(0, 6);
+  const awayBenchPlayers = awayRoster.filter(p => !awayActiveGk.some(gk => gk.number === p.number) && !awayFieldStarters.some(s => s.number === p.number));
+
+  // Cálculo en tiempo real de exclusiones activas (2 minutos = 120 segundos)
+  const activeExclusions = useMemo(() => {
+    if (!currentMatch?.events || currentMatch.events.length === 0) return {};
+
+    const exclusions = {};
+    const EXCLUSION_DURATION = 120; // 120 segundos
+
+    currentMatch.events.forEach((ev) => {
+      const isSanction = ev.event_type === "sanction";
+      const sType = (ev.sanction_type || "").toLowerCase();
+      const is2Min = sType.includes("2 min") || sType.includes("exclusion") || sType.includes("2min") || sType.includes("dos minutos");
+
+      if (isSanction && is2Min) {
+        const team = ev.team || (ev.is_opponent_action ? "VISITANTE" : "LOCAL");
+        const pNum = String(ev.player_id ?? ev.player_number ?? "");
+        if (!pNum) return;
+
+        const startTime = Number(ev.match_time_seconds) || 0;
+        const endTime = startTime + EXCLUSION_DURATION;
+
+        // Comprobar si en el segundo actual 'time' la sanción sigue activa
+        if (time >= startTime && time < endTime) {
+          const remainingSeconds = endTime - time;
+          const key = `${team}_${pNum}`;
+
+          if (!exclusions[key] || remainingSeconds > exclusions[key].remainingSeconds) {
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            exclusions[key] = {
+              startTime,
+              endTime,
+              remainingSeconds,
+              formattedCountdown: `${mins}:${String(secs).padStart(2, "0")}`
+            };
+          }
+        }
+      }
+    });
+
+    return exclusions;
+  }, [currentMatch?.events, time]);
+
+  // Si el jugador actualmente seleccionado resulta excluido, deseleccionarlo
+  useEffect(() => {
+    if (selectedPlayer) {
+      const key = `${selectedPlayer.team}_${selectedPlayer.number}`;
+      if (activeExclusions[key]) {
+        setSelectedPlayer(null);
+      }
+    }
+  }, [activeExclusions, selectedPlayer]);
+
+  // Manejador de clic en jugador de la alineación / plantilla
+  const handleRosterPlayerClick = (player, team, category) => {
+    // Si el jugador está excluido por 2 minutos, la casilla está bloqueada
+    const exclusionKey = `${team}_${player.number}`;
+    if (activeExclusions[exclusionKey]) {
+      return;
+    }
+
+    // Si un suplente del MISMO equipo está seleccionado y hacemos clic en un titular (o portero titular) -> CAMBIO DE JUGADOR
+    if (
+      selectedPlayer &&
+      selectedPlayer.team === team &&
+      selectedPlayer.category === "bench" &&
+      (category === "starter" || category === "gk")
+    ) {
+      // REGLA ESTRICTA PORTERO: En el campo de PORTERO solo puede colocarse un portero
+      if (category === "gk" && !isGk(selectedPlayer)) {
+        alert("En la sección de PORTERO solo se puede colocar a un portero suplente. Selecciona un portero.");
+        return;
+      }
+
+      const setRoster = team === "LOCAL" ? setHomeRoster : setAwayRoster;
+      setRoster(prevRoster => {
+        return prevRoster.map(p => {
+          if (p.number === selectedPlayer.number) {
+            return { ...p, is_starter: true };
+          }
+          if (p.number === player.number) {
+            return { ...p, is_starter: false };
+          }
+          return p;
+        });
+      });
+
+      // Limpiar selección tras realizar el cambio
+      setSelectedPlayer(null);
+      return;
+    }
+
+    // Selección normal diferenciando equipo y categoría
+    setSelectedPlayer({
+      ...player,
+      team,
+      category,
+      isBench: category === "bench"
+    });
+  };
+
+  const timelineEvents = useMemo(() => {
+    if (!currentMatch?.events || currentMatch.events.length === 0) return [];
+
+    let homeGoals = 0;
+    let awayGoals = 0;
+
+    // 1. Recorrer cronológicamente para calcular el marcador acumulado exacto tras cada acción
+    const eventsWithScore = currentMatch.events.map((e) => {
+      const category = getEventCategory(e);
+      const isGoal = category === "goles";
+      if (isGoal) {
+        const isHome = e.team === "LOCAL" || e.is_opponent_action === false || e.is_opponent_action === "false";
+        if (isHome) {
+          homeGoals += 1;
+        } else {
+          awayGoals += 1;
+        }
+      }
+
+      // Etiqueta legible de la acción
+      let typeLabel = "ACCIÓN";
+      let typeClass = "perdida"; // "gol" | "parada" | "perdida"
+
+      if (category === "goles") {
+        typeLabel = e.shot_zone === "7 Metros" ? "GOL 7M" : "GOL";
+        typeClass = "gol";
+      } else if (category === "paradas") {
+        typeLabel = e.shot_zone === "7 Metros" ? "PARADA 7M" : "PARADA";
+        typeClass = "parada";
+      } else if (category === "fallo_lanzamiento") {
+        typeLabel = (e.result || "FALLO").toUpperCase();
+        typeClass = "perdida";
+      } else if (category === "perdidas") {
+        typeLabel = `PÉRDIDA ${e.turnover_type ? `(${e.turnover_type.toUpperCase()})` : ""}`.trim();
+        typeClass = "perdida";
+      } else if (category === "tiempo_muerto") {
+        typeLabel = "T. MUERTO";
+        typeClass = "parada";
+      } else if (category === "golpe_franco") {
+        typeLabel = "G. FRANCO";
+        typeClass = "parada";
+      } else if (category === "sanciones") {
+        typeLabel = (e.sanction_type || "SANCIÓN").toUpperCase();
+        typeClass = "perdida";
+      } else if (category === "periodo") {
+        typeLabel = (e.result || e.sanction_type || "FIN PERIODO").toUpperCase();
+        typeClass = "parada";
+      }
+
+      const playerNum = e.player_number || e.shooter_number || e.player_id || "";
+      const playerName = e.player_name || e.shooter_name || "";
+      const playerStr = playerNum ? `#${playerNum} ${playerName}`.trim() : (playerName || e.team || "");
+
+      const fromZoneRaw = e.shot_zone || e.court_zone || e.shot_position || "";
+      const toZoneRaw = e.goal_zone || e.target_zone || "";
+      const formattedFrom = formatCourtZoneName(fromZoneRaw);
+      const formattedTo = formatGoalZoneName(toZoneRaw);
+      let trajectory = "";
+
+      if (category === "goles" || category === "paradas" || category === "fallo_lanzamiento") {
+        if (formattedFrom && formattedTo) {
+          trajectory = `${formattedFrom} -> ${formattedTo}`;
+        } else if (formattedFrom) {
+          trajectory = formattedFrom;
+        } else if (formattedTo) {
+          trajectory = formattedTo;
+        }
+      }
+
+      const isHome = e.team === "LOCAL" || e.is_opponent_action === false || e.is_opponent_action === "false";
+      const teamName = isHome ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+
+      return {
+        category,
+        rawType: e.event_type,
+        rawResult: e.result,
+        time: formatTime(e.match_time_seconds || 0),
+        typeLabel,
+        type: typeClass,
+        description: playerStr,
+        teamName,
+        isHome,
+        fromZone: formattedFrom,
+        toZone: formattedTo,
+        trajectory,
+        score: `${homeGoals} - ${awayGoals}`
+      };
+    });
+
+    // 2. Aplicar filtro seleccionado de las 7 categorías oficiales
+    let filtered = eventsWithScore;
+    if (historyFilter && !["TODOS", "todos", "TODO", "todo"].includes(historyFilter)) {
+      filtered = eventsWithScore.filter(e => e.category === historyFilter);
+    }
+
+    // 3. Devolver los eventos invertidos (más reciente primero en la línea de tiempo)
+    return filtered.slice(-30).reverse();
+  }, [currentMatch?.events, historyFilter]);
+
+  const handleQuickAction = async (actionKey) => {
+    // 1. TIEMPO MUERTO: Se asocia de manera automática al equipo que tiene la posesión
+    if (actionKey === "tiempo_muerto") {
+      const posTeam = activePossession.team || "LOCAL";
+      setIsRunning(false); // Pausa el tiempo automáticamente
+      await sendMatchEvent({
+        event_type: "sanction",
+        sanction_type: "Tiempo Muerto",
+        player_id: "Equipo",
+        team: posTeam,
+        is_opponent_action: posTeam !== "LOCAL"
+      }, time);
+      return;
+    }
+
+    // Comprobación previa: Seleccionar jugador de la alineación
+    if (!selectedPlayer) {
+      alert("Por favor, selecciona primero a un jugador de la alineación/plantilla para registrar la acción.");
+      return;
+    }
+
+    // Suplentes: Solo se pueden aplicar sanciones
+    if (selectedPlayer.isBench) {
+      const isSanction = ["exclusion", "amarilla", "roja", "azul"].includes(actionKey);
+      if (!isSanction) {
+        alert("Los suplentes solo pueden recibir Sanciones (2 min, Amarilla, Roja, Azul). Para meter a este jugador al campo, haz clic en un titular de la alineación.");
+        return;
+      }
+    }
+
+    // 2. SANCIONES (2 Min, Amarilla, Roja, Azul) -> Registro directo asociando al jugador
+    if (["exclusion", "amarilla", "roja", "azul"].includes(actionKey)) {
+      const sanctionNames = {
+        exclusion: "2 Minutos",
+        amarilla: "Tarjeta Amarilla",
+        roja: "Tarjeta Roja",
+        azul: "Tarjeta Azul"
+      };
+      await sendMatchEvent({
+        event_type: "sanction",
+        sanction_type: sanctionNames[actionKey],
+        player_id: selectedPlayer.number,
+        player_number: selectedPlayer.number,
+        player_name: selectedPlayer.name,
+        team: selectedPlayer.team,
+        is_opponent_action: selectedPlayer.team !== "LOCAL"
+      }, time);
+      setSelectedPlayer(null);
+      return;
+    }
+
+    // 2b. GOLPE FRANCO (Solo activado para jugadores del equipo DEFENSOR — sin posesión)
+    if (actionKey === "golpe_franco") {
+      const isDefendingPlayer = selectedPlayer && selectedPlayer.team !== activePossession?.team;
+      if (!isDefendingPlayer || selectedPlayer.isBench) {
+        alert("El Golpe Franco solo se puede atribuir a un jugador del equipo que DEFIENDE (sin posesión).");
+        return;
+      }
+
+      await sendMatchEvent({
+        event_type: "free_throw",
+        result: "Golpe Franco",
+        player_id: selectedPlayer.number,
+        player_number: selectedPlayer.number,
+        player_name: selectedPlayer.name,
+        team: selectedPlayer.team,
+        is_opponent_action: selectedPlayer.team !== "LOCAL",
+        match_time_seconds: time
+      }, time);
+
+      setSelectedPlayer(null);
+      return;
+    }
+
+    // 3. REGISTRO CON CLIC DIRECTO EN DIBUJOS DE PISTA Y PORTERÍA (SIN POPUPS)
+    const actionInstantTime = time; // Captura el tiempo EXACTO en el momento que se pulsa el botón de acción
+
+    if (actionKey === "gol_7m" || actionKey === "parada_7m") {
+      setActiveActionFlow({
+        actionKey,
+        actionTime: actionInstantTime,
+        player: selectedPlayer,
+        team: selectedPlayer.team,
+        step: "AWAITING_GOAL_CLICK",
+        shotZone: "7 Metros",
+        isPenetration: false
+      });
+    } else {
+      const turnoverNames = {
+        perdida_pase: "Pase",
+        perdida_dobles: "Dobles",
+        perdida_pasos: "Pasos",
+        perdida_pasivo: "Pasivo"
+      };
+      setActiveActionFlow({
+        actionKey,
+        actionTime: actionInstantTime,
+        turnoverType: turnoverNames[actionKey] || null,
+        player: selectedPlayer,
+        team: selectedPlayer.team,
+        step: "AWAITING_COURT_CLICK",
+        shotZone: null,
+        isPenetration: false
+      });
+    }
+  };
+
+  const executeDirectAction = async (flow) => {
+    const eventTime = flow.actionTime !== undefined ? flow.actionTime : time;
+    const isAttackerHome = flow.team === "LOCAL";
+    const defendingGoalkeeper = isAttackerHome ? awayActiveGk[0] : homeActiveGk[0];
+
+    let eventType = "shot";
+    let shotResult = "Gol";
+
+    if (flow.actionKey.startsWith("perdida")) {
+      eventType = "turnover";
+      shotResult = "Pérdida";
+    } else if (flow.actionKey === "gol" || flow.actionKey === "gol_7m") {
+      shotResult = "Gol";
+    } else if (flow.actionKey === "parada" || flow.actionKey === "parada_7m") {
+      shotResult = "Parada";
+    } else if (flow.actionKey === "poste") {
+      shotResult = "Poste";
+    } else if (flow.actionKey === "fuera") {
+      shotResult = "Fuera";
+    }
+
+    const zoneStr = (flow.shotZone || "").toLowerCase();
+    let derivedShotType = "exterior";
+
+    if (flow.actionKey === "gol_7m" || flow.actionKey === "parada_7m") {
+      derivedShotType = "7m";
+    } else if (flow.isFirstWave || zoneStr.includes("contraataque")) {
+      derivedShotType = "contraataque";
+    } else if (flow.isPenetration || zoneStr.includes("penetración") || zoneStr.includes("penetracion")) {
+      derivedShotType = "penetración";
+    } else if (zoneStr.includes("extremo")) {
+      derivedShotType = "extremo";
+    } else if (zoneStr.includes("pivote")) {
+      derivedShotType = "pivote";
+    } else if (zoneStr.includes("9m") || zoneStr.includes("exterior")) {
+      derivedShotType = "exterior";
+    }
+
+    let derivedPlayPhase = "Posicional";
+    if (flow.isFirstWave || derivedShotType === "contraataque") {
+      derivedPlayPhase = "1ª Oleada";
+    } else if (derivedShotType === "7m") {
+      derivedPlayPhase = "7m";
+    }
+
+    const currentSituation = getAutoNumericalSituation(flow.team, eventTime);
+
+    const xgValue = calculateShotXG({
+      event_type: eventType,
+      shot_type: derivedShotType,
+      play_phase: derivedPlayPhase,
+      numerical_situation: currentSituation,
+      target_zone: flow.goalZone || null
+    });
+
+    const xsavesValue = calculateShotXSaves({
+      event_type: eventType,
+      shot_type: derivedShotType,
+      play_phase: derivedPlayPhase,
+      numerical_situation: currentSituation,
+      target_zone: flow.goalZone || null
+    });
+
+    const is7m = derivedShotType === "7m" || (flow.shotZone && flow.shotZone.includes("7"));
+    const finalCourtCoord = flow.courtCoord || (is7m ? { x: 50, y: 55 } : courtCoord);
+    const finalGoalCoord = flow.goalCoord || (flow.goalZone ? goalCoord : null);
+
+    const eventPayload = {
+      event_type: eventType,
+      result: shotResult,
+      shot_type: derivedShotType,
+      play_phase: derivedPlayPhase,
+      numerical_situation: currentSituation,
+      turnover_type: flow.turnoverType || null,
+      player_id: flow.player.number,
+      player_number: flow.player.number,
+      player_name: flow.player.name,
+      shooter_number: flow.player.number,
+      shooter_name: flow.player.name,
+      team: flow.team,
+      is_opponent_action: !isAttackerHome,
+      shot_zone: flow.shotZone || "Centro 9M",
+      court_zone: flow.shotZone || "Centro 9M",
+      shot_position: flow.shotZone || "Centro 9M",
+      court_coord: finalCourtCoord,
+      court_x: finalCourtCoord?.x ?? null,
+      court_y: finalCourtCoord?.y ?? null,
+      is_penetration: flow.isPenetration ?? false,
+      expected_goals: xgValue,
+      xg: xgValue,
+      expected_saves: xsavesValue,
+      xsaves: xsavesValue,
+      goal_zone: flow.goalZone || null,
+      target_zone: flow.goalZone || null,
+      goal_coord: finalGoalCoord,
+      goal_x: finalGoalCoord?.x ?? null,
+      goal_y: finalGoalCoord?.y ?? null,
+      goalkeeper_id: defendingGoalkeeper?.number || null,
+      goalkeeper_number: defendingGoalkeeper?.number || null,
+      goalkeeper_name: defendingGoalkeeper?.name || null,
+      rebound: flow.reboundResult || null,
+      match_time_seconds: eventTime
+    };
+
+    // 1. Registrar evento en backend / contexto (sendMatchEvent se encarga de incrementar el marcador 1 sola vez)
+    await sendMatchEvent(eventPayload, eventTime);
+
+    // 2. DETERMINACIÓN Y CAMBIO AUTOMÁTICO DE POSESIÓN SEGÚN REGLAMENTO
+    let shouldChangePossession = false;
+    let endReason = "Tiro";
+
+    if (shotResult === "Gol") {
+      shouldChangePossession = true;
+      endReason = "Gol";
+    } else if (shotResult === "Fuera") {
+      shouldChangePossession = true;
+      endReason = "Fuera";
+    } else if (eventType === "turnover") {
+      shouldChangePossession = true;
+      endReason = `Pérdida ${flow.turnoverType || ""}`.trim();
+    } else if (shotResult === "Parada" || shotResult === "Poste") {
+      if (!flow.reboundResult || flow.reboundResult === "defense") {
+        shouldChangePossession = true;
+        endReason = shotResult === "Parada" ? "Parada Portero" : "Poste";
+      }
+    }
+
+    if (shouldChangePossession && closePossession) {
+      const nextPossessionTeam = isAttackerHome ? "VISITANTE" : "LOCAL";
+      await closePossession(eventTime, endReason, nextPossessionTeam);
+    }
+
+    // Resetear el flujo activo y la selección de jugador
+    setActiveActionFlow(null);
+    setSelectedPlayer(null);
+  };
 
   return (
-    <div className="match-analysis-page">
-      {/* HEADER DE MESA Y ESTADÍSTICAS */}
-      <header className="analysis-header-bar">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Volver a mis partidos">
-            <IconArrowLeft /> Volver
-          </button>
-          <img src={isotipo} alt="HandStats" style={{ height: 28, width: "auto", objectFit: "contain" }} />
-        </div>
-
-        <div className="hs-mode-switcher" style={{ display: "flex", gap: 4, background: "var(--bg-inset)", padding: 4, borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
-          <button
-            type="button"
-            className={`btn btn-sm ${mainViewMode === "live" ? "btn-primary" : "btn-ghost"}`}
-            onClick={() => setMainViewMode("live")}
-          >
-            <IconHandball /> Mesa de Control (Directo)
-          </button>
-          <button
-            type="button"
-            className={`btn btn-sm ${mainViewMode === "stats" ? "btn-primary" : "btn-ghost"}`}
-            onClick={() => setMainViewMode("stats")}
-          >
-            <IconBarChart /> Centro de Inteligencia (Estadísticas)
+    <div className={`match-dashboard-wrapper ${mainViewMode === "stats" ? "stats-mode" : "live-mode"}`}>
+      {/* HEADER PRINCIPAL / MARCADOR DEL PARTIDO */}
+      <header className="mp-scoreboard-bar">
+        <div className="mp-top-left-info">
+          <button className="mp-icon-btn" aria-label="Volver" title="Volver" onClick={onBack}>
+            <IconArrowLeft size={18} />
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={handleUndo}
-            disabled={!currentMatch.events || currentMatch.events.length === 0}
-            style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 12px" }}
-            aria-label="Deshacer última acción"
+        {/* BANDEROLA MARCADOR CENTRAL (ESTRUCTURA: EQUIPO LOCAL - MARCADOR AGRUPADO - EQUIPO VISITANTE) */}
+        <div className="mp-scoreboard-banner">
+
+          {/* 1. EQUIPO LOCAL */}
+          <div
+            className={`mp-team-banner home ${activePossession.team === "LOCAL" ? "has-possession" : ""}`}
+            onClick={() => setActivePossession && setActivePossession(prev => ({ ...prev, team: "LOCAL" }))}
+            title="Haz clic para asignar la posesión a Mi Equipo"
           >
-            <IconUndo /> Deshacer
-          </button>
-          <div className="possession-indicator-top">
-            Ataque Nº: <span className="badge-possession-number">{activePossession.possession_number}</span>
+            <div className="mp-team-logo-wrap">
+              {currentMatch.home_logo ? (
+                <img src={currentMatch.home_logo} alt={currentMatch.home_team} />
+              ) : (
+                <IconShield size={18} />
+              )}
+            </div>
+            <div className="mp-team-info-wrap">
+              <span className="mp-team-name">{currentMatch.home_team || "MI EQUIPO"}</span>
+              <div className={`mp-possession-indicator home ${activePossession.team === "LOCAL" ? "active" : ""}`}>
+                <IconSoccerBall className="mp-pos-icon" size={12} />
+                <span className="mp-pos-text">POSESIÓN</span>
+              </div>
+            </div>
           </div>
+
+          {/* 2. MARCADOR AGRUPADO (GOLES LOCAL + CRONÓMETRO/CONTROLES + GOLES VISITANTE) */}
+          <div className="mp-scoreboard-grouped">
+            <div className="mp-score-box home">
+              <span className="mp-score-digit">{calculatedHomeGoals}</span>
+            </div>
+
+            <div className="mp-scoreboard-center-content">
+              <span className="mp-center-period">{currentPeriod}</span>
+
+              <div className="mp-time-display-wrap">
+                <div className="mp-time-adjust-group left">
+                  <button
+                    type="button"
+                    className="mp-time-adjust-btn"
+                    onClick={() => adjustTime(-5)}
+                    title="Restar 5 segundos al marcador"
+                  >
+                    -5s
+                  </button>
+                  <button
+                    type="button"
+                    className="mp-time-adjust-btn"
+                    onClick={() => adjustTime(-1)}
+                    title="Restar 1 segundo al marcador"
+                  >
+                    -1s
+                  </button>
+                </div>
+
+                <span className="mp-center-time">{formatTime(time)}</span>
+
+                <div className="mp-time-adjust-group right">
+                  <button
+                    type="button"
+                    className="mp-time-adjust-btn"
+                    onClick={() => adjustTime(1)}
+                    title="Sumar 1 segundo al marcador"
+                  >
+                    +1s
+                  </button>
+                  <button
+                    type="button"
+                    className="mp-time-adjust-btn"
+                    onClick={() => adjustTime(5)}
+                    title="Sumar 5 segundos al marcador"
+                  >
+                    +5s
+                  </button>
+                </div>
+              </div>
+
+              <div className="mp-center-controls">
+                <button
+                  className={`mp-timer-toggle-btn ${isRunning ? "running" : "paused"}`}
+                  onClick={() => setIsRunning(!isRunning)}
+                  title={isRunning ? "Pausar cronómetro" : "Iniciar cronómetro"}
+                  aria-label={isRunning ? "Pausar" : "Iniciar"}
+                >
+                  {isRunning ? <IconPause size={16} /> : <IconPlay size={16} />}
+                </button>
+                <button
+                  className="mp-period-end-btn"
+                  onClick={handleEndPeriod}
+                  title="Finalizar periodo actual"
+                >
+                  <IconFlag size={12} />
+                  <span>FIN DE PERIODO</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="mp-score-box away">
+              <span className="mp-score-digit">{calculatedAwayGoals}</span>
+            </div>
+          </div>
+
+          {/* 3. EQUIPO VISITANTE */}
+          <div
+            className={`mp-team-banner away ${activePossession.team === "VISITANTE" ? "has-possession" : ""}`}
+            onClick={() => setActivePossession && setActivePossession(prev => ({ ...prev, team: "VISITANTE" }))}
+            title="Haz clic para asignar la posesión al Equipo Rival"
+          >
+            <div className="mp-team-info-wrap align-right">
+              <span className="mp-team-name">{currentMatch.away_team || "RIVAL TEAM"}</span>
+              <div className={`mp-possession-indicator away ${activePossession.team === "VISITANTE" ? "active" : ""}`}>
+                <span className="mp-pos-text">POSESIÓN</span>
+                <IconSoccerBall className="mp-pos-icon" size={12} />
+              </div>
+            </div>
+            <div className="mp-team-logo-wrap">
+              {currentMatch.away_logo ? (
+                <img src={currentMatch.away_logo} alt={currentMatch.away_team} />
+              ) : (
+                <IconShield size={18} />
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        {/* ACCIONES SUPERIORES DERECHA */}
+        <div className="mp-top-right-actions">
+          <button
+            className="mp-icon-btn theme-toggle-btn"
+            onClick={handleToggleTheme}
+            aria-label="Cambiar modo claro/oscuro"
+            title={currentTheme === "dark" ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
+          >
+            {currentTheme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
+          </button>
+          <button
+            className={`mp-view-toggle-icon-btn ${mainViewMode}`}
+            onClick={() => setMainViewMode(prev => prev === "live" ? "stats" : "live")}
+            aria-label={mainViewMode === "live" ? "Estadísticas" : "Mesa de Control"}
+            title={mainViewMode === "live" ? "Ir a Estadísticas del Partido" : "Volver a la Mesa de Control"}
+          >
+            {mainViewMode === "live" ? <IconBarChart size={22} /> : <IconBriefcase size={22} />}
+          </button>
         </div>
       </header>
 
       {mainViewMode === "stats" ? (
-        <MatchStatsModule
-          match={currentMatch}
-          activePossession={activePossession}
-          timeSeconds={time}
-        />
+        <div className="mp-stats-scroll-container">
+          <MatchStatsModule
+            match={currentMatch}
+            activePossession={activePossession}
+            timeSeconds={time}
+          />
+        </div>
       ) : (
-        <>
-
-      {/* MARCADOR Y CRONÓMETRO */}
-      <section className="scoreboard-container" aria-label="Marcador del partido">
-        {/* EQUIPO LOCAL */}
-        <div className={`scoreboard-team local-side ${activePossession.team === "LOCAL" ? "has-possession" : ""}`}>
-          <div className="team-name">{currentMatch.home_team}</div>
-          <div className="team-score" role="status" aria-live="polite">{currentMatch.goals_home}</div>
-          <div className="possession-dot">{activePossession.team === "LOCAL" ? "ATAQUE" : "DEFENSA"}</div>
-
-          {possessionStarted && (
-            <div className="team-scoreboard-actions">
-              {activePossession.team === "LOCAL" ? (
-                <div className="scoreboard-actions-grid attack-grid">
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-lanzamiento ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "lanzamiento" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("LOCAL", "lanzamiento")}
-                    aria-label="Registrar lanzamiento local"
-                  >
-                    <IconGoalNet /> Lanzamiento
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-perdida ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "perdida" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("LOCAL", "perdida")}
-                    aria-label="Registrar pérdida local"
-                  >
-                    <IconAlertTriangle /> Pérdida
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-sancion ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "sancion" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("LOCAL", "sancion")}
-                    aria-label="Registrar sanción local"
-                  >
-                    <IconShield /> Sanción
-                  </button>
-                  <button
-                    type="button"
-                    className="sb-action-btn btn-timeout"
-                    onClick={() => {
-                      handleAction("sanction", { sanction_type: "Tiempo Muerto Local" });
-                      setIsRunning(false);
-                    }}
-                    aria-label="Tiempo muerto local"
-                  >
-                    <IconClock /> T. Muerto
-                  </button>
-                </div>
-              ) : (
-                <div className="scoreboard-actions-grid defense-grid">
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-golpe-franco ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "free_throw" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("LOCAL", "free_throw")}
-                    aria-label="Registrar golpe franco cometido por local"
-                  >
-                    <IconHandball /> Golpe Franco
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-lanzamiento ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "penalty_7m" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("LOCAL", "penalty_7m")}
-                    aria-label="Registrar 7m cometido por local en defensa"
-                  >
-                    <IconTarget /> 7m Penalti
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-sancion ${selectedTeamAction?.team === "LOCAL" && selectedTeamAction?.action === "sancion" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("LOCAL", "sancion")}
-                    aria-label="Registrar sanción local en defensa"
-                  >
-                    <IconShield /> Sanción
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* MÓDULO CRONÓMETRO */}
-        <div className="scoreboard-timer-module" role="timer" aria-label="Cronómetro del partido">
-          {isEditingTime ? (
-            <div className="timer-edit-inputs" style={{ display: "flex", gap: 5, justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
-              <input
-                type="number"
-                min="0"
-                max="99"
-                value={inputMinutes}
-                onChange={(e) => setInputMinutes(e.target.value)}
-                className="input-field select-sm"
-                style={{ width: 60, textAlign: "center", fontSize: "1.2rem", padding: "4px" }}
-                placeholder="Min"
-                aria-label="Minutos"
-              />
-              <span style={{ fontSize: "1.2rem", color: "#9ca3af" }}>:</span>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={inputSeconds}
-                onChange={(e) => setInputSeconds(e.target.value)}
-                className="input-field select-sm"
-                style={{ width: 60, textAlign: "center", fontSize: "1.2rem", padding: "4px" }}
-                placeholder="Seg"
-                aria-label="Segundos"
-              />
-              <button className="btn btn-primary btn-sm" onClick={handleSaveTime} style={{ padding: "6px 10px", marginLeft: 5 }} aria-label="Confirmar tiempo">
-                <IconCheck />
-              </button>
-              <button className="btn btn-secondary btn-sm" onClick={() => setIsEditingTime(false)} style={{ padding: "6px 10px" }} aria-label="Cancelar edición">
-                <IconX />
-              </button>
-            </div>
-          ) : (
-            <div
-              className="timer-display"
-              onClick={handleStartEditTime}
-              style={{ cursor: "pointer" }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleStartEditTime(); }}
-              aria-label={`Tiempo: ${formatTime(time)}. Clic para editar.`}
-            >
-              {formatTime(time)} <IconEdit />
-            </div>
-          )}
-          {/* FILA 1: AJUSTES DE TIEMPO */}
-          <div className="timer-adjust-row" style={{ display: "flex", gap: "4px", justifyContent: "center", marginBottom: "8px" }}>
-            <button className="btn-time-adjust" onClick={() => adjustTime(-60)} aria-label="Restar 1 minuto">-1m</button>
-            <button className="btn-time-adjust" onClick={() => adjustTime(-10)} aria-label="Restar 10 segundos">-10s</button>
-            <button className="btn-time-adjust" onClick={() => adjustTime(10)} aria-label="Sumar 10 segundos">+10s</button>
-            <button className="btn-time-adjust" onClick={() => adjustTime(60)} aria-label="Sumar 1 minuto">+1m</button>
-          </div>
-
-          {/* FILA 2: CONTROLES PRINCIPALES (INICIAR/PAUSAR + FIN PERIODEO) */}
-          <div className="timer-main-controls-row" style={{ display: "flex", gap: "6px", justifyContent: "center", alignItems: "center" }}>
-            <button
-              type="button"
-              className={`btn-timer-play ${isRunning ? "running" : ""}`}
-              onClick={() => setIsRunning(!isRunning)}
-              style={{ flex: 1, padding: "8px 12px", fontSize: "0.8rem", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px" }}
-              aria-label={isRunning ? "Pausar cronómetro" : "Iniciar cronómetro"}
-            >
-              {isRunning ? <><IconPause /> Pausar</> : <><IconPlay /> Iniciar</>}
-            </button>
-
-            {possessionStarted && (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                style={{ flex: 1, fontSize: "0.75rem", padding: "8px 8px", height: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "4px", whiteSpace: "nowrap" }}
-                onClick={() => {
-                  if (time < 1800) {
-                    handleEndFirstHalf();
-                  } else if (time < 3600) {
-                    handleEndSecondHalf();
-                  } else {
-                    setActiveActionSubmenu("fin_periodo");
-                  }
-                }}
-                aria-label="Controles de fin de periodo"
-              >
-                <IconFlag /> Fin Periodo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* EQUIPO VISITANTE */}
-        <div className={`scoreboard-team away-side ${activePossession.team === "VISITANTE" ? "has-possession" : ""}`}>
-          <div className="team-name">{currentMatch.away_team}</div>
-          <div className="team-score" role="status" aria-live="polite">{currentMatch.goals_away}</div>
-          <div className="possession-dot">{activePossession.team === "VISITANTE" ? "ATAQUE" : "DEFENSA"}</div>
-
-          {possessionStarted && (
-            <div className="team-scoreboard-actions">
-              {activePossession.team === "VISITANTE" ? (
-                <div className="scoreboard-actions-grid attack-grid">
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-lanzamiento ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "lanzamiento" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("VISITANTE", "lanzamiento")}
-                    aria-label="Registrar lanzamiento visitante"
-                  >
-                    <IconGoalNet /> Lanzamiento
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-perdida ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "perdida" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("VISITANTE", "perdida")}
-                    aria-label="Registrar pérdida visitante"
-                  >
-                    <IconAlertTriangle /> Pérdida
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-sancion ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "sancion" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("VISITANTE", "sancion")}
-                    aria-label="Registrar sanción visitante"
-                  >
-                    <IconShield /> Sanción
-                  </button>
-                  <button
-                    type="button"
-                    className="sb-action-btn btn-timeout"
-                    onClick={() => {
-                      handleAction("sanction", { sanction_type: "Tiempo Muerto Visitante" });
-                      setIsRunning(false);
-                    }}
-                    aria-label="Tiempo muerto visitante"
-                  >
-                    <IconClock /> T. Muerto
-                  </button>
-                </div>
-              ) : (
-                <div className="scoreboard-actions-grid defense-grid">
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-golpe-franco ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "free_throw" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("VISITANTE", "free_throw")}
-                    aria-label="Registrar golpe franco cometido por visitante"
-                  >
-                    <IconHandball /> Golpe Franco
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-lanzamiento ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "penalty_7m" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("VISITANTE", "penalty_7m")}
-                    aria-label="Registrar 7m cometido por visitante en defensa"
-                  >
-                    <IconTarget /> 7m Penalti
-                  </button>
-                  <button
-                    type="button"
-                    className={`sb-action-btn btn-sancion ${selectedTeamAction?.team === "VISITANTE" && selectedTeamAction?.action === "sancion" ? "active" : ""}`}
-                    onClick={() => handleSelectTeamAction("VISITANTE", "sancion")}
-                    aria-label="Registrar sanción visitante en defensa"
-                  >
-                    <IconShield /> Sanción
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ESTADO INICIAL: SELECCIONAR QUIEN EMPIEZA */}
-      {!possessionStarted ? (
-        <section className="initial-possession-card" aria-label="Selección de posesión inicial">
-          <h3><IconMegaphone /> Posesión Inicial</h3>
-          <p>Para comenzar a cronometrar el partido, selecciona qué equipo inicia con el balón:</p>
-          <div className="possession-buttons">
-            <button className="btn btn-primary btn-lg" onClick={() => handleStartPossession("LOCAL")} aria-label={`Balón para ${currentMatch.home_team}`}>
-              Balón para {currentMatch.home_team} (Local)
-            </button>
-            <button className="btn btn-primary btn-lg" onClick={() => handleStartPossession("VISITANTE")} aria-label={`Balón para ${currentMatch.away_team}`}>
-              Balón para {currentMatch.away_team} (Visitante)
-            </button>
-          </div>
-        </section>
-      ) : (
-        /* PANEL PRINCIPAL DE ACCIONES */
-        <div className="analysis-panel-grid" style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "10px" }}>
-
-          {selectedTeamAction === null ? (
-            /* ESPACIO VACÍO / DE INSTRUCCIONES */
-            <div className="empty-workspace-card" style={{ textAlign: "center", padding: "40px", background: "var(--bg-surface)", borderRadius: "var(--radius)", border: "1px dashed var(--border-color)" }}>
-              <IconMegaphone style={{ fontSize: "2.5rem", color: "var(--text-muted)", marginBottom: "15px" }} />
-              <h3 style={{ color: "var(--text-color)", marginBottom: "8px" }}>Mesa de Control Balonmano</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", maxWidth: "450px", margin: "0 auto 20px auto" }}>
-                Selecciona una acción (Lanzamiento, Pérdida, Sanción o Golpe Franco) en el marcador del equipo correspondiente para comenzar a registrar datos en tiempo real.
-              </p>
-
-              <div className="manual-control-box" style={{ maxWidth: "300px", margin: "0 auto" }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary w-100 btn-change-possession"
-                  onClick={handleManualPossessionChange}
-                  aria-label="Cambiar posesión manualmente"
-                >
-                  <IconRefresh /> Cambiar Posesión Manualmente
-                </button>
+        /* VISTA PRINCIPAL 3 COLUMNAS */
+        <div className="mp-main-container">
+          {/* COLUMNA IZQUIERDA: MI EQUIPO (VERDE) */}
+          <aside className="mp-team-column home-column">
+            {/* SECCIÓN PORTERO */}
+            <div className="mp-roster-section gk-section">
+              <h4 className="mp-section-title">
+                <span>PORTERO</span>
+                <span className="mp-pos-badge gk">
+                  <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
+                  POR
+                </span>
+              </h4>
+              <div className="mp-player-list">
+                {homeActiveGk.map((player, pIdx) => {
+                  const excl = activeExclusions[`LOCAL_${player.number}`];
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`mp-player-row gk-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                      onClick={() => handleRosterPlayerClick(player, "LOCAL", "gk")}
+                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                    >
+                      <div className="mp-player-number green">#{player.number}</div>
+                      <span className="mp-player-name">{player.name}</span>
+                      <span className="mp-pos-pill gk">POR</span>
+                      {excl ? (
+                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                          {excl.formattedCountdown}
+                        </span>
+                      ) : (
+                        <span className="mp-status-dot" title="En Campo" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          ) : (
-            /* DETALLES DE ACCIÓN DE EQUIPO SELECCIONADA */
-            <div className="active-action-workspace" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
 
-              {/* COLUMNA IZQUIERDA: SELECCIÓN DE JUGADOR O MODIFICADOR SANCIONES */}
-              <section className="roster-selection-card" aria-label="Selección de jugador destinatario">
-                {selectedTeamAction.action === "sancion" ? (
-                  <>
-                    <h3><IconShield /> Tipo de Sanción Disciplinaria</h3>
-                    <div className="modifier-group" style={{ margin: "12px 0 20px 0" }}>
-                      <div className="modifier-buttons" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                        {[
-                          { id: "Tarjeta Amarilla", label: "Amarilla" },
-                          { id: "2 Minutos", label: "Exclusión (2m)" },
-                          { id: "Tarjeta Roja", label: "Roja" },
-                          { id: "Tarjeta Azul", label: "Azul" }
-                        ].map((sanc) => (
-                          <button
-                            key={sanc.id}
-                            type="button"
-                            className={`modifier-btn ${selectedSanctionType === sanc.id ? "active" : ""}`}
-                            onClick={() => setSelectedSanctionType(sanc.id)}
-                            aria-pressed={selectedSanctionType === sanc.id}
-                          >
-                            {sanc.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                ) : null}
-
-                <h3>
-                  <IconUsers /> Roster:{" "}
-                  {selectedTeamAction.action === "penalty_7m" ? (
-                    !pending7mDetails.defender
-                      ? `${selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team} (Defensa)`
-                      : `${selectedTeamAction.team === "LOCAL" ? currentMatch.away_team : currentMatch.home_team} (Ataque)`
-                  ) : selectedTeamAction.action === "falta_en_ataque" ? (
-                    !pendingFaltaAtaqueDetails.attacker
-                      ? `${selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team} (Ataque)`
-                      : `${selectedTeamAction.team === "LOCAL" ? currentMatch.away_team : currentMatch.home_team} (Defensa)`
-                  ) : (
-                    selectedTeamAction.team === "LOCAL" ? currentMatch.home_team : currentMatch.away_team
-                  )}
-                </h3>
-                <p className="roster-hint">
-                  {selectedTeamAction.action === "penalty_7m" ? (
-                    !pending7mDetails.defender
-                      ? "1º Selecciona el defensor que COMETIÓ / PROVOCÓ el 7m:"
-                      : "2º Selecciona el atacante que SUFRIÓ / RECIBIÓ el 7m:"
-                  ) : selectedTeamAction.action === "falta_en_ataque" ? (
-                    !pendingFaltaAtaqueDetails.attacker
-                      ? "1º Selecciona el atacante que COMETIÓ / PROVOCÓ la falta en ataque:"
-                      : "2º Selecciona el defensa A QUIEN SE LA PROVOCARON:"
-                  ) : (
-                    "Selecciona el jugador que realiza/recibe la acción:"
-                  )}
-                </p>
-
-                <div className="players-touch-grid" role="radiogroup" aria-label="Jugadores disponibles">
-                  {/* Botón de Equipo (General) - no disponible para Lanzamiento */}
-                  {selectedTeamAction.action !== "lanzamiento" && (
-                    <button
-                      className={`player-touch-btn team-option ${selectedPlayer === "team" ? "selected" : ""}`}
-                      onClick={() => {
-                        if (selectedTeamAction.action === "penalty_7m") {
-                          if (!pending7mDetails.defender) {
-                            setPending7mDetails({ defender: "team", attacker: null });
-                          } else {
-                            handleConfirm7mPenalty(pending7mDetails.defender, "team");
-                          }
-                        } else if (selectedTeamAction.action === "falta_en_ataque") {
-                          if (!pendingFaltaAtaqueDetails.attacker) {
-                            setPendingFaltaAtaqueDetails({ attacker: "team", defender: null });
-                          } else {
-                            handleConfirmFaltaAtaque(pendingFaltaAtaqueDetails.attacker, "team");
-                          }
-                        } else {
-                          setSelectedPlayer("team");
-                          if (selectedTeamAction.action === "sancion") {
-                            handleAction("sanction", {
-                              sanction_type: selectedSanctionType,
-                              player_id: "Equipo",
-                              is_opponent_action: selectedTeamAction.team === "VISITANTE"
-                            });
-                          } else if (selectedTeamAction.action === "free_throw") {
-                            const isOpp = selectedTeamAction.team === "VISITANTE";
-                            sendMatchEvent({
-                              event_type: "free_throw",
-                              player_id: "Equipo",
-                              is_opponent_action: isOpp
-                            }, time);
-                            setSelectedPlayer(null);
-                            setSelectedTeamAction(null);
-                          }
-                        }
-                      }}
-                      role="radio"
-                      aria-checked={selectedPlayer === "team"}
-                      aria-label="Equipo general"
+            {/* SECCIÓN ALINEACIÓN */}
+            <div className="mp-roster-section">
+              <h4 className="mp-section-title">ALINEACIÓN</h4>
+              <div className="mp-player-list">
+                {homeFieldStarters.map((player, pIdx) => {
+                  const excl = activeExclusions[`LOCAL_${player.number}`];
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                      onClick={() => handleRosterPlayerClick(player, "LOCAL", "starter")}
+                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
                     >
-                      <span className="btn-number"><IconShield /></span>
-                      <span className="btn-name">Equipo (General)</span>
-                    </button>
-                  )}
-
-                  {/* Listar jugadores del equipo correspondiente */}
-                  {(
-                    selectedTeamAction.action === "penalty_7m" ? (
-                      !pending7mDetails.defender
-                        ? (selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || [])
-                        : (selectedTeamAction.team === "LOCAL" ? currentMatch.away_players || [] : currentMatch.home_players || [])
-                    ) : selectedTeamAction.action === "falta_en_ataque" ? (
-                      !pendingFaltaAtaqueDetails.attacker
-                        ? (selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || [])
-                        : (selectedTeamAction.team === "LOCAL" ? currentMatch.away_players || [] : currentMatch.home_players || [])
-                    ) : (
-                      selectedTeamAction.team === "LOCAL" ? currentMatch.home_players || [] : currentMatch.away_players || []
-                    )
-                  ).map((player, idx) => {
-                    const isGk = isGoalkeeper(player);
-
-                    let isBtnDisabled = false;
-
-                    const isSelected = selectedPlayer?.number === player.number;
-
-                    return (
-                      <button
-                        key={idx}
-                        disabled={isBtnDisabled}
-                        className={`player-touch-btn ${isSelected ? "selected" : ""} ${isGk ? "goalkeeper-option" : ""} ${isBtnDisabled ? "btn-disabled" : ""}`}
-                        onClick={() => {
-                          if (selectedTeamAction.action === "penalty_7m") {
-                            if (!pending7mDetails.defender) {
-                              setPending7mDetails({ defender: player, attacker: null });
-                            } else {
-                              handleConfirm7mPenalty(pending7mDetails.defender, player);
-                            }
-                          } else if (selectedTeamAction.action === "falta_en_ataque") {
-                            if (!pendingFaltaAtaqueDetails.attacker) {
-                              setPendingFaltaAtaqueDetails({ attacker: player, defender: null });
-                            } else {
-                              handleConfirmFaltaAtaque(pendingFaltaAtaqueDetails.attacker, player);
-                            }
-                          } else {
-                            setSelectedPlayer(player);
-
-                            if (selectedTeamAction.action === "sancion") {
-                              handleAction("sanction", {
-                                sanction_type: selectedSanctionType,
-                                player_id: `${player.number} - ${player.name}`,
-                                is_opponent_action: selectedTeamAction.team === "VISITANTE"
-                              });
-                            } else if (selectedTeamAction.action === "free_throw") {
-                              const isOpp = selectedTeamAction.team === "VISITANTE";
-                              sendMatchEvent({
-                                event_type: "free_throw",
-                                player_id: `${player.number} - ${player.name}`,
-                                is_opponent_action: isOpp
-                              }, time);
-                              setSelectedPlayer(null);
-                              setSelectedTeamAction(null);
-                            }
-                          }
-                        }}
-                        style={{
-                          border: isGk ? "1px dashed var(--accent-success)" : undefined,
-                          opacity: isBtnDisabled ? 0.3 : 1
-                        }}
-                        role="radio"
-                        aria-checked={isSelected}
-                        aria-label={`${isGk ? "Portero" : "Jugador"} número ${player.number}, ${player.name}`}
-                      >
-                        <span className="btn-number">{`#${player.number}`}</span>
-                        <span className="btn-name">
-                          {isGk ? `[POR] ${player.name}` : player.name}
+                      <div className="mp-player-number green">#{player.number}</div>
+                      <span className="mp-player-name">{player.name}</span>
+                      {excl ? (
+                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                          {excl.formattedCountdown}
                         </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
+                      ) : (
+                        <span className="mp-status-dot" title="En Campo" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-              {/* COLUMNA DERECHA: SUBMENÚS DE ACCIONES */}
-              <section className="action-buttons-card" aria-label="Detalles de acción de juego">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-                  <h3 style={{ margin: 0 }}>
-                    {selectedTeamAction.action === "lanzamiento" ? (
-                      <><IconGoalNet /> Detalles del Lanzamiento</>
-                    ) : selectedTeamAction.action === "perdida" ? (
-                      <><IconAlertTriangle /> Detalles de la Pérdida</>
-                    ) : selectedTeamAction.action === "sancion" ? (
-                      <><IconShield /> Detalles de la Sanción</>
-                    ) : selectedTeamAction.action === "penalty_7m" ? (
-                      <><IconTarget /> 7m Cometido en Defensa</>
-                    ) : selectedTeamAction.action === "falta_en_ataque" ? (
-                      <><IconAlertTriangle /> Falta en Ataque</>
-                    ) : (
-                      <><IconHandball /> Detalles Golpe Franco</>
-                    )}
-                  </h3>
+            {/* SECCIÓN SUPLENTES */}
+            <div className="mp-roster-section bench-section">
+              <h4 className="mp-section-title">SUPLENTES</h4>
+              <div className="mp-player-list">
+                {homeBenchPlayers.map((player, pIdx) => {
+                  const excl = activeExclusions[`LOCAL_${player.number}`];
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                      onClick={() => handleRosterPlayerClick(player, "LOCAL", "bench")}
+                      title={excl ? `Jugador suplente excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                    >
+                      <div className="mp-player-number green">#{player.number}</div>
+                      <span className="mp-player-name">{player.name}</span>
+                      {(player.position === "PORTERO" || player.position === "POR") && (
+                        <span className="mp-pos-pill bench-gk">POR</span>
+                      )}
+                      {excl && (
+                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                          {excl.formattedCountdown}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
+
+          {/* COLUMNA CENTRAL: PITCH TÁCTICO + 16 ACCIONES (4X4) + HISTORIAL */}
+          <main className="mp-center-column">
+            {/* CARD TÁCTICA: MEDIA PISTA DETALLADA + PORTERÍA DETALLADA */}
+            <div className="mp-tactical-card">
+              {/* BARRA SUPERIOR DE GUÍA DE INTERACCIÓN */}
+              <div className="mp-selection-bar">
+                <div className={`mp-step-item ${selectedPlayer ? "active" : ""}`}>
+                  <span className="mp-step-label">1. JUGADOR</span>
+                  <span className="mp-step-val">{selectedPlayer ? `#${selectedPlayer.number} ${selectedPlayer.name}` : "Selecciona..."}</span>
+                </div>
+                <div className="mp-step-divider"><IconArrowRight size={12} /></div>
+                <div className={`mp-step-item ${activeActionFlow ? "active" : ""}`}>
+                  <span className="mp-step-label">2. ACCIÓN</span>
+                  <span className="mp-step-val">{activeActionFlow ? (activeActionFlow.actionKey || "").toUpperCase().replace("_", " ") : "Elige Acción..."}</span>
+                </div>
+                <div className="mp-step-divider"><IconArrowRight size={12} /></div>
+                <div className={`mp-step-item ${activeActionFlow?.step === "AWAITING_COURT_CLICK" ? "pulsing" : activeActionFlow?.shotZone ? "active" : ""}`}>
+                  <span className="mp-step-label">3. PISTA</span>
+                  <span className="mp-step-val">
+                    {activeActionFlow?.shotZone || (activeActionFlow?.step === "AWAITING_COURT_CLICK" ? (
+                      <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> HAZ CLIC EN PISTA</>
+                    ) : "...")}
+                  </span>
+                </div>
+                <div className="mp-step-divider"><IconArrowRight size={12} /></div>
+                <div className={`mp-step-item ${activeActionFlow?.step === "AWAITING_GOAL_CLICK" ? "pulsing" : activeActionFlow?.goalZone ? "active" : ""}`}>
+                  <span className="mp-step-label">4. PORTERÍA</span>
+                  <span className="mp-step-val">
+                    {activeActionFlow?.goalZone || (activeActionFlow?.step === "AWAITING_GOAL_CLICK" ? (
+                      <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> HAZ CLIC EN PORTERÍA</>
+                    ) : "...")}
+                  </span>
+                </div>
+
+                {(selectedPlayer || activeActionFlow) && (
                   <button
                     type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => {
-                      setSelectedPlayer(null);
-                      setSelectedTeamAction(null);
-                      setActiveActionSubmenu(null);
-                      setPending7mDetails({ defender: null, attacker: null });
-                      setPendingFaltaAtaqueDetails({ attacker: null, defender: null });
-                      resetShotWizard();
-                    }}
-                    aria-label="Cancelar acción"
+                    className="mp-cancel-flow-btn"
+                    onClick={handleCancelAction}
+                    title="Cancelar la acción en curso y reiniciar selección"
                   >
-                    <IconX /> Cancelar Acción
+                    <IconX size={12} style={{ marginRight: 2 }} /> Cancelar Acción
                   </button>
+                )}
+              </div>
+
+              {/* CONTENEDOR 2 COLUMNAS: MEDIA PISTA (IZQ) Y PORTERÍA (DER) */}
+              <div className="mp-court-goal-grid">
+                {/* 1. MEDIA PISTA DE BALONMANO DETALLADA (CLICK EN CUALQUIER PUNTO) */}
+                <div className="mp-half-court-wrapper">
+                  <div className="mp-card-subtitle" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>MEDIA PISTA DE BALONMANO</span>
+                    <button
+                      type="button"
+                      className={`mp-toggle-zones-btn ${showCourtZones ? "active" : ""}`}
+                      onClick={() => setShowCourtZones(!showCourtZones)}
+                      title={showCourtZones ? "Ocultar delimitación de zonas" : "Mostrar delimitación de zonas"}
+                    >
+                      {showCourtZones ? (
+                        <><IconEyeOff size={13} style={{ marginRight: 4 }} /> Ocultar Zonas</>
+                      ) : (
+                        <><IconEye size={13} style={{ marginRight: 4 }} /> Mostrar Zonas</>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="mp-half-court interactive" onClick={handleCourtClick} title="Haz clic en cualquier punto de la media pista">
+                    {/* SVG DE MEDIA PISTA DE BALONMANO (GEOMETRÍA OFICIAL CON PORTERÍA ARRIBA) */}
+                    <svg viewBox="0 0 400 300" className="mp-hc-svg" preserveAspectRatio="none">
+                      <defs>
+                        {/* Fondo Gradient de Pista (Verde Estadio Profesional) */}
+                        <linearGradient id="courtBgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#061c0e" />
+                          <stop offset="50%" stopColor="#114725" />
+                          <stop offset="100%" stopColor="#082212" />
+                        </linearGradient>
+
+                        {/* Relleno diferenciado para el Área de 6m */}
+                        <linearGradient id="areaAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="rgba(45, 190, 96, 0.14)" />
+                          <stop offset="100%" stopColor="rgba(45, 190, 96, 0.28)" />
+                        </linearGradient>
+
+                        {/* Patrón de Red de Portería */}
+                        <pattern id="hcNetPattern" width="6" height="6" patternUnits="userSpaceOnUse">
+                          <path d="M 0 3 L 6 3 M 3 0 L 3 6" fill="none" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="0.8" />
+                        </pattern>
+
+                        {/* Patrón de Franjas Rojas y Blancas para los Postes de la Portería */}
+                        <pattern id="hcRedWhitePost" width="16" height="6" patternUnits="userSpaceOnUse">
+                          <rect x="0" y="0" width="8" height="6" fill="#ef4444" />
+                          <rect x="8" y="0" width="8" height="6" fill="#ffffff" />
+                        </pattern>
+                      </defs>
+
+                      {/* 1. Fondo principal de la media pista */}
+                      <rect x="0" y="0" width="400" height="300" fill="url(#courtBgGrad)" />
+
+                      {/* 2. CAPAS VISUALES DE ZONAS xG (CONMUTABLE CON EL BOTÓN DE MOSTRAR/OCULTAR ZONAS) */}
+                      {showCourtZones && (
+                        <g className="mp-court-zone-overlays">
+                          {/* A. EXTREMO IZQUIERDO (X: 0-10%, Y: 0-21%) */}
+                          <path
+                            d="M 8 8 L 40 8 L 40 63 L 8 63 Z"
+                            fill="rgba(249, 115, 22, 0.55)"
+                            stroke="#f97316"
+                            strokeWidth="2.5"
+                          />
+                          <text x="24" y="32" fill="#f97316" fontSize="10" fontWeight="bold" textAnchor="middle">EXTREMO IZQ</text>
+                          <text x="24" y="45" fill="#fca5a5" fontSize="8" textAnchor="middle">xG Extremo</text>
+
+                          {/* B. EXTREMO DERECHO (X: 90-100%, Y: 0-21%) */}
+                          <path
+                            d="M 360 8 L 392 8 L 392 63 L 360 63 Z"
+                            fill="rgba(249, 115, 22, 0.55)"
+                            stroke="#f97316"
+                            strokeWidth="2.5"
+                          />
+                          <text x="376" y="32" fill="#f97316" fontSize="10" fontWeight="bold" textAnchor="middle">EXTREMO DER</text>
+                          <text x="376" y="45" fill="#fca5a5" fontSize="8" textAnchor="middle">xG Extremo</text>
+
+                          {/* C. ÁREA AZUL (MEDIA LUNA DELIMITADA EXACTA A LA LÍNEA DE 9M) */}
+                          <path
+                            d="M 8 63 L 40 63 A 135 135 0 0 0 165 143 L 235 143 A 135 135 0 0 0 360 63 L 392 63 A 195 195 0 0 1 235 203 L 165 203 A 195 195 0 0 1 8 63 Z"
+                            fill="rgba(37, 99, 235, 0.45)"
+                            stroke="#2563eb"
+                            strokeWidth="3"
+                          />
+                          <text x="200" y="172" fill="#93c5fd" fontSize="11" fontWeight="bold" textAnchor="middle">PIVOTE 6M / PENETRACIÓN / 1ª OLEADA</text>
+                          <text x="200" y="186" fill="#bfdbfe" fontSize="9" textAnchor="middle">(Pulsa para abrir el selector táctico)</text>
+
+                          {/* D. 9M LATERAL IZQUIERDO (SECTOR ROSA / MAGENTA ABAJO IZQ: X 0-31%) */}
+                          <path
+                            d="M 8 63 A 195 195 0 0 0 124 196 L 124 288 L 8 288 Z"
+                            fill="rgba(236, 72, 153, 0.40)"
+                            stroke="#ec4899"
+                            strokeWidth="2.5"
+                          />
+                          <text x="66" y="240" fill="#ec4899" fontSize="11" fontWeight="bold" textAnchor="middle">9M LATERAL IZQ</text>
+                          <text x="66" y="254" fill="#fbcfe8" fontSize="9" textAnchor="middle">xG Exterior</text>
+
+                          {/* E. 9M CENTRAL (ESPECIFICACIÓN EXACTA: BORDEANDO AL 100% EL ARCO DE 9M SIN HUECOS) */}
+                          <path
+                            d="M 124 196 A 195 195 0 0 0 165 203 L 235 203 A 195 195 0 0 0 276 196 L 276 288 L 124 288 Z"
+                            fill="rgba(34, 197, 94, 0.40)"
+                            stroke="#22c55e"
+                            strokeWidth="2.5"
+                          />
+                          <text x="200" y="240" fill="#22c55e" fontSize="11" fontWeight="bold" textAnchor="middle">9M CENTRAL</text>
+                          <text x="200" y="254" fill="#86efac" fontSize="9" textAnchor="middle">xG Exterior</text>
+
+                          {/* F. 9M LATERAL DERECHO (SECTOR BLANCO ABAJO DER: X 69-100%) */}
+                          <path
+                            d="M 276 196 A 195 195 0 0 0 392 63 L 392 288 L 276 288 Z"
+                            fill="rgba(255, 255, 255, 0.35)"
+                            stroke="#ffffff"
+                            strokeWidth="2.5"
+                          />
+                          <text x="334" y="240" fill="#ffffff" fontSize="11" fontWeight="bold" textAnchor="middle">9M LATERAL DER</text>
+                          <text x="334" y="254" fill="#e2e8f0" fontSize="9" textAnchor="middle">xG Exterior</text>
+                        </g>
+                      )}
+
+                      {/* 3. Marco exterior del campo (Líneas perimetrales) */}
+                      <rect x="8" y="8" width="384" height="284" fill="none" stroke="#ffffff" strokeWidth="3" />
+
+                      {/* 4. Portería y Red en la línea de fondo arriba */}
+                      {/* Red de portería */}
+                      <rect x="165" y="0" width="70" height="8" fill="url(#hcNetPattern)" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                      {/* Postes de portería con franjas rojas y blancas */}
+                      <rect x="165" y="6" width="70" height="5" fill="url(#hcRedWhitePost)" stroke="#ffffff" strokeWidth="1" />
+
+                      {/* 5. Área de 6 Metros (Geometría oficial: Arcos de 6m desde los postes + tramo recto de 3m) */}
+                      <path
+                        d="M 30 8 A 135 135 0 0 0 165 142 L 235 142 A 135 135 0 0 0 370 8 Z"
+                        fill="url(#areaAreaGrad)"
+                        stroke="#ffffff"
+                        strokeWidth="3.5"
+                      />
+
+                      {/* 6. Línea de 4 Metros del Portero (A 4m dentro del área de 6m) */}
+                      <line x1="188" y1="98" x2="212" y2="98" stroke="#ffffff" strokeWidth="3" />
+
+                      {/* 7. Línea de 7 Metros (Penalti, a 7m de portería) */}
+                      <line x1="184" y1="165" x2="216" y2="165" stroke="#fbbf24" strokeWidth="3.5" />
+
+                      {/* 8. Línea de 9 Metros (Golpe Franco - Discontinua de X 0% Y 21% a X 100% Y 21%) */}
+                      <path
+                        d="M 8 63 A 195 195 0 0 0 165 203 L 235 203 A 195 195 0 0 0 392 63"
+                        fill="none"
+                        stroke="#ffffff"
+                        strokeWidth="2.5"
+                        strokeDasharray="9 7"
+                      />
+
+                      {/* 9. Marca de zona de cambios en la banda izquierda (Línea lateral abajo) */}
+                      <line x1="8" y1="260" x2="22" y2="260" stroke="#ffffff" strokeWidth="3" />
+                    </svg>
+
+                    {/* MARCADOR DE POSICIÓN SELECCIONADA EN PISTA */}
+                    {courtCoord && (
+                      <div className="mp-pinpoint-marker court" style={{ left: `${courtCoord.x}%`, top: `${courtCoord.y}%` }}>
+                        <div className="mp-pinpoint-pulse" />
+                        <div className="mp-pinpoint-dot">📍</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Subvista de Lanzamiento */}
-                {selectedTeamAction.action === "lanzamiento" && (
-                  <div>
-                    {!selectedPlayer ? (
-                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
-                        Por favor, selecciona un jugador del Roster de la izquierda para configurar los detalles del lanzamiento.
-                      </div>
-                    ) : activeActionSubmenu === "select_goal_zone" ? (
-                      /* PASO 2: PORTERÍA EN EL MISMO LUGAR */
-                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--text-primary)" }}>
-                            Zona de Portería:
-                          </span>
-                          <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu(null)} aria-label="Modificar opciones de tiro">
-                            <IconArrowLeft /> Modificar opciones
-                          </button>
-                        </div>
-                        <p className="submenu-hint" style={{ marginBottom: "10px" }}>
-                          {shotResult === "Gol" || shotResult === "Parada"
-                            ? "Haz clic en la zona interior de la portería donde fue el balón:"
-                            : shotResult === "Poste"
-                              ? "Haz clic en los postes o larguero de la portería:"
-                              : "Haz clic en la zona exterior del campo donde se marchó el balón:"}
-                        </p>
+                {/* 2. PORTERÍA DE BALONMANO DETALLADA (CLICK EN CUALQUIER PUNTO DE LA RED) */}
+                <div className="mp-goal-diagram-wrapper">
+                  <div className="mp-card-subtitle">
+                    <span>PORTERÍA EN DETALLE (HAZ CLIC EN EL LUGAR DEL LANZAMIENTO)</span>
+                  </div>
 
-                        <div style={{ display: "flex", justifyContent: "center", margin: "10px 0" }}>
-                          <div className="goal-grid-selector">
-                            {goalZones.map((zone, zIdx) => {
-                              const isPost = zone.group === "poste";
-                              const isOutside = zone.group === "fuera";
-                              const isInside = zone.group === "interior";
+                    <div className="mp-goal-frame interactive" onClick={handleGoalClick} title="Haz clic en cualquier punto de la portería o zonas exteriores">
+                    {/* SVG DE PORTERÍA DE BALONMANO DETALLADA CON MARGEN EXTERIOR */}
+                    <svg viewBox="0 0 360 220" className="mp-goal-svg" preserveAspectRatio="none">
+                      <defs>
+                        {/* Red de portería */}
+                        <pattern id="netMesh" width="12" height="12" patternUnits="userSpaceOnUse">
+                          <path d="M 12 0 L 0 12 M 0 0 L 12 12" stroke="rgba(255,255,255,0.22)" strokeWidth="1" />
+                        </pattern>
+                        {/* Franjas de poste de balonmano (Blanco y Rojo) */}
+                        <pattern id="stripedPost" width="20" height="20" patternUnits="userSpaceOnUse">
+                          <rect width="10" height="20" fill="#ffffff" />
+                          <rect x="10" width="10" height="20" fill="#dc2626" />
+                        </pattern>
+                      </defs>
 
-                              let isEnabled = false;
-                              if (isOutside && shotResult === "Fuera") isEnabled = true;
-                              if (isPost && shotResult === "Poste") isEnabled = true;
-                              if (isInside && (shotResult === "Gol" || shotResult === "Parada")) isEnabled = true;
+                      {/* Fondo de portería / zona exterior */}
+                      <rect x="0" y="0" width="360" height="220" fill="#081210" />
 
-                              let btnClass = "goal-zone-btn ";
-                              if (isPost) btnClass += "zone-post";
-                              else if (isOutside) btnClass += "zone-outside";
-                              else btnClass += "zone-inside";
+                      {/* Zonas exteriores para tiros fuera */}
+                      <rect x="0" y="0" width="360" height="24" fill="rgba(255,255,255,0.03)" />
+                      <rect x="0" y="24" width="30" height="196" fill="rgba(255,255,255,0.03)" />
+                      <rect x="330" y="24" width="30" height="196" fill="rgba(255,255,255,0.03)" />
 
-                              if (isEnabled) btnClass += " enabled";
-                              else btnClass += " disabled";
+                      {/* Textos sutiles indicadores de zonas exteriores */}
+                      <text x="180" y="16" fill="rgba(255,255,255,0.28)" fontSize="8.5" fontWeight="800" textAnchor="middle" letterSpacing="0.8">FUERA ARRIBA</text>
+                      <text x="15" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(-90 15 120)" letterSpacing="0.8">FUERA IZQ</text>
+                      <text x="345" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(90 345 120)" letterSpacing="0.8">FUERA DER</text>
 
-                              return (
-                                <button
-                                  key={`zone-${zIdx}`}
-                                  type="button"
-                                  disabled={!isEnabled}
-                                  className={btnClass}
-                                  style={zone.style}
-                                  onClick={() => handleSelectGoalZone(zone.id)}
-                                  title={zone.label}
-                                  aria-label={zone.label}
-                                >
-                                  <span className="zone-label-text">{zone.id}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    ) : activeActionSubmenu === "select_opposing_goalkeeper" ? (
-                      /* PASO 3: PORTERO DEFENSOR EN EL MISMO LUGAR */
-                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--text-primary)" }}>
-                            Portero Defensor:
-                          </span>
-                          <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu("select_goal_zone")} aria-label="Volver a portería">
-                            <IconArrowLeft /> Volver
-                          </button>
-                        </div>
-                        <p className="submenu-hint" style={{ marginBottom: "12px" }}>¿Qué portero del equipo contrario estaba en la portería?</p>
+                      {/* Malla / Red de portería */}
+                      <rect x="44" y="38" width="272" height="182" fill="url(#netMesh)" />
 
-                        <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
-                          {defendingGoalkeepers.map((gk, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              className="option-btn btn-parada"
-                              onClick={() => {
-                                const gkDetails = {
-                                  goalkeeper_number: gk.number,
-                                  goalkeeper_name: gk.name,
-                                  shooter_number: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.number : null,
-                                  shooter_name: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.name : (selectedPlayer === "team" ? "Equipo" : null)
-                                };
-                                handleAction("shot", { ...pendingAction.details, ...gkDetails });
-                                setPendingAction(null);
-                                setActiveActionSubmenu(null);
-                              }}
-                              style={{ padding: "12px", fontSize: "0.85rem" }}
-                              aria-label={`Portero número ${gk.number}, ${gk.name}`}
-                            >
-                              #{gk.number} - {gk.name}
-                            </button>
-                          ))}
+                      {/* Guías visuales de escuadras y zonas */}
+                      <line x1="134" y1="38" x2="134" y2="220" stroke="rgba(255,255,255,0.12)" strokeDasharray="4,4" />
+                      <line x1="226" y1="38" x2="226" y2="220" stroke="rgba(255,255,255,0.12)" strokeDasharray="4,4" />
+                      <line x1="44" y1="98" x2="316" y2="98" stroke="rgba(255,255,255,0.12)" strokeDasharray="4,4" />
+                      <line x1="44" y1="158" x2="316" y2="158" stroke="rgba(255,255,255,0.12)" strokeDasharray="4,4" />
 
-                          <button
-                            key="unknown-gk"
-                            type="button"
-                            className="option-btn btn-parada"
-                            onClick={() => {
-                              const gkDetails = {
-                                goalkeeper_number: 0,
-                                goalkeeper_name: "Portero Desconocido",
-                                shooter_number: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.number : null,
-                                shooter_name: selectedPlayer && selectedPlayer !== "team" ? selectedPlayer.name : (selectedPlayer === "team" ? "Equipo" : null)
-                              };
-                              handleAction("shot", { ...pendingAction.details, ...gkDetails });
-                              setPendingAction(null);
-                              setActiveActionSubmenu(null);
-                            }}
-                            style={{ padding: "12px", fontSize: "0.85rem" }}
-                          >
-                            Portero Desconocido
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      /* PASO 1: CONFIGURAR OPCIONES DE LANZAMIENTO */
-                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
-                        <div className="live-modifiers-grid" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                          {/* Fila 1: Resultado */}
-                          <div className="live-modifier-row">
-                            <span className="live-row-label" style={{ display: "block", fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "4px" }}>Resultado:</span>
-                            <div className="live-row-options grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
-                              {["Gol", "Parada", "Fuera", "Poste"].map((res) => {
-                                let btnBorder = undefined;
-                                if (shotResult === res) {
-                                  btnBorder = res === "Gol" ? "2px solid #10b981" : (res === "Parada" ? "2px solid #3b82f6" : "2px solid #f59e0b");
-                                }
-                                return (
-                                  <button
-                                    key={res}
-                                    type="button"
-                                    className={`modifier-btn ${shotResult === res ? "active" : ""}`}
-                                    onClick={() => {
-                                      setShotResult(res);
-                                      if (res !== "Gol") {
-                                        setSelectedAssistPosition("Ninguna");
-                                      }
-                                    }}
-                                    style={{ border: btnBorder, padding: "8px 2px", fontSize: "0.78rem" }}
-                                    aria-pressed={shotResult === res}
-                                  >
-                                    {res}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
+                      {/* Marco de Postes y Larguero (Reglamentario franjeado) */}
+                      {/* Larguero superior */}
+                      <rect x="30" y="24" width="300" height="14" fill="url(#stripedPost)" stroke="#000" strokeWidth="1" />
+                      {/* Poste Izquierdo */}
+                      <rect x="30" y="24" width="14" height="196" fill="url(#stripedPost)" stroke="#000" strokeWidth="1" />
+                      {/* Poste Derecho */}
+                      <rect x="316" y="24" width="14" height="196" fill="url(#stripedPost)" stroke="#000" strokeWidth="1" />
 
-                          {/* Fila 2: Fase de Juego */}
-                          <div className="live-modifier-row">
-                            <span className="live-row-label" style={{ display: "block", fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "4px" }}>Fase de Juego:</span>
-                            <div className="live-row-options grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
-                              {[
-                                { id: "Posicional", label: "Posicional" },
-                                { id: "1ª Oleada", label: "1ª Oleada" },
-                                { id: "2ª Oleada", label: "2ª Oleada" },
-                                { id: "7m", label: "7m (Penalti)" }
-                              ].map((phase) => (
-                                <button
-                                  key={phase.id}
-                                  type="button"
-                                  className={`modifier-btn ${selectedPhase === phase.id ? "active" : ""}`}
-                                  onClick={() => {
-                                    setSelectedPhase(phase.id);
-                                    if (phase.id === "7m") {
-                                      setSelectedPosition("Centro");
-                                    } else if (phase.id === "1ª Oleada") {
-                                      if (selectedPosition === "Muy Izquierda" || selectedPosition === "Muy Derecha") {
-                                        setSelectedPosition("Centro");
-                                      }
-                                    }
-                                  }}
-                                  style={{
-                                    padding: "8px 2px",
-                                    fontSize: "0.75rem",
-                                    border: selectedPhase === phase.id ? "2px solid var(--accent-primary)" : undefined
-                                  }}
-                                  aria-pressed={selectedPhase === phase.id}
-                                >
-                                  {phase.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
+                      {/* Línea de suelo */}
+                      <line x1="0" y1="219" x2="360" y2="219" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
+                    </svg>
 
-                          {/* Fila 3: Tipo de Tiro */}
-                          {(() => {
-                            const isTypeDisabled = selectedPhase === "7m" || selectedPhase === "1ª Oleada";
-                            return (
-                              <div className="live-modifier-row" style={{ opacity: isTypeDisabled ? 0.3 : 1, transition: "opacity 0.2s" }}>
-                                <span className="live-row-label" style={{ display: "block", fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "4px" }}>Tipo de Tiro:</span>
-                                <div className="live-row-options grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
-                                  {["Extremo", "Pivote", "Exterior", "Penetración"].map((type) => (
-                                    <button
-                                      key={type}
-                                      type="button"
-                                      disabled={isTypeDisabled}
-                                      className={`modifier-btn ${selectedShotType === type ? "active" : ""}`}
-                                      onClick={() => {
-                                        setSelectedShotType(type);
-                                        if (type === "Extremo") {
-                                          if (selectedPosition !== "Izquierda" && selectedPosition !== "Derecha") {
-                                            setSelectedPosition("Izquierda");
-                                          }
-                                        }
-                                      }}
-                                      style={{
-                                        padding: "8px 2px",
-                                        fontSize: "0.75rem",
-                                        border: selectedShotType === type ? "2px solid var(--accent-primary)" : undefined
-                                      }}
-                                      aria-pressed={selectedShotType === type}
-                                    >
-                                      {type === "Exterior" ? "Exterior 9m" : type}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })()}
-
-                          {/* Fila 4: Posición Horizontal */}
-                          {(() => {
-                            const isPosDisabled = selectedPhase === "7m";
-                            return (
-                              <div className="live-modifier-row" style={{ opacity: isPosDisabled ? 0.3 : 1, transition: "opacity 0.2s" }}>
-                                <span className="live-row-label" style={{ display: "block", fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "4px" }}>Posición de Campo:</span>
-                                <div className="live-row-options grid-5" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px" }}>
-                                  {["Muy Izquierda", "Izquierda", "Centro", "Derecha", "Muy Derecha"].map((pos) => {
-                                    let isBtnDisabled = isPosDisabled;
-                                    if (!isPosDisabled) {
-                                      if (selectedPhase === "1ª Oleada") {
-                                        if (pos === "Muy Izquierda" || pos === "Muy Derecha") isBtnDisabled = true;
-                                      } else if (selectedShotType === "Extremo") {
-                                        if (pos !== "Izquierda" && pos !== "Derecha") isBtnDisabled = true;
-                                      }
-                                    }
-
-                                    return (
-                                      <button
-                                        key={pos}
-                                        type="button"
-                                        disabled={isBtnDisabled}
-                                        className={`modifier-btn ${selectedPosition === pos ? "active" : ""}`}
-                                        onClick={() => setSelectedPosition(pos)}
-                                        style={{
-                                          padding: "8px 2px",
-                                          fontSize: "0.68rem",
-                                          border: selectedPosition === pos ? "2px solid var(--accent-primary)" : undefined,
-                                          opacity: isBtnDisabled ? 0.15 : 1
-                                        }}
-                                        aria-pressed={selectedPosition === pos}
-                                      >
-                                        {pos}
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            );
-                          })()}
-
-                          {/* Fila 5: Situación Numérica */}
-                          <div className="live-modifier-row">
-                            <span className="live-row-label" style={{ display: "block", fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "4px" }}>Sit. Numérica:</span>
-                            <div className="live-row-options grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "6px" }}>
-                              {["Igualdad", "Superioridad", "Inferioridad"].map((sit) => {
-                                const autoSit = getAutoNumericalSituation();
-                                const isAuto = autoSit === sit;
-
-                                return (
-                                  <button
-                                    key={sit}
-                                    type="button"
-                                    className={`modifier-btn ${selectedNumericalSituation === sit ? "active" : ""}`}
-                                    onClick={() => setSelectedNumericalSituation(sit)}
-                                    style={{
-                                      padding: "8px 2px",
-                                      fontSize: "0.75rem",
-                                      border: selectedNumericalSituation === sit ? "2px solid var(--accent-primary)" : undefined
-                                    }}
-                                    aria-pressed={selectedNumericalSituation === sit}
-                                  >
-                                    {sit} {isAuto && <span style={{ fontSize: "0.6rem", display: "block", opacity: 0.7 }}>(Auto)</span>}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Fila 6: Asistencia */}
-                          {shotResult === "Gol" && (
-                            <div className="live-modifier-row">
-                              <span className="live-row-label" style={{ display: "block", fontSize: "0.8rem", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "4px" }}>Asistido por (Posición):</span>
-                              <div className="live-row-options grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
-                                {[
-                                  "Ninguna",
-                                  "Portero",
-                                  "Extremo Izquierdo",
-                                  "Lateral Izquierdo",
-                                  "Central",
-                                  "Lateral Derecho",
-                                  "Extremo Derecho",
-                                  "Pivote"
-                                ].map((pos) => (
-                                  <button
-                                    key={pos}
-                                    type="button"
-                                    className={`modifier-btn ${selectedAssistPosition === pos ? "active" : ""}`}
-                                    onClick={() => setSelectedAssistPosition(pos)}
-                                    style={{
-                                      padding: "8px 2px",
-                                      fontSize: "0.68rem",
-                                      border: selectedAssistPosition === pos ? "2px solid var(--accent-primary)" : undefined
-                                    }}
-                                    aria-pressed={selectedAssistPosition === pos}
-                                  >
-                                    {pos}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Sanciones activas */}
-                        {(() => {
-                          const activeSanc = getActiveSuspensions();
-                          const hasHomeSanc = activeSanc.home.length > 0;
-                          const hasAwaySanc = activeSanc.away.length > 0;
-                          if (!hasHomeSanc && !hasAwaySanc) return null;
-
-                          return (
-                            <div className="active-suspensions-wizard-info" style={{ margin: "12px 0 8px 0", padding: "8px 10px", background: "rgba(255,255,255,0.03)", borderRadius: "6px", fontSize: "0.75rem", border: "1px solid rgba(255,255,255,0.05)" }}>
-                              <div style={{ fontWeight: "bold", marginBottom: "4px", color: "var(--text-muted)" }}>
-                                Sanciones de 2 Minutos Activas:
-                              </div>
-                              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                                {activeSanc.home.map((s, idx) => (
-                                  <div key={`live-s-home-${idx}`} style={{ color: "#38bdf8" }}>
-                                    • {currentMatch.home_team}: <strong>{s.player_id}</strong> (Resta {s.remaining}s)
-                                  </div>
-                                ))}
-                                {activeSanc.away.map((s, idx) => (
-                                  <div key={`live-s-away-${idx}`} style={{ color: "#ec4899" }}>
-                                    • {currentMatch.away_team}: <strong>{s.player_id}</strong> (Resta {s.remaining}s)
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })()}
-
-                        <button
-                          type="button"
-                          className="btn btn-primary w-100"
-                          style={{ marginTop: "15px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", fontWeight: "bold", padding: "12px" }}
-                          onClick={() => handleConfirmShotDetails()}
-                        >
-                          <IconCheck /> CONTINUAR A PORTERÍA ➔
-                        </button>
+                    {/* MARCADOR DE TIRO SELECCIONADO EN PORTERÍA */}
+                    {goalCoord && (
+                      <div className="mp-pinpoint-marker goal" style={{ left: `${goalCoord.x}%`, top: `${goalCoord.y}%` }}>
+                        <div className="mp-pinpoint-pulse red" />
+                        <div className="mp-pinpoint-dot red">⚽</div>
                       </div>
                     )}
                   </div>
-                )}
-
-                {/* Subvista de Pérdida */}
-                {selectedTeamAction.action === "perdida" && (
-                  <div>
-                    {!selectedPlayer ? (
-                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
-                        Por favor, selecciona un jugador o "Equipo (General)" de la izquierda para configurar los detalles de la pérdida.
-                      </div>
-                    ) : activeActionSubmenu === "select_defender_falta_ataque" ? (
-                      /* PASO SECUNDARIO PARA FALTA EN ATAQUE: SELECCIONAR DEFENSOR */
-                      <div className="submenu-container live-logging-container" style={{ border: "none", padding: 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ fontSize: "0.85rem", fontWeight: "bold", color: "var(--text-primary)" }}>
-                            Defensa a quien se la provocaron:
-                          </span>
-                          <button type="button" className="btn-back-menu" onClick={() => setActiveActionSubmenu(null)} aria-label="Volver">
-                            <IconArrowLeft /> Volver
-                          </button>
-                        </div>
-                        <p className="submenu-hint" style={{ marginBottom: "12px" }}>
-                          ¿A qué defensa del equipo contrario le provocaron la falta en ataque?
-                        </p>
-
-                        <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
-                          {(selectedTeamAction.team === "LOCAL" ? currentMatch.away_players || [] : currentMatch.home_players || []).map((def, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              className="option-btn btn-perdida"
-                              onClick={() => {
-                                handleAction("turnover", {
-                                  end_reason: "Falta en ataque",
-                                  defender_number: def.number,
-                                  defender_name: def.name,
-                                  defender_id: `${def.number} - ${def.name}`
-                                });
-                                setActiveActionSubmenu(null);
-                              }}
-                              style={{ padding: "12px", fontSize: "0.85rem" }}
-                              aria-label={`Defensa número ${def.number}, ${def.name}`}
-                            >
-                              #{def.number} - {def.name}
-                            </button>
-                          ))}
-
-                          <button
-                            key="no-defender"
-                            type="button"
-                            className="option-btn btn-perdida"
-                            onClick={() => {
-                              handleAction("turnover", { end_reason: "Falta en ataque" });
-                              setActiveActionSubmenu(null);
-                            }}
-                            style={{ padding: "12px", fontSize: "0.85rem" }}
-                          >
-                            Sin Defensor / Desconocido
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      /* OPCIONES DE PÉRDIDA DE BALÓN */
-                      <div className="submenu-container" style={{ border: "none", padding: 0 }}>
-                        <p className="submenu-hint" style={{ marginBottom: "12px" }}>Selecciona la causa de la pérdida de balón:</p>
-                        <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                          {[
-                            { reason: "Falta en ataque", label: "Falta en ataque" },
-                            { reason: "Mal Pase", label: "Mal Pase" },
-                            { reason: "Pasivo", label: "Pasivo" },
-                            { reason: "Dobles / Pasos", label: "Dobles / Pasos" }
-                          ].map((item) => (
-                            <button
-                              key={item.reason}
-                              type="button"
-                              className="option-btn btn-perdida"
-                              onClick={() => {
-                                if (item.reason === "Falta en ataque") {
-                                  setPendingFaltaAtaqueDetails({
-                                    attacker: selectedPlayer,
-                                    defender: null
-                                  });
-                                  setSelectedTeamAction({
-                                    team: selectedTeamAction.team,
-                                    action: "falta_en_ataque"
-                                  });
-                                } else {
-                                  handleAction("turnover", { end_reason: item.reason });
-                                }
-                              }}
-                              style={{ padding: "12px", fontSize: "0.85rem" }}
-                              aria-label={`Pérdida por ${item.label}`}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Subvista de Sanción */}
-                {selectedTeamAction.action === "sancion" && (
-                  <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
-                    Haz clic en cualquier jugador o miembro del cuerpo técnico de la izquierda para aplicar la sanción de tipo <strong>{selectedSanctionType}</strong>.
-                  </div>
-                )}
-
-                {/* Subvista de Golpe Franco */}
-                {selectedTeamAction.action === "free_throw" && (
-                  <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
-                    Haz clic en cualquier jugador o en "Equipo (General)" de la izquierda para registrar el Golpe Franco cometido en defensa.
-                  </div>
-                )}
-
-                {/* Subvista de Falta en Ataque */}
-                {selectedTeamAction.action === "falta_en_ataque" && (
-                  <div>
-                    {!pendingFaltaAtaqueDetails.attacker ? (
-                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
-                        1º Haz clic en el roster de la izquierda en el atacante que <strong>cometió / provocó la falta en ataque</strong>.
-                      </div>
-                    ) : (
-                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-primary)", background: "rgba(16,185,129,0.06)", borderRadius: "6px", border: "1px solid rgba(16,185,129,0.3)" }}>
-                        <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>
-                          Atacante: #{pendingFaltaAtaqueDetails.attacker === "team" ? "Equipo" : `${pendingFaltaAtaqueDetails.attacker.number} - ${pendingFaltaAtaqueDetails.attacker.name}`}
-                        </p>
-                        <p style={{ margin: "0 0 15px 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                          2º Ahora haz clic en el roster de la izquierda en el defensa <strong>a quien se la provocaron</strong> para completar el registro.
-                        </p>
-                        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => setPendingFaltaAtaqueDetails({ attacker: null, defender: null })}
-                          >
-                            <IconArrowLeft /> Cambiar Atacante
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => handleConfirmFaltaAtaque(pendingFaltaAtaqueDetails.attacker, null)}
-                          >
-                            Sin Defensor / Omitir
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Subvista de 7m Cometido en Defensa */}
-                {selectedTeamAction.action === "penalty_7m" && (
-                  <div>
-                    {!pending7mDetails.defender ? (
-                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)", background: "rgba(255,255,255,0.01)", borderRadius: "6px", border: "1px dashed rgba(255,255,255,0.05)" }}>
-                        1º Haz clic en el roster de la izquierda en el defensor que <strong>cometió / provocó el 7m</strong>.
-                      </div>
-                    ) : (
-                      <div className="action-step-hint" style={{ padding: "20px", textAlign: "center", color: "var(--text-primary)", background: "rgba(16,185,129,0.06)", borderRadius: "6px", border: "1px solid rgba(16,185,129,0.3)" }}>
-                        <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>
-                          Defensor: #{pending7mDetails.defender === "team" ? "Equipo" : `${pending7mDetails.defender.number} - ${pending7mDetails.defender.name}`}
-                        </p>
-                        <p style={{ margin: "0 0 15px 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                          2º Ahora haz clic en el roster de la izquierda en el atacante que <strong>sufrió / recibió el 7m</strong> para completar el registro.
-                        </p>
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => setPending7mDetails({ defender: null, attacker: null })}
-                        >
-                          <IconArrowLeft /> Cambiar Defensor
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-
-
-
-              {/* Submenú de fin de periodo */}
-              {activeActionSubmenu === "fin_periodo" && (
-                <div className="period-selection-overlay" style={{ gridColumn: "span 2", background: "var(--bg-surface)", border: "1px solid var(--border-color)", borderRadius: "var(--radius)", padding: "20px", marginTop: "10px" }}>
-                  <h4><IconFlag /> Fin de Periodo</h4>
-                  <p className="submenu-hint" style={{ marginBottom: "15px" }}>Selecciona el periodo que ha finalizado:</p>
-
-                  <div className="options-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-                    <button
-                      className="option-btn btn-period"
-                      onClick={handleEndFirstHalf}
-                      style={{ padding: "15px", fontSize: "0.9rem" }}
-                      aria-label="Finalizar primera parte"
-                    >
-                      Fin 1ª Parte (30:00)
-                    </button>
-
-                    <button
-                      className="option-btn btn-period"
-                      onClick={handleEndSecondHalf}
-                      style={{ padding: "15px", fontSize: "0.9rem" }}
-                      aria-label="Finalizar segunda parte"
-                    >
-                      Fin 2ª Parte (60:00)
-                    </button>
-
-                    <button
-                      className="option-btn btn-period"
-                      onClick={async () => {
-                        await sendMatchEvent({
-                          event_type: "sanction",
-                          player_id: "Equipo",
-                          is_opponent_action: false,
-                          sanction_type: "Fin Prórroga"
-                        }, time);
-
-                        await closePossession(time, "Fin Prórroga");
-
-                        setIsRunning(false);
-                        setActiveActionSubmenu(null);
-                        setSelectedTeamAction(null);
-                      }}
-                      style={{ padding: "15px", fontSize: "0.9rem" }}
-                      aria-label="Finalizar prórroga"
-                    >
-                      Fin Prórroga
-                    </button>
-                  </div>
-
-                  <button className="btn-back-menu" style={{ marginTop: "15px" }} onClick={() => setActiveActionSubmenu(null)} aria-label="Volver al panel principal">
-                    <IconArrowLeft /> Atrás
-                  </button>
                 </div>
-              )}
-
+              </div>
             </div>
-          )}
+
+            {/* BLOQUE INFERIOR DE 2 COLUMNAS: ACCIONES 4X4 (IZQ) E HISTORIAL (DER) */}
+            <div className="mp-bottom-grid">
+              {/* REJILLA DE 16 ACCIONES (4X4) */}
+              <div className="mp-actions-card">
+                <div className="mp-actions-header">
+                  <h4>ACCIONES</h4>
+                </div>
+
+                <div className="mp-actions-4x4-grid">
+                  {/* FILA 1: LANZAMIENTOS Y PORTERÍA */}
+                  <button className={`mp-action-tile gol ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("gol")}>
+                    <div className="mp-tile-icon"><IconGoalNet size={26} /></div>
+                    <span>GOL</span>
+                  </button>
+                  <button className={`mp-action-tile gol-7m ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("gol_7m")}>
+                    <div className="mp-tile-icon"><IconGoal7m size={26} /></div>
+                    <span>GOL 7M</span>
+                  </button>
+                  <button className={`mp-action-tile parada ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("parada")}>
+                    <div className="mp-tile-icon"><IconSaveGlove size={26} /></div>
+                    <span>PARADA</span>
+                  </button>
+                  <button className={`mp-action-tile parada-7m ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("parada_7m")}>
+                    <div className="mp-tile-icon"><IconSave7m size={26} /></div>
+                    <span>PARADA 7M</span>
+                  </button>
+
+                  {/* FILA 2: POSTE, FUERA, GOLPE FRANCO Y TIEMPO MUERTO */}
+                  <button className={`mp-action-tile poste ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("poste")}>
+                    <div className="mp-tile-icon"><IconPost size={26} /></div>
+                    <span>POSTE</span>
+                  </button>
+                  <button className={`mp-action-tile fuera ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("fuera")}>
+                    <div className="mp-tile-icon"><IconFuera size={26} /></div>
+                    <span>FUERA</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`mp-action-tile golpe-franco ${(!selectedPlayer || selectedPlayer.isBench || selectedPlayer.team === activePossession?.team) ? "disabled-bench" : ""}`}
+                    disabled={!selectedPlayer || selectedPlayer.isBench || selectedPlayer.team === activePossession?.team}
+                    onClick={() => handleQuickAction("golpe_franco")}
+                    title={
+                      !selectedPlayer
+                        ? "Selecciona un jugador en campo del equipo defensor para otorgar Golpe Franco"
+                        : selectedPlayer.team === activePossession?.team
+                          ? "Solo disponible para jugadores del equipo sin posesión (Defensa)"
+                          : "Registrar Golpe Franco cometido por la defensa"
+                    }
+                  >
+                    <div className="mp-tile-icon"><IconFreeThrow size={26} /></div>
+                    <span>G. FRANCO</span>
+                  </button>
+                  <button className={`mp-action-tile tiempo-muerto ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("tiempo_muerto")}>
+                    <div className="mp-tile-icon"><IconTimeout size={26} /></div>
+                    <span>T. MUERTO</span>
+                  </button>
+
+                  {/* FILA 3: PÉRDIDAS */}
+                  <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pase")}>
+                    <div className="mp-tile-icon"><IconBadPass size={26} /></div>
+                    <span>P. PASE</span>
+                  </button>
+                  <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_dobles")}>
+                    <div className="mp-tile-icon"><IconDoubleDribble size={26} /></div>
+                    <span>P. DOBLES</span>
+                  </button>
+                  <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pasos")}>
+                    <div className="mp-tile-icon"><IconFootsteps size={26} /></div>
+                    <span>P. PASOS</span>
+                  </button>
+                  <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pasivo")}>
+                    <div className="mp-tile-icon"><IconPassivePlay size={26} /></div>
+                    <span>P. PASIVO</span>
+                  </button>
+
+                  {/* FILA 4: SANCIONES */}
+                  <button className="mp-action-tile sancion-2min" onClick={() => handleQuickAction("exclusion")}>
+                    <div className="mp-tile-icon"><IconTimer2m size={26} /></div>
+                    <span>2 MIN</span>
+                  </button>
+                  <button className="mp-action-tile sancion-amarilla" onClick={() => handleQuickAction("amarilla")}>
+                    <div className="mp-tile-icon"><IconCardYellow size={26} /></div>
+                    <span>AMARILLA</span>
+                  </button>
+                  <button className="mp-action-tile sancion-roja" onClick={() => handleQuickAction("roja")}>
+                    <div className="mp-tile-icon"><IconCardRed size={26} /></div>
+                    <span>ROJA</span>
+                  </button>
+                  <button className="mp-action-tile sancion-azul" onClick={() => handleQuickAction("azul")}>
+                    <div className="mp-tile-icon"><IconCardBlue size={26} /></div>
+                    <span>AZUL</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* HISTORIAL DE ACCIONES */}
+              <div className="mp-timeline-card">
+                <div className="mp-timeline-header">
+                  <div className="mp-timeline-title-wrap">
+                    <h4>HISTORIAL DE ACCIONES</h4>
+                    <button
+                      className="mp-undo-btn"
+                      onClick={() => handleUndo()}
+                      title="Deshacer última acción registrada"
+                    >
+                      <IconUndo size={14} />
+                      <span>DESHACER</span>
+                    </button>
+                  </div>
+                  <select
+                    className="mp-timeline-filter"
+                    value={historyFilter}
+                    onChange={(e) => setHistoryFilter(e.target.value)}
+                  >
+                    <option value="TODOS">TODOS</option>
+                    <option value="goles">GOLES</option>
+                    <option value="paradas">PARADAS</option>
+                    <option value="fallo_lanzamiento">FALLO LANZAMIENTO</option>
+                    <option value="perdidas">PÉRDIDAS</option>
+                    <option value="tiempo_muerto">TIEMPO MUERTO</option>
+                    <option value="golpe_franco">GOLPE FRANCO</option>
+                    <option value="sanciones">SANCIONES</option>
+                  </select>
+                </div>
+
+                <div className="mp-timeline-list">
+                  {timelineEvents.length > 0 ? (
+                    timelineEvents.map((evt, eIdx) => (
+                      <div key={eIdx} className="mp-timeline-item">
+                        <div className={`mp-item-icon ${evt.type}`}>
+                          {evt.type === "gol" ? <IconGoalNet size={12} /> : evt.type === "parada" ? <IconSaveGlove size={12} /> : <IconAlertTriangle size={12} />}
+                        </div>
+                        <div className="mp-item-details">
+                          <div className="mp-item-top">
+                            <span className="mp-item-time">{evt.time}</span>
+                            <span className="mp-item-type">{evt.typeLabel}</span>
+                            <span className={`mp-item-team-name ${evt.isHome ? "home" : "away"}`}>
+                              • {evt.teamName}
+                            </span>
+                          </div>
+                          <span className="mp-item-desc">{evt.description}</span>
+                          {evt.fromZone && evt.toZone ? (
+                            <div className="mp-item-trajectory">
+                              <span>{evt.fromZone}</span>
+                              <IconArrowRight size={9} style={{ opacity: 0.6 }} />
+                              <span>{evt.toZone}</span>
+                            </div>
+                          ) : evt.trajectory ? (
+                            <div className="mp-item-trajectory">
+                              <span>{evt.trajectory}</span>
+                            </div>
+                          ) : null}
+                        </div>
+                        <span className="mp-item-score">{evt.score}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mp-timeline-empty">Sin acciones registradas aún en el partido</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </main>
+
+          {/* COLUMNA DERECHA: RIVAL TEAM (AZUL) */}
+          <aside className="mp-team-column away-column">
+            {/* SECCIÓN PORTERO */}
+            <div className="mp-roster-section gk-section">
+              <h4 className="mp-section-title">
+                <span>PORTERO</span>
+                <span className="mp-pos-badge gk">
+                  <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
+                  POR
+                </span>
+              </h4>
+              <div className="mp-player-list">
+                {awayActiveGk.map((player, pIdx) => {
+                  const excl = activeExclusions[`VISITANTE_${player.number}`];
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`mp-player-row gk-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                      onClick={() => handleRosterPlayerClick(player, "VISITANTE", "gk")}
+                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                    >
+                      <div className="mp-player-number blue">#{player.number}</div>
+                      <span className="mp-player-name">{player.name}</span>
+                      <span className="mp-pos-pill gk">POR</span>
+                      {excl ? (
+                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                          {excl.formattedCountdown}
+                        </span>
+                      ) : (
+                        <span className="mp-status-dot" title="En Campo" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SECCIÓN ALINEACIÓN */}
+            <div className="mp-roster-section">
+              <h4 className="mp-section-title">ALINEACIÓN</h4>
+              <div className="mp-player-list">
+                {awayFieldStarters.map((player, pIdx) => {
+                  const excl = activeExclusions[`VISITANTE_${player.number}`];
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                      onClick={() => handleRosterPlayerClick(player, "VISITANTE", "starter")}
+                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                    >
+                      <div className="mp-player-number blue">#{player.number}</div>
+                      <span className="mp-player-name">{player.name}</span>
+                      {excl ? (
+                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                          {excl.formattedCountdown}
+                        </span>
+                      ) : (
+                        <span className="mp-status-dot" title="En Campo" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SECCIÓN SUPLENTES */}
+            <div className="mp-roster-section bench-section">
+              <h4 className="mp-section-title">SUPLENTES</h4>
+              <div className="mp-player-list">
+                {awayBenchPlayers.map((player, pIdx) => {
+                  const excl = activeExclusions[`VISITANTE_${player.number}`];
+                  return (
+                    <div
+                      key={pIdx}
+                      className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                      onClick={() => handleRosterPlayerClick(player, "VISITANTE", "bench")}
+                      title={excl ? `Jugador suplente excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                    >
+                      <div className="mp-player-number blue">#{player.number}</div>
+                      <span className="mp-player-name">{player.name}</span>
+                      {(player.position === "PORTERO" || player.position === "POR") && (
+                        <span className="mp-pos-pill bench-gk">POR</span>
+                      )}
+                      {excl && (
+                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                          {excl.formattedCountdown}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
         </div>
       )}
 
-      {/* HISTORIAL RECIENTE */}
-      <section className="timeline-container-card" aria-label="Historial de eventos recientes">
-        <h3><IconHistory /> Historial de Eventos Recientes</h3>
-        {recentEvents.length === 0 ? (
-          <p className="no-events-text">Aún no se han registrado eventos en este partido.</p>
-        ) : (
-          <div className="timeline-list" role="log" aria-live="polite">
-            {recentEvents.map((event, idx) => {
-              const isGoal = event.event_type === "shot" && event.result === "Gol";
-              const isStop = event.event_type === "shot" && event.result === "Parada";
+      {/* MODAL POSESIÓN INICIAL DEL PARTIDO */}
+      {showInitialPossessionModal && (
+        <div className="mp-initial-possession-backdrop">
+          <div className="mp-initial-possession-card">
+            <div className="mp-pos-modal-icon">
+              <IconBall size={28} color="#2DBE60" />
+            </div>
+            <h3>POSESIÓN INICIAL DEL PARTIDO</h3>
+            <p>¿Qué equipo ha ganado el saque inicial y empieza atacando en la 1ª Parte?</p>
 
-              const teamName = event.is_opponent_action ? currentMatch.away_team : currentMatch.home_team;
-              const teamClass = event.is_opponent_action ? "away-event" : "home-event";
+            <div className="mp-pos-modal-actions">
+              <button
+                type="button"
+                className="mp-pos-modal-btn home"
+                onClick={() => handleSelectInitialPossession("LOCAL")}
+              >
+                <span className="mp-btn-team-name">{currentMatch.home_team || "MI EQUIPO (LOCAL)"}</span>
+                <span className="mp-btn-sub">Saque de centro en 1ª Parte</span>
+              </button>
 
-              let eventIcon = null;
-              let badgeColorClass = "";
-              let eventTypeText = "";
+              <button
+                type="button"
+                className="mp-pos-modal-btn away"
+                onClick={() => handleSelectInitialPossession("VISITANTE")}
+              >
+                <span className="mp-btn-team-name">{currentMatch.away_team || "RIVAL TEAM (VISITANTE)"}</span>
+                <span className="mp-btn-sub">Saque de centro en 1ª Parte</span>
+              </button>
+            </div>
 
-              if (event.event_type === "shot") {
-                eventTypeText = "Lanzamiento";
-                if (isGoal) {
-                  eventIcon = <IconGoalNet />;
-                  badgeColorClass = "badge-goal";
-                } else if (isStop) {
-                  eventIcon = <IconGlove />;
-                  badgeColorClass = "badge-stop";
-                } else {
-                  eventIcon = <IconTarget />;
-                  badgeColorClass = "badge-miss";
-                }
-              } else if (event.event_type === "turnover") {
-                eventTypeText = "Pérdida";
-                eventIcon = <IconAlertTriangle />;
-                badgeColorClass = "badge-turnover";
-              } else if (event.event_type === "sanction") {
-                eventTypeText = event.sanction_type === "7m Provocado" ? "7m Penalti" : "Sanción";
-                eventIcon = <IconShield />;
-                badgeColorClass = "badge-sanction";
-              } else if (event.event_type === "free_throw") {
-                eventTypeText = "Falta Def.";
-                eventIcon = <IconHandball />;
-                badgeColorClass = "badge-free-throw";
-              }
-
-              return (
-                <div key={idx} className={`timeline-card ${teamClass} ${isGoal ? "is-goal" : ""} ${isStop ? "is-stop" : ""}`}>
-                  {/* Fila Superior: Tiempo, Equipo, Datos Posesión */}
-                  <div className="timeline-card-header">
-                    <span className="timeline-card-time">{formatTime(event.match_time_seconds)}</span>
-                    <span className={`timeline-card-team-badge ${teamClass}`}>
-                      {teamName}
-                    </span>
-                    <span className="timeline-card-meta">
-                      Ataque #{event.possession_number} • {event.play_phase} • {event.numerical_situation}
-                    </span>
-                  </div>
-
-                  {/* Fila Inferior: Detalles de Acción */}
-                  <div className="timeline-card-body">
-                    <span className={`timeline-card-badge ${badgeColorClass}`}>
-                      {eventIcon} <span>{eventTypeText}</span>
-                    </span>
-
-                    <div className="timeline-card-content">
-                      <strong className="timeline-card-player">{event.player_id}</strong>
-                      <span className="timeline-card-desc">
-                        {event.event_type === "shot" ? (
-                          <>
-                            lanzó desde <strong>{event.shot_type}</strong> ({event.shot_position || "Centro"}) con resultado{" "}
-                            <span className={`result-tag ${event.result.toLowerCase()}`}>
-                              {event.result.toUpperCase()}
-                            </span>
-                            {event.target_zone && (
-                              <> en zona: <strong>{getZoneLabel(event.target_zone)}</strong></>
-                            )}
-                            {event.goalkeeper_name && (
-                              <> contra <strong>#{event.goalkeeper_number} {event.goalkeeper_name}</strong></>
-                            )}
-                            {event.assist_position && event.assist_position !== "Ninguna" && (
-                              <> (Asistido por: <strong>{event.assist_position}</strong>)</>
-                            )}
-                          </>
-                        ) : event.event_type === "turnover" ? (
-                          <>
-                            perdió el balón por <strong>{event.end_reason || "Causa no especificada"}</strong>
-                            {event.defender_name && (
-                              <> (Forzada por defensor: <strong>#{event.defender_number} {event.defender_name}</strong>)</>
-                            )}
-                          </>
-                        ) : event.event_type === "free_throw" ? (
-                          <>
-                            cometió <strong>Golpe Franco en defensa</strong>
-                          </>
-                        ) : (
-                          <>
-                            sanción / acción: <strong>{event.sanction_type || "Amonestación"}</strong>
-                            {event.drawn_by_player && (
-                              <> (Recibido por: <strong>{event.drawn_by_player}</strong>)</>
-                            )}
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            <div className="mp-pos-modal-footnote">
+              <IconInfo size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> Al cambiar de periodo (2ª Parte), la posesión cambiará automáticamente al equipo contrario.
+            </div>
           </div>
-        )}
-      </section>
-        </>
+        </div>
+      )}
+      {/* MODAL EXCLUSIVO PARA ZONA DE PIVOTE: PIVOTE 6M / PENETRACIÓN / 1ª OLEADA */}
+      {showPivotOptionModal && (
+        <div className="mp-initial-possession-backdrop" style={{ zIndex: 9999 }}>
+          <div className="mp-initial-possession-card pivot-option-modal">
+            <div className="mp-pivot-modal-header">
+              <div className="mp-pos-modal-icon pivot-icon-glow">
+                <IconGoalNet size={30} color="#38bdf8" />
+              </div>
+              <div className="mp-pivot-modal-titles">
+                <h3>TIPO DE ACCIÓN EN ZONA DE PIVOTE</h3>
+                <p>Elige la variante táctica de tiro en los 6 metros para calibrar el xG exacto</p>
+              </div>
+            </div>
+
+            <div className="mp-pivot-modal-actions">
+              <button
+                type="button"
+                className="mp-pivot-option-card default-pivot"
+                onClick={() => handleSelectPivotOption("pivote")}
+              >
+                <div className="mp-pivot-card-icon-wrap pivot">
+                  <IconUser size={20} color="#3b82f6" />
+                </div>
+                <div className="mp-pivot-card-content">
+                  <div className="mp-pivot-card-header-row">
+                    <span className="mp-pivot-card-title">Pivote 6M</span>
+                    <span className="mp-pivot-tag tag-pivot">POSICIONAL</span>
+                  </div>
+                  <span className="mp-pivot-card-desc">Lanzamiento directo desde la línea de 6 metros en ataque posicional</span>
+                </div>
+                <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
+              </button>
+
+              <button
+                type="button"
+                className="mp-pivot-option-card penetration"
+                onClick={() => handleSelectPivotOption("penetración")}
+              >
+                <div className="mp-pivot-card-icon-wrap penetration">
+                  <IconZap size={20} color="#eab308" />
+                </div>
+                <div className="mp-pivot-card-content">
+                  <div className="mp-pivot-card-header-row">
+                    <span className="mp-pivot-card-title">Penetración</span>
+                    <span className="mp-pivot-tag tag-penetration">DESMARQUE / FINTA</span>
+                  </div>
+                  <span className="mp-pivot-card-desc">Finta de cuerpo o desmarque con penetración a 6 metros</span>
+                </div>
+                <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
+              </button>
+
+              <button
+                type="button"
+                className="mp-pivot-option-card counterattack"
+                onClick={() => handleSelectPivotOption("contraataque")}
+              >
+                <div className="mp-pivot-card-icon-wrap counterattack">
+                  <IconFlame size={20} color="#a855f7" />
+                </div>
+                <div className="mp-pivot-card-content">
+                  <div className="mp-pivot-card-header-row">
+                    <span className="mp-pivot-card-title">1ª Oleada / Contraataque</span>
+                    <span className="mp-pivot-tag tag-counterattack">TRANSICIÓN RÁPIDA</span>
+                  </div>
+                  <span className="mp-pivot-card-desc">Lanzamiento en contraataque directo o primera oleada</span>
+                </div>
+                <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="mp-cancel-pivot-btn"
+              onClick={() => {
+                setShowPivotOptionModal(false);
+                setPendingPivotFlow(null);
+              }}
+            >
+              <IconX size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> Cancelar Selección
+            </button>
+          </div>
+        </div>
+      )}
+      {/* MODAL POPUP PARA SELECCIÓN DE REBOTE (EN PARADA O POSTE) */}
+      {activeActionFlow?.step === "AWAITING_REBOUND" && (
+        <div className="mp-initial-possession-backdrop" style={{ zIndex: 9999 }}>
+          <div className="mp-initial-possession-card pivot-option-modal">
+            <div className="mp-pivot-modal-header">
+              <div className="mp-pos-modal-icon pivot-icon-glow">
+                <IconSaveGlove size={30} color="#38bdf8" />
+              </div>
+              <div className="mp-pivot-modal-titles">
+                <h3>¿HUBO REBOTE TRAS EL TIRO?</h3>
+                <p>
+                  Acción de {activeActionFlow?.actionKey === "poste" ? "POSTE" : "PARADA"}. Indica quién recuperó la posesión tras el impacto:
+                </p>
+              </div>
+            </div>
+
+            <div className="mp-pivot-modal-actions">
+              <button
+                type="button"
+                className="mp-pivot-option-card default-pivot"
+                onClick={() => executeDirectAction({ ...activeActionFlow, reboundResult: "defense" })}
+              >
+                <div className="mp-pivot-card-icon-wrap pivot">
+                  <IconShield size={20} color="#3b82f6" />
+                </div>
+                <div className="mp-pivot-card-content">
+                  <div className="mp-pivot-card-header-row">
+                    <span className="mp-pivot-card-title">Sin Rebote / Balón Defensa</span>
+                    <span className="mp-pivot-tag tag-pivot">CAMBIO POSESIÓN</span>
+                  </div>
+                  <span className="mp-pivot-card-desc">El equipo defensor recupera el balón o saque de portería</span>
+                </div>
+                <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
+              </button>
+
+              <button
+                type="button"
+                className="mp-pivot-option-card penetration"
+                onClick={() => executeDirectAction({ ...activeActionFlow, reboundResult: "attack" })}
+              >
+                <div className="mp-pivot-card-icon-wrap penetration">
+                  <IconSwords size={20} color="#eab308" />
+                </div>
+                <div className="mp-pivot-card-content">
+                  <div className="mp-pivot-card-header-row">
+                    <span className="mp-pivot-card-title">Rebote para el Ataque</span>
+                    <span className="mp-pivot-tag tag-penetration">MANTIENE POSESIÓN</span>
+                  </div>
+                  <span className="mp-pivot-card-desc">El equipo atacante captura el rechace y mantiene la posesión</span>
+                </div>
+                <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              className="mp-cancel-pivot-btn"
+              onClick={handleCancelAction}
+            >
+              <IconX size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> Cancelar Acción
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
