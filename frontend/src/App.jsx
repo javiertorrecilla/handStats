@@ -34,6 +34,27 @@ function App() {
   } = useMatch();
 
   // --------------------------------------------------
+  // TEMA (CLARO / OSCURO)
+  // --------------------------------------------------
+
+  const getInitialTheme = () => {
+    const saved = localStorage.getItem("hs_theme");
+    if (saved) return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  };
+
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("hs_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  // --------------------------------------------------
   // ESTADOS
   // --------------------------------------------------
 
@@ -99,6 +120,8 @@ function App() {
         register={register}
         loginWithGoogle={loginWithGoogle}
         loginAsGuest={loginAsGuest}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
     );
   }
@@ -213,18 +236,20 @@ function App() {
           logout={logout}
           view={view}
           setView={setView}
+          theme={theme}
+          toggleTheme={toggleTheme}
         />
       )}
 
-      <main className="app-main" style={view === "analyze" ? { marginLeft: 0, width: "100%", padding: "20px" } : {}}>
+      <main className="app-main" style={view === "analyze" ? { marginLeft: 0, width: "100%", padding: 0, minHeight: "100vh" } : {}}>
         {loadingData && (
           <div
             style={{
               marginBottom: 20,
               padding: "12px 16px",
               borderRadius: 8,
-              background: "rgba(37,99,235,.08)",
-              color: "var(--accent-primary)",
+              background: "var(--color-primary-subtle)",
+              color: "var(--color-primary)",
               fontWeight: 600,
             }}
           >
@@ -261,6 +286,8 @@ function App() {
             user={user}
             initialMode={initialAnalyzeMode}
             onBack={() => setView("list")}
+            theme={theme}
+            toggleTheme={toggleTheme}
           />
         ) : (
           <MatchesPage
