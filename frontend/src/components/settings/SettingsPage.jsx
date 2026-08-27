@@ -90,8 +90,7 @@ export default function SettingsPage({ matchesList = [] }) {
 
   const tabs = [
     { id: "xg", icon: <IconTarget size={16} />, label: "xGoals" },
-    { id: "xsaves", icon: <IconGlove size={16} />, label: "xSaves" },
-    { id: "rating", icon: <IconStar size={16} />, label: "Acciones y Valoraciones para Rating" },
+    { id: "xsaves", icon: <IconGlove size={16} />, label: "xSaves" }
   ];
 
   const categoriesList = [
@@ -165,8 +164,15 @@ export default function SettingsPage({ matchesList = [] }) {
         {activeTab === "xg" && (
           <div className="hs-card settings-card">
             <div className="settings-card-header">
-              <IconTarget size={18} className="settings-icon-header" />
-              <h4 className="hs-card-title">MODELO DE EXPECTED GOALS (xGOALS)</h4>
+              <div className="settings-card-header-avatar">
+                <IconTarget size={20} />
+              </div>
+              <div>
+                <h4 className="hs-card-title" style={{ margin: 0 }}>MODELO DE EXPECTED GOALS (xGOALS)</h4>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", fontWeight: 500 }}>
+                  Calibración empírica y probabilidades calculadas por posición y cuadrante 3x3
+                </span>
+              </div>
             </div>
 
             {/* PANEL DE CALIBRACIÓN EMPÍRICA AUTOMÁTICA */}
@@ -221,19 +227,41 @@ export default function SettingsPage({ matchesList = [] }) {
 
             {/* CAJA EXPLICATIVA CON LA FÓRMULA DE xG Y EL SISTEMA EMPÍRICO */}
             <div className="formula-callout-box">
-              <div className="formula-title">
-                <IconInfo /> FÓRMULA Y SISTEMA DE CALIBRACIÓN AUTOMÁTICA (500 TIROS + 25% INCREMENTAL)
+              <div className="formula-header-banner">
+                <div className="formula-title-badge">
+                  <IconInfo /> MODELO Y SISTEMA DE CALIBRACIÓN AUTOMÁTICA
+                </div>
+                <span className="formula-subtitle-tag">Hitos Incrementales +25%</span>
               </div>
-              <div className="formula-math">
-                Probabilidad Base xG = Goles Anotados en Posición / Tiros Totales en Posición
-                <br />
-                Modificador Zona 3x3 = Efectividad Real en Zona - Efectividad Global de Portería
-                <br />
-                Hitos de Recalibración (+25% Muestra): 500 → 625 → 782 → 977 → 1221 tiros...
+
+              {/* FILA DE TARJETAS DE FÓRMULAS */}
+              <div className="formula-cards-row">
+                <div className="formula-card">
+                  <span className="formula-card-title">1. Probabilidad Base xG</span>
+                  <div className="formula-card-code">
+                    Goles en Posición / Tiros Totales
+                  </div>
+                </div>
+                <div className="formula-card">
+                  <span className="formula-card-title">2. Modificador Zona 3x3</span>
+                  <div className="formula-card-code">
+                    Efectividad Zona - Efec. Global
+                  </div>
+                </div>
+                <div className="formula-card">
+                  <span className="formula-card-title">3. Hitos Recalibración (+25%)</span>
+                  <div className="formula-card-code">
+                    500 → 625 → 782 → 977 → 1221...
+                  </div>
+                </div>
               </div>
-              <p className="formula-desc">
-                <strong>¿Cómo funciona la autocalibración proporcional por volumen?</strong> Al alcanzar <strong>500 lanzamientos</strong>, HandStats activa un modelo empírico basado en tus propios datos. A partir de ese momento, el modelo se <strong>recalibra automáticamente</strong> cada vez que el número total de lanzamientos aumenta un <strong>25%</strong> respecto a la última actualización (500, 625, 782, 977, 1221 tiros...). En cada recalibración se utilizan todos los <strong>datos acumulados</strong>, permitiendo que las probabilidades de gol se <strong>ajusten progresivamente y ganen precisión y estabilidad</strong> conforme aumenta la muestra disponible.
-              </p>
+
+              {/* BLOQUE EXPLICATIVO INFERIOR */}
+              <div className="formula-explanation-block">
+                <p>
+                  <strong>¿Cómo funciona la autocalibración proporcional por volumen?</strong> Al alcanzar <strong>500 lanzamientos</strong>, HandStats activa un modelo empírico basado en tus propios datos. A partir de ese momento, el modelo se <strong>recalibra automáticamente</strong> cada vez que el número total de lanzamientos aumenta un <strong>25%</strong> respecto a la última actualización (500, 625, 782, 977, 1221 tiros...). En cada recalibración se utilizan todos los <strong>datos acumulados</strong>, permitiendo que las probabilidades de gol se <strong>ajusten progresivamente y ganen precisión y estabilidad</strong> conforme aumenta la muestra disponible.
+                </p>
+              </div>
             </div>
 
             {/* BLOQUE PARALELO LADO A LADO: MARCO 3X3 DE PORTERÍA (IZQ) Y TABLA DESGLOSADA (DER) */}
@@ -244,12 +272,11 @@ export default function SettingsPage({ matchesList = [] }) {
                   MODIFICADORES POR ZONA (MARCO 3X3)
                 </h5>
 
-                <div className="empirical-goal-grid-3x3">
+                <div className="empirical-goal-grid-3x3" style={{ maxWidth: "540px", margin: "0 auto" }}>
                   {["TL", "TC", "TR", "ML", "C", "MR", "BL", "BC", "BR"].map((zKey) => {
                     const zData = empiricalData.zoneCounts[zKey] || { shots: 0, goals: 0 };
                     const modVal = empiricalData.zoneModifiers[zKey] ?? 0;
                     const ratePct = zData.shots > 0 ? Math.round((zData.goals / zData.shots) * 100) : 0;
-                    const savePct = 100 - ratePct;
 
                     const isPositive = modVal > 0;
                     const isNegative = modVal < 0;
@@ -259,26 +286,22 @@ export default function SettingsPage({ matchesList = [] }) {
                         key={zKey}
                         className="empirical-goal-cell-3x3"
                         style={{
-                          border: `1px solid ${isPositive ? "rgba(16, 185, 129, 0.4)" : isNegative ? "rgba(239, 68, 68, 0.4)" : "var(--border-color)"}`
+                          border: `1px solid ${isPositive ? "rgba(16, 185, 129, 0.4)" : isNegative ? "rgba(239, 68, 68, 0.4)" : "var(--border-color)"}`,
+                          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, var(--bg-surface) 100%)",
+                          padding: "12px 8px"
                         }}
                       >
                         <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>
                           {goalZoneLabels[zKey]}
                         </span>
-                        <span style={{ fontSize: "14px", fontWeight: 900, fontFamily: "var(--font-mono)", margin: "2px 0" }}>
-                          {zData.goals}/{zData.shots} ({ratePct}%)
+                        <span style={{ fontSize: "14px", fontWeight: 900, fontFamily: "var(--font-mono)", margin: "3px 0", color: "var(--color-primary)" }}>
+                          {zData.goals}/{zData.shots} Goles
                         </span>
-                        <span
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            color: isPositive ? "var(--color-primary)" : isNegative ? "var(--color-danger)" : "var(--text-muted)"
-                          }}
-                        >
+                        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-primary)" }}>
+                          Eficacia: {ratePct}%
+                        </span>
+                        <span style={{ fontSize: "11px", fontWeight: 800, color: isPositive ? "var(--color-primary)" : isNegative ? "var(--color-danger)" : "var(--text-muted)", marginTop: "3px" }}>
                           {modVal > 0 ? `+${modVal} xG` : `${modVal} xG`}
-                        </span>
-                        <span style={{ fontSize: "9px", color: "var(--text-muted)", marginTop: "2px" }}>
-                          xSaves: {savePct}%
                         </span>
                       </div>
                     );
@@ -472,23 +495,54 @@ export default function SettingsPage({ matchesList = [] }) {
         {activeTab === "xsaves" && (
           <div className="hs-card settings-card">
             <div className="settings-card-header">
-              <IconGlove size={18} className="settings-icon-header" />
-              <h4 className="hs-card-title">EXPECTED SAVES (xSAVES) Y MODIFICADOR DE PORTERÍA POR ZONA 3X3</h4>
+              <div className="settings-card-header-avatar">
+                <IconGlove size={20} />
+              </div>
+              <div>
+                <h4 className="hs-card-title" style={{ margin: 0 }}>EXPECTED SAVES (xSAVES) & MODIFICADOR DE PORTERÍA</h4>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", fontWeight: 500 }}>
+                  Modificador empírico por cuadrante (3x3) y paradas esperadas del portero
+                </span>
+              </div>
             </div>
 
             {/* CAJA EXPLICATIVA CON LA FÓRMULA DE xSaves Y MODIFICADOR DE PORTERÍA POR ZONA 3X3 */}
             <div className="formula-callout-box">
-              <div className="formula-title">
-                <IconInfo /> FÓRMULA EMPÍRICA CON MODIFICADOR POR ZONA 3X3 (xSAVES = 1 - xG + MODIFICADOR_ZONA)
+              <div className="formula-header-banner">
+                <div className="formula-title-badge">
+                  <IconInfo /> MODELO DE PORTERÍA Y MODIFICADOR DE CUADRANTES (3X3)
+                </div>
+                <span className="formula-subtitle-tag">xSaves = (1 - xG) + Modificadores</span>
               </div>
-              <div className="formula-math">
-                xSaves_Zona(z) = (1 - xG) + ModificadorZonaXSaves(z)
-                <br />
-                ModificadorZonaXSaves(z) = TasaParadasReal(z) - TasaParadasGlobalPortería
+
+              {/* FILA DE TARJETAS DE FÓRMULAS */}
+              <div className="formula-cards-row">
+                <div className="formula-card">
+                  <span className="formula-card-title">1. xSaves por Zona (z)</span>
+                  <div className="formula-card-code">
+                    (1 - xG) + ModificadorZona(z)
+                  </div>
+                </div>
+                <div className="formula-card">
+                  <span className="formula-card-title">2. Modificador Portería (z)</span>
+                  <div className="formula-card-code">
+                    TasaParadas(z) - TasaGlobal
+                  </div>
+                </div>
+                <div className="formula-card">
+                  <span className="formula-card-title">3. Evaluación Cuadrantes</span>
+                  <div className="formula-card-code">
+                    Desviación vs Eficiencia Global
+                  </div>
+                </div>
               </div>
-              <p className="formula-desc">
-                Las paradas esperadas del portero se calculan como <strong>1 - xG + ModificadorZonaXSaves</strong>. El <strong>Modificador de Portería por Zona 3x3</strong> evalúa el rendimiento empírico del portero en cada zona de la portería (diferenciando por ejemplo entre <strong>Arriba al Centro TC</strong> y <strong>Abajo al Centro BC</strong>) restando su porcentaje de paradas reales en ese cuadrante respecto a su efectividad global.
-              </p>
+
+              {/* BLOQUE EXPLICATIVO INFERIOR */}
+              <div className="formula-explanation-block">
+                <p>
+                  Las paradas esperadas del portero se calculan como <strong>(1 - xG) + ModificadorZonaXSaves</strong>. El <strong>Modificador de Portería por Zona 3x3</strong> evalúa el rendimiento empírico del portero en cada cuadrante de la portería (diferenciando por ejemplo entre <strong>Arriba al Centro TC</strong> y <strong>Abajo al Centro BC</strong>) restando su porcentaje de paradas reales en ese cuadrante respecto a su efectividad global.
+                </p>
+              </div>
             </div>
 
             {/* MARCO DE PORTERÍA 3X3 CON VALORES xSAVES Y MODIFICADORES AUTOMÁTICOS */}
@@ -534,445 +588,6 @@ export default function SettingsPage({ matchesList = [] }) {
                       </div>
                     );
                   })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* SECCIÓN 5: ACCIONES Y RATING */}
-        {activeTab === "rating" && (
-          <div className="hs-card settings-card">
-            <div className="settings-card-header">
-              <IconStar size={18} className="settings-icon-header" />
-              <h4 className="hs-card-title">ACCIONES Y VALORACIONES PARA RATING DE JUGADOR</h4>
-            </div>
-            <p className="settings-section-desc">
-              Configuración y calibración del algoritmo de valoración individual (escala 0.0 a 10.0), basado en Impacto Neto ($NPS$), probabilidades esperadas ($xG/xSaves$) y normalización logística.
-            </p>
-
-            {/* EXPLICACIÓN DETALLADA DEL SISTEMA DE RATING */}
-            <div className="rating-explanation-card">
-              <h5 className="rating-explanation-title">
-                <IconInfo /> ¿Cómo se calcula la nota individual de cada jugador?
-              </h5>
-              <p className="rating-explanation-text">
-                El sistema **no cuenta simplemente goles**. En su lugar, calcula el **Impacto Neto del Jugador (NPS)** acumulando el mérito o penalización de cada acción relevante según su dificultad real y su valor táctico. Finalmente, transforma ese NPS acumulado en una **nota entre 0.0 y 10.0** mediante una curva sigmoide centrada en **5.0 para partidos neutros**.
-              </p>
-
-              {/* ESCALA DE VALORACIÓN DE REFERENCIA */}
-              <div className="rating-scale-badges-grid">
-                <div className="rating-scale-badge tier-excellent">
-                  <span className="tier-score">9.5 - 10.0</span>
-                  <span className="tier-label">Excelente / MVP</span>
-                </div>
-                <div className="rating-scale-badge tier-very-good">
-                  <span className="tier-score">8.0 - 9.4</span>
-                  <span className="tier-label">Muy Buen Partido</span>
-                </div>
-                <div className="rating-scale-badge tier-neutral">
-                  <span className="tier-score">5.0</span>
-                  <span className="tier-label">Partido Promedio</span>
-                </div>
-                <div className="rating-scale-badge tier-poor">
-                  <span className="tier-score">3.0 - 4.9</span>
-                  <span className="tier-label">Partido Flojo</span>
-                </div>
-                <div className="rating-scale-badge tier-bad">
-                  <span className="tier-score">&lt; 3.0</span>
-                  <span className="tier-label">Partido Muy Malo</span>
-                </div>
-              </div>
-
-              {/* PRINCIPIOS MATEMÁTICOS Y REGLAS */}
-              <div className="rating-principles-grid">
-                <div className="rating-principle-item">
-                  <strong>⚽ Goles y Dificultad (xG)</strong>
-                  <span>Marcar un tiro difícil (xG = 0.20) aporta mucho más valor (+0.80 × peso) que marcar a puerta vacía (xG = 0.90). Fallar un tiro fácil penaliza fuertemente.</span>
-                </div>
-                <div className="rating-principle-item">
-                  <strong>🛡️ Mérito Defensivo Real</strong>
-                  <span>Provocar faltas en ataque y golpes francos suma valor directo. Permite que los especialistas defensivos obtengan notas altas (8.0 - 9.5) sin depender de marcar goles.</span>
-                </div>
-                <div className="rating-principle-item">
-                  <strong>🧤 Portería Basada en xSaves</strong>
-                  <span>Las paradas se valoran según el $xG$ del lanzamiento detenido. Parar un tiro de 6m/7m ($xG = 0.85$) concede una valoración máxima.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* FÓRMULA MATEMÁTICA EN CUADRO DESTACADO */}
-            <div className="formula-callout-box">
-              <div className="formula-title">
-                FÓRMULA DE IMPACITO NETO (NPS) Y NORMALIZACIÓN LOGÍSTICA
-              </div>
-              <div className="formula-math">
-                Rating = 10 / (1 + e^(-k × NPS))
-                <br />
-                NPS = ∑ (Goles × (1 - xG) + Paradas × xG + AccionesDefensivas) - ∑ (Fallos × xG + Pérdidas + Sanciones)
-              </div>
-              <p className="formula-desc">
-                Con $k = 0.35$, un NPS de $0$ otorga una nota exacta de $5.0$. Un NPS de $+4.0$ sube a $8.0$ y un NPS de $+6.3$ alcanza un $9.1$.
-              </p>
-            </div>
-
-            {/* SECCIONES CONFIGURABLES DE PARÁMETROS */}
-
-            {/* 1. NORMALIZACIÓN Y SENSIBILIDAD */}
-            <div className="rating-category-block">
-              <h5 className="rating-category-title">1. Escalado & Sensibilidad Sigmoide</h5>
-              <div className="settings-inputs-grid">
-                <div className="form-group">
-                  <label>Factor de Sensibilidad (k)</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.05"
-                      min="0.1"
-                      max="1.0"
-                      className="input-field"
-                      value={form.sigmoidK ?? 0.35}
-                      onChange={(e) => handleChange("sigmoidK", e.target.value)}
-                    />
-                    <span className="unit-tag">k</span>
-                  </div>
-                  <span className="param-item-hint">Pendiente de la curva. Ajusta la velocidad de subida/bajada de la nota.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Nota para Partido Neutro (NPS = 0)</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="4.0"
-                      max="6.0"
-                      className="input-field"
-                      value={form.neutralRating ?? 5.0}
-                      onChange={(e) => handleChange("neutralRating", e.target.value)}
-                    />
-                    <span className="unit-tag">pts</span>
-                  </div>
-                  <span className="param-item-hint">Nota asignada por defecto a un rendimiento neutro o de nivel medio.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. ATAQUE Y LANZAMIENTOS */}
-            <div className="rating-category-block">
-              <h5 className="rating-category-title">2. Ataque & Lanzamientos (Ponderados por xG)</h5>
-              <div className="settings-inputs-grid">
-                <div className="form-group">
-                  <label>Peso Gol Anotado [ × (1 - xG) ]</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_goal ?? 1.50}
-                      onChange={(e) => handleChange("w_goal", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Impacto positivo base por marcar gol, escalado inversamente a su xG.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Parada Sufrida [ × xG ]</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_miss_saved ?? 1.20}
-                      onChange={(e) => handleChange("w_miss_saved", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Penalización por tiro detenido a puerta, proporcional a la facilidad (xG).</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Tiro Fuera / Poste [ × xG ]</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_miss_off ?? 1.40}
-                      onChange={(e) => handleChange("w_miss_off", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Penalización por tirar fuera sin forzar intervención del portero rival.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Puntuación Provocar Penalti 7m</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_drawn_7m ?? 1.10}
-                      onChange={(e) => handleChange("w_drawn_7m", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Valoración positiva por generar una ocasión clarísima de 7m en ataque.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. PÉRDIDAS DE BALÓN SEGMENTADAS */}
-            <div className="rating-category-block">
-              <h5 className="rating-category-title">3. Pérdidas de Balón Segmentadas</h5>
-              <div className="settings-inputs-grid">
-                <div className="form-group">
-                  <label>Penalización Mal Pase</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.2"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_turnover_bad_pass ?? 1.00}
-                      onChange={(e) => handleChange("w_turnover_bad_pass", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Balón regregalado que suele conceder contraataque directo al rival.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Dobles</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.2"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_turnover_double ?? 0.80}
-                      onChange={(e) => handleChange("w_turnover_double", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Infracción técnica no forzada en el bote de balón.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Pasos</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.2"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_turnover_travel ?? 0.80}
-                      onChange={(e) => handleChange("w_turnover_travel", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Infracción técnica en la circulación o penetración.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Pasivo</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.2"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_turnover_passive ?? 0.90}
-                      onChange={(e) => handleChange("w_turnover_passive", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Agotamiento del tiempo de ataque sin generar ocasión ni tiro.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Falta en Ataque Cometida</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.2"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_turnover_offensive_foul ?? 1.10}
-                      onChange={(e) => handleChange("w_turnover_offensive_foul", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Infracción al chocar contra el defensor que anula el ataque.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. ACCIONES DEFENSIVAS */}
-            <div className="rating-category-block">
-              <h5 className="rating-category-title">4. Acciones Defensivas</h5>
-              <div className="settings-inputs-grid">
-                <div className="form-group">
-                  <label>Puntuación Provocar Golpe Franco</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.05"
-                      min="0.1"
-                      max="1.5"
-                      className="input-field"
-                      value={form.w_def_free_throw ?? 0.30}
-                      onChange={(e) => handleChange("w_def_free_throw", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Frena el ritmo del rival y permite ajustar el bloque defensivo.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Puntuación Provocar Falta en Ataque</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.3"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_def_drawn_off_foul ?? 1.10}
-                      onChange={(e) => handleChange("w_def_drawn_off_foul", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Recuperación neta de posesión en defensa (equivalente a un robo).</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Cometer Penalti 7m</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.3"
-                      max="2.5"
-                      className="input-field"
-                      value={form.w_def_committed_7m ?? 1.10}
-                      onChange={(e) => handleChange("w_def_committed_7m", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Penalización por conceder una opción de gol clara de 7m en defensa.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 5. ACTUACIÓN DE PORTERÍA */}
-            <div className="rating-category-block">
-              <h5 className="rating-category-title">5. Actuación de Portería (Ponderada por xG)</h5>
-              <div className="settings-inputs-grid">
-                <div className="form-group">
-                  <label>Puntuación Parada Portero [ × xG ]</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_gk_save ?? 1.50}
-                      onChange={(e) => handleChange("w_gk_save", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Valoración positiva multiplicada directamente por la dificultad del tiro (xG).</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Gol Encajado [ × (1 - xG) ]</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.5"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_gk_conceded ?? 1.00}
-                      onChange={(e) => handleChange("w_gk_conceded", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Penalización multiplicada por (1 - xG). Encajar tiros lejanos resta más.</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 6. DISCIPLINA Y SANCIONES */}
-            <div className="rating-category-block">
-              <h5 className="rating-category-title">6. Disciplina & Sanciones Disciplinarias</h5>
-              <div className="settings-inputs-grid">
-                <div className="form-group">
-                  <label>Penalización Tarjeta Amarilla</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.1"
-                      max="1.5"
-                      className="input-field"
-                      value={form.w_yellow_card ?? 0.40}
-                      onChange={(e) => handleChange("w_yellow_card", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Amonestación verbal o tarjeta reglamentaria sin inferioridad.</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Exclusión 2 Minutos</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.3"
-                      max="3.0"
-                      className="input-field"
-                      value={form.w_two_min ?? 1.20}
-                      onChange={(e) => handleChange("w_two_min", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Deja al equipo en inferioridad numérica durante 2 minutos (-1 jugador).</span>
-                </div>
-
-                <div className="form-group">
-                  <label>Penalización Tarjeta Roja / Azul</label>
-                  <div className="input-group-unit">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1.0"
-                      max="5.0"
-                      className="input-field"
-                      value={form.w_red_card ?? 2.50}
-                      onChange={(e) => handleChange("w_red_card", e.target.value)}
-                    />
-                    <span className="unit-tag">peso</span>
-                  </div>
-                  <span className="param-item-hint">Expulsión definitiva del partido; perjuicio máximo al equipo.</span>
                 </div>
               </div>
             </div>

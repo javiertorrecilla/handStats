@@ -1,13 +1,19 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — SETTINGS PAGE STYLES
+   HANDSTATS ANALYTICS — SETTINGS PAGE STYLES v2.5
+   Estilos refinados integrados con el Design System de HandStats
    ========================================================== */
 
 .settings-page {
   display: flex;
   flex-direction: column;
   gap: var(--space-24);
+  max-width: 1080px;
+  margin: 0 auto;
+  width: 100%;
+  animation: slideUp var(--duration-slow) var(--easing);
 }
 
+/* ENCABEZADO PRINCIPAL */
 .settings-header {
   display: flex;
   justify-content: space-between;
@@ -19,6 +25,7 @@
 }
 
 .settings-header h2 {
+  font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 800;
   color: var(--text-primary);
@@ -32,6 +39,7 @@
   font-size: var(--text-xs);
   color: var(--text-muted);
   margin: var(--space-4) 0 0 0;
+  line-height: 1.4;
 }
 
 .settings-header-actions {
@@ -41,9 +49,9 @@
 }
 
 .settings-alert-success {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  background: var(--color-primary-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--brand-primary);
   padding: var(--space-12) var(--space-16);
   border-radius: var(--radius);
   font-size: var(--text-xs);
@@ -51,15 +59,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-8);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
 }
 
-/* BOTONERA NAVEGABLE NIVELES DE AJUSTE */
+/* BOTONERA NAVEGABLE ENTRE NIVELES DE AJUSTE */
 .settings-tabs-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-8);
+  gap: var(--space-6);
   background: var(--bg-surface);
-  padding: var(--space-8);
+  padding: var(--space-6);
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
@@ -71,25 +80,26 @@
   color: var(--text-muted);
   font-size: var(--text-xs);
   font-weight: 700;
-  padding: var(--space-10) var(--space-16);
+  padding: var(--space-8) var(--space-16);
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: var(--space-8);
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--easing);
+  font-family: var(--font-sans);
 }
 
 .settings-tab-btn:hover {
   color: var(--text-primary);
-  background: rgba(241, 245, 249, 0.7);
+  background: var(--bg-inset);
 }
 
 .settings-tab-btn.active {
-  background: var(--color-primary);
+  background: var(--brand-primary);
   color: #ffffff;
-  border-color: var(--color-primary);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  border-color: var(--brand-primary);
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
 }
 
 /* CONTENEDOR DE FORMULARIO */
@@ -102,18 +112,39 @@
 .settings-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-16);
+  gap: var(--space-20);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-24);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .settings-card-header {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--space-12);
+  padding-bottom: var(--space-14);
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: var(--space-4);
 }
 
+.settings-card-header-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  background: var(--color-primary-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-primary);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+}
+
 .settings-icon-header {
-  color: var(--color-primary);
+  color: var(--brand-primary);
 }
 
 .settings-section-desc {
@@ -128,17 +159,18 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  padding: var(--space-16);
+  padding: var(--space-18) var(--space-20);
   display: flex;
   flex-direction: column;
   gap: var(--space-14);
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .empirical-status-panel.active {
-  border-color: rgba(16, 185, 129, 0.4);
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.04) 0%, var(--bg-surface) 100%);
+  border-color: rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, var(--bg-surface) 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
 }
 
 .empirical-status-header {
@@ -154,19 +186,21 @@
   align-items: center;
   font-size: 11px;
   font-weight: 800;
-  color: var(--color-primary);
-  background: rgba(16, 185, 129, 0.12);
+  color: var(--brand-primary);
+  background: var(--color-primary-subtle);
   padding: 4px 10px;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-full);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  font-family: var(--font-data, sans-serif);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .empirical-status-subtext {
   font-size: var(--text-xs);
   color: var(--text-secondary);
   margin: var(--space-6) 0 0 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .empirical-toggle-box {
@@ -190,6 +224,7 @@
   justify-content: space-between;
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 600;
 }
 
 .empirical-progress-bar {
@@ -203,15 +238,15 @@
 
 .empirical-progress-fill {
   height: 100%;
-  background: var(--color-primary);
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 
-/* GRID PARALELO LADO A LADO: MARCO 3X3 + TABLA EMPÍRICA */
+/* GRID PARALELO LADO A LADO */
 .empirical-side-by-side-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: var(--space-16);
   align-items: stretch;
   margin-top: var(--space-8);
@@ -237,11 +272,10 @@
   justify-content: center;
   padding: var(--space-8) var(--space-10);
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
 }
 
-/* TABLA DE DESGLOSE EMPÍRICO REAL (SIN SCROLL / PERFECTAMENTE INTEGRADA) */
 .empirical-breakdown-card {
   background: var(--bg-inset);
   border: 1px solid var(--border-color);
@@ -275,84 +309,197 @@
 
 .empirical-full-height-table tr {
   height: 16.66%;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.empirical-full-height-table th,
-.empirical-full-height-table td {
-  padding: 6px 8px;
-  font-size: 11px;
+.empirical-full-height-table tr:last-child {
+  border-bottom: none;
+}
+
+.empirical-full-height-table th {
+  padding: 6px 4px;
+  font-size: 10px;
   text-align: center;
-  vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
-.empirical-full-height-table th:first-child,
-.empirical-full-height-table td:first-child {
+.empirical-full-height-table td {
+  padding: 6px 4px;
+  font-size: 11.5px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Columna 1: Tipo Lanzamiento */
+.empirical-full-height-table th:nth-child(1),
+.empirical-full-height-table td:nth-child(1) {
   text-align: left;
-  width: 32%;
+  width: 39%;
+  padding-left: 8px;
+}
+
+/* Columnas 2, 3, 4, 5: Tiros, Goles, xG, xSaves */
+.empirical-full-height-table th:nth-child(2),
+.empirical-full-height-table td:nth-child(2),
+.empirical-full-height-table th:nth-child(3),
+.empirical-full-height-table td:nth-child(3),
+.empirical-full-height-table th:nth-child(4),
+.empirical-full-height-table td:nth-child(4),
+.empirical-full-height-table th:nth-child(5),
+.empirical-full-height-table td:nth-child(5) {
+  width: 11.5%;
+}
+
+/* Columna 6: Estado */
+.empirical-full-height-table th:nth-child(6),
+.empirical-full-height-table td:nth-child(6) {
+  width: 15%;
+  text-align: center;
+  padding-right: 6px;
 }
 
 .empirical-tag-status {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 3px 8px;
-  border-radius: var(--radius-xs);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
   text-transform: uppercase;
-  font-family: var(--font-mono);
+  font-family: var(--font-data, sans-serif);
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .empirical-tag-status.auto {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: var(--color-primary-subtle);
+  color: var(--brand-primary);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .empirical-tag-status.manual {
-  background: rgba(100, 116, 139, 0.15);
+  background: rgba(100, 116, 139, 0.12);
   color: #64748b;
+  border: 1px solid rgba(100, 116, 139, 0.2);
 }
 
-/* CAJA EXPLICATIVA CON FÓRMULAS MATEMÁTICAS */
+/* ---- CUADROS DE INFORMACIÓN Y FÓRMULAS ---- */
 .formula-callout-box {
   background: var(--bg-inset);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  padding: var(--space-14) var(--space-16);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-20) var(--space-24);
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 }
 
-.formula-title {
+.formula-header-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-12);
+}
+
+.formula-title-badge {
+  font-family: var(--font-display);
   font-size: var(--text-xs);
   font-weight: 800;
   color: var(--text-primary);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
-.formula-math {
+.formula-title-badge svg {
+  color: var(--brand-primary);
+}
+
+.formula-subtitle-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--brand-primary);
+  background: var(--color-primary-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-data, sans-serif);
+}
+
+/* FILA DE TARJETAS DE FÓRMULAS */
+.formula-cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-16);
+  margin: 4px 0;
+}
+
+.formula-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xs);
-  padding: var(--space-10) var(--space-12);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 800;
-  color: var(--color-primary);
-  line-height: 1.4;
-  overflow-x: auto;
+  border-top: 3px solid var(--brand-primary);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  transition: all 0.2s var(--easing);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
-.formula-desc {
+.formula-card:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.1);
+}
+
+.formula-card-title {
+  font-family: var(--font-display);
   font-size: 11px;
+  font-weight: 800;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.formula-card-code {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--brand-primary);
+  background: var(--bg-inset);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: var(--radius-xs);
+  padding: 8px 12px;
+  text-align: center;
+  line-height: 1.35;
+}
+
+/* BLOQUE EXPLICATIVO INFERIOR */
+.formula-explanation-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--brand-primary);
+  border-radius: var(--radius-xs);
+  padding: 14px 18px;
+  margin-top: 2px;
+}
+
+.formula-explanation-block p {
+  font-size: 11.5px;
+  color: var(--text-secondary);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 /* MATRIZ DE INPUTS DE CONFIGURACIÓN */
@@ -375,7 +522,6 @@
   color: var(--text-secondary);
 }
 
-/* SUBTEXTO EXPLICATIVO DE CADA PARÁMETRO */
 .param-item-hint {
   font-size: 11px;
   color: var(--text-muted);
@@ -387,14 +533,15 @@
 .rating-explanation-card {
   background: var(--bg-inset);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: var(--space-16);
+  border-radius: var(--radius-sm);
+  padding: var(--space-18);
   display: flex;
   flex-direction: column;
-  gap: var(--space-14);
+  gap: var(--space-16);
 }
 
 .rating-explanation-title {
+  font-family: var(--font-display);
   font-size: var(--text-sm);
   font-weight: 800;
   color: var(--text-primary);
@@ -415,7 +562,7 @@
 .rating-scale-badges-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: var(--space-8);
+  gap: var(--space-10);
 }
 
 .rating-scale-badge {
@@ -423,14 +570,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8) var(--space-10);
-  border-radius: var(--radius-xs);
+  padding: var(--space-10) var(--space-12);
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   text-align: center;
 }
 
 .rating-scale-badge .tier-score {
-  font-family: var(--font-mono);
+  font-family: var(--font-data, sans-serif);
   font-size: 13px;
   font-weight: 900;
 }
@@ -442,32 +589,32 @@
 }
 
 .tier-excellent {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #10b981;
+  background: var(--color-primary-subtle);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--brand-primary);
 }
 
 .tier-very-good {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
   color: #38bdf8;
 }
 
 .tier-neutral {
   background: rgba(148, 163, 184, 0.12);
   border-color: rgba(148, 163, 184, 0.25);
-  color: #cbd5e1;
+  color: #94a3b8;
 }
 
 .tier-poor {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
   color: #f59e0b;
 }
 
 .tier-bad {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
   color: #ef4444;
 }
 
@@ -482,16 +629,17 @@
 .rating-principle-item {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xs);
-  padding: var(--space-10) var(--space-12);
+  border-radius: var(--radius-sm);
+  padding: var(--space-12) var(--space-14);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-6);
 }
 
 .rating-principle-item strong {
   font-size: var(--text-xs);
   color: var(--text-primary);
+  font-weight: 700;
 }
 
 .rating-principle-item span {
@@ -505,17 +653,18 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: var(--space-16);
+  padding: var(--space-18);
   margin-top: var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: var(--space-12);
+  gap: var(--space-14);
 }
 
 .rating-category-title {
+  font-family: var(--font-display);
   font-size: var(--text-xs);
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--brand-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
@@ -533,7 +682,7 @@
 .input-group-unit .input-field {
   width: 100%;
   padding-right: 55px;
-  font-family: var(--font-mono);
+  font-family: var(--font-data, sans-serif);
   font-weight: 700;
 }
 
@@ -544,7 +693,7 @@
   color: var(--text-muted);
   font-size: 10px;
   font-weight: 800;
-  font-family: var(--font-mono);
+  font-family: var(--font-data, sans-serif);
   padding: 3px 6px;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-color);
