@@ -65,10 +65,6 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
         aVal = Number(a.turnovers) || 0;
         bVal = Number(b.turnovers) || 0;
         break;
-      case "steals":
-        aVal = Number(a.steals) || 0;
-        bVal = Number(b.steals) || 0;
-        break;
       case "twoMins":
         aVal = Number(a.twoMins) || 0;
         bVal = Number(b.twoMins) || 0;
@@ -105,7 +101,6 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
     { key: "goalkeeperSaves", label: "Paradas" },
     { key: "goalkeeperXSaves", label: "xSaves" },
     { key: "turnovers", label: "Pérdidas" },
-    { key: "steals", label: "Robos" },
     { key: "twoMins", label: "2 Min" },
     { key: "rating", label: "Rating" }
   ];
@@ -145,12 +140,10 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
                     </span>
                   </td>
 
-                  {/* TIROS DE CAMPO / GOLES (con % de eficacia integrado) / XG — JUGADORES DE CAMPO */}
-                  <td>{p.isGoalkeeper ? <span style={{ color: "var(--text-muted)" }}>—</span> : p.shotsCount}</td>
+                  {/* TIROS DE CAMPO / GOLES (con % de eficacia integrado) / XG — JUGADORES Y PORTEROS QUE LANZAN */}
+                  <td>{p.shotsCount > 0 ? p.shotsCount : "—"}</td>
                   <td>
-                    {p.isGoalkeeper ? (
-                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                    ) : (
+                    {p.shotsCount > 0 || p.goals > 0 ? (
                       <>
                         <strong>{p.goals}</strong>
                         {p.shotsCount > 0 && (
@@ -159,9 +152,11 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
                           </span>
                         )}
                       </>
+                    ) : (
+                      <span style={{ color: "var(--text-muted)" }}>0</span>
                     )}
                   </td>
-                  <td>{p.isGoalkeeper ? <span style={{ color: "var(--text-muted)" }}>—</span> : (p.shotsCount > 0 ? p.xg : "—")}</td>
+                  <td>{p.shotsCount > 0 ? p.xg : "—"}</td>
 
                   {/* TIROS RECIBIDOS / PARADAS (con % de eficacia integrado) / XSAVES — PORTEROS */}
                   <td>
@@ -194,7 +189,6 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
                   </td>
 
                   <td>{p.turnovers}</td>
-                  <td>{p.steals}</td>
                   <td>{p.twoMins}</td>
                   <td>
                     <MetricBadge value={p.rating} variant={p.rating >= 7.5 ? "success" : p.rating >= 6.0 ? "info" : "warning"} />
