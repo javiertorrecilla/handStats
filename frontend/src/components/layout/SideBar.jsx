@@ -1,3 +1,4 @@
+import { useState } from "react";
 import isotipo from "../../assets/isotipo.png";
 import "./Sidebar.css";
 
@@ -40,97 +41,188 @@ const IconLogout = () => (
   </svg>
 );
 
+const IconSun = () => (
+  <svg className="theme-toggle-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" />
+    <line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const IconMoon = () => (
+  <svg className="theme-toggle-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const IconHamburger = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+const IconClose = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 export default function Sidebar({
   user,
   guestMatches,
   logout,
   view,
   setView,
+  theme = "light",
+  toggleTheme,
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const isMatchesActive = view === "list" || view === "create";
 
+  const handleSelectView = (newView) => {
+    setView(newView);
+    setIsOpen(false);
+  };
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-top">
-        <div className="sidebar-brand-header">
-          <div className="sidebar-logo-glow-wrapper">
-            <img src={isotipo} alt="HandStats Emblem" className="sidebar-brand-logo" />
-          </div>
-          <div className="sidebar-brand-details">
-            <h1 className="sidebar-brand-title">HAND<span>STATS</span></h1>
-            <span className="sidebar-brand-tagline">ANALYZE. IMPROVE. WIN.</span>
-          </div>
-        </div>
-      </div>
-
-      <nav className="sidebar-nav">
-        <button
-          className={`sidebar-item ${isMatchesActive ? "active" : ""}`}
-          onClick={() => setView("list")}
-        >
-          <div className="sidebar-icon-box">
-            <IconCalendar />
-          </div>
-          <span className="sidebar-item-label">Mis Partidos</span>
-          <IconChevronRight />
-        </button>
-
-        {user.role !== "guest" && (
-          <button
-            className={`sidebar-item ${view === "teams" ? "active" : ""}`}
-            onClick={() => setView("teams")}
-          >
-            <div className="sidebar-icon-box">
-              <IconTeams />
-            </div>
-            <span className="sidebar-item-label">Equipos</span>
-            <IconChevronRight />
-          </button>
-        )}
-
-        <button
-          className={`sidebar-item ${view === "settings" ? "active" : ""}`}
-          onClick={() => setView("settings")}
-        >
-          <div className="sidebar-icon-box">
-            <IconSettings />
-          </div>
-          <span className="sidebar-item-label">Ajustes de Parámetros</span>
-          <IconChevronRight />
-        </button>
-      </nav>
-
-      <div className="sidebar-bottom">
-        <div className="sidebar-user-card">
-          <div className="sidebar-avatar-container">
-            <div className="sidebar-user-avatar">
-              {user.role === "guest" ? "G" : (user.displayName?.[0] || user.email?.[0] || "U").toUpperCase()}
-            </div>
-            <span className="status-dot-online" title="Conectado"></span>
-          </div>
-
-          <div className="sidebar-user-info">
-            <span className="sidebar-user-name">
-              {user.role === "guest"
-                ? "Usuario Invitado"
-                : user.displayName || user.email?.split("@")[0]}
-            </span>
-            <span className="user-role-badge">
-              {user.role === "guest" ? `Demo (${guestMatches}/3 partidos)` : "Entrenador / Analista"}
-            </span>
-          </div>
-        </div>
-
+    <>
+      {/* Mobile Top Navbar with Hamburger */}
+      <div className="mobile-header-bar">
         <button
           type="button"
-          className="sidebar-logout-btn"
-          onClick={logout}
-          title="Cerrar sesión"
+          className="mobile-hamburger-btn"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label="Abrir menú de navegación"
         >
-          <IconLogout />
-          <span>Cerrar Sesión</span>
+          <IconHamburger />
         </button>
+        <div className="mobile-brand-title">
+          HAND<span>STATS</span>
+        </div>
       </div>
-    </aside>
+
+      {/* Backdrop overlay for mobile */}
+      {isOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+        <div className="sidebar-top">
+          <div className="sidebar-brand">
+            <img src={isotipo} alt="HandStats Emblem" className="sidebar-logo-img" />
+            <div className="sidebar-brand-text">
+              <h1 className="sidebar-title">HAND<span>STATS</span></h1>
+              <span className="sidebar-tagline">ANALYZE. IMPROVE. WIN.</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={() => setIsOpen(false)}
+            aria-label="Cerrar menú"
+          >
+            <IconClose />
+          </button>
+        </div>
+
+        <nav className="sidebar-nav">
+          <button
+            className={`sidebar-item ${isMatchesActive ? "active" : ""}`}
+            onClick={() => handleSelectView("list")}
+          >
+            <div className="sidebar-icon-box">
+              <IconCalendar />
+            </div>
+            <span className="sidebar-item-label">Mis Partidos</span>
+            <IconChevronRight />
+          </button>
+
+          {user.role !== "guest" && (
+            <button
+              className={`sidebar-item ${view === "teams" ? "active" : ""}`}
+              onClick={() => handleSelectView("teams")}
+            >
+              <div className="sidebar-icon-box">
+                <IconTeams />
+              </div>
+              <span className="sidebar-item-label">Equipos</span>
+              <IconChevronRight />
+            </button>
+          )}
+
+          <button
+            className={`sidebar-item ${view === "settings" ? "active" : ""}`}
+            onClick={() => handleSelectView("settings")}
+          >
+            <div className="sidebar-icon-box">
+              <IconSettings />
+            </div>
+            <span className="sidebar-item-label">Ajustes de Parámetros</span>
+            <IconChevronRight />
+          </button>
+        </nav>
+
+        <div className="sidebar-bottom">
+          <button
+            type="button"
+            className="sidebar-theme-toggle"
+            onClick={toggleTheme}
+            title={`Cambiar a modo ${theme === "dark" ? "claro" : "oscuro"}`}
+          >
+            <div className="theme-toggle-left">
+              {theme === "dark" ? <IconMoon /> : <IconSun />}
+              <span>{theme === "dark" ? "Modo Oscuro" : "Modo Claro"}</span>
+            </div>
+            <div className={`theme-toggle-switch ${theme === "dark" ? "dark-active" : ""}`}>
+              <span className="theme-toggle-handle"></span>
+            </div>
+          </button>
+
+          <div className="sidebar-user-card">
+            <div className="sidebar-avatar-container">
+              <div className="sidebar-user-avatar">
+                {user.role === "guest" ? "G" : (user.displayName?.[0] || user.email?.[0] || "U").toUpperCase()}
+              </div>
+              <span className="status-dot-online" title="Conectado"></span>
+            </div>
+
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">
+                {user.role === "guest"
+                  ? "Usuario Invitado"
+                  : user.displayName || user.email?.split("@")[0]}
+              </span>
+              <span className="user-role-badge">
+                {user.role === "guest" ? `Demo (${guestMatches}/3 partidos)` : "Entrenador / Analista"}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="sidebar-logout-btn"
+            onClick={logout}
+            title="Cerrar sesión"
+          >
+            <IconLogout />
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
