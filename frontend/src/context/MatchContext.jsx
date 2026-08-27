@@ -36,13 +36,53 @@ export const MatchProvider = ({ children }) => {
   const sendMatchEvent = async (eventData, matchTimeSeconds) => {
     if (!currentMatch) return;
 
+    const eventTime = matchTimeSeconds ?? eventData.match_time_seconds ?? 0;
+    const isAway = eventData.team === "VISITANTE" || eventData.is_opponent_action === true || eventData.is_opponent_action === "true";
+
+    // Calcular situación numérica automática basada en exclusiones de 2 minutos activas si no viene especificada
+    let autoSituation = "Igualdad";
+    if (currentMatch.events && currentMatch.events.length > 0) {
+      let homeExcl = 0;
+      let awayExcl = 0;
+      currentMatch.events.forEach((ev) => {
+        const isSanction = ev.event_type === "sanction";
+        const sType = String(ev.sanction_type || "").toLowerCase();
+        const is2Min = sType.includes("2 min") || sType.includes("exclusion") || sType.includes("2min") || sType.includes("dos minutos");
+        if (isSanction && is2Min) {
+          const start = Number(ev.match_time_seconds) || 0;
+          const end = start + 120;
+          if (eventTime >= start && eventTime < end) {
+            const evIsAway = ev.team === "VISITANTE" || ev.is_opponent_action === true || ev.is_opponent_action === "true";
+            if (evIsAway) awayExcl += 1;
+            else homeExcl += 1;
+          }
+        }
+      });
+
+      if (isAway) {
+        if (awayExcl > homeExcl) autoSituation = "Inferioridad";
+        else if (awayExcl < homeExcl) autoSituation = "Superioridad";
+        else autoSituation = "Igualdad";
+      } else {
+        if (homeExcl > awayExcl) autoSituation = "Inferioridad";
+        else if (homeExcl < awayExcl) autoSituation = "Superioridad";
+        else autoSituation = "Igualdad";
+      }
+    }
+
     const fullEvent = {
+      possession_number: activePossession?.possession_number ?? 1,
+      play_phase: activePossession?.phase ?? "Posicional",
+      numerical_situation: autoSituation,
       ...eventData,
-      match_time_seconds: matchTimeSeconds,
-      possession_number: activePossession.possession_number,
-      play_phase: activePossession.phase,
-      numerical_situation: activePossession.situation,
+      match_time_seconds: eventTime,
     };
+
+    if (eventData.numerical_situation) {
+      fullEvent.numerical_situation = eventData.numerical_situation;
+    } else if (!fullEvent.numerical_situation || fullEvent.numerical_situation === "Igualdad") {
+      fullEvent.numerical_situation = autoSituation;
+    }
 
     try {
       await matchService.addEvent(currentMatch._id, fullEvent);
