@@ -97,6 +97,19 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
   const homeFreeThrows = homeEvents.filter((e) => e.event_type === "free_throw").length;
   const awayFreeThrows = awayEvents.filter((e) => e.event_type === "free_throw").length;
 
+  // Rebotes (Ofensivos, Defensivos y Totales)
+  const isOffRebound = (e) => e.rebound === "attack" || e.rebound === "offensive" || e.rebound_type === "offensive";
+  const isDefRebound = (e) => e.rebound === "defense" || e.rebound === "defensive" || e.rebound_type === "defensive";
+
+  const homeOffRebounds = homeShots.filter(isOffRebound).length + homeEvents.filter((e) => e.event_type === "rebound" && isOffRebound(e)).length;
+  const awayOffRebounds = awayShots.filter(isOffRebound).length + awayEvents.filter((e) => e.event_type === "rebound" && isOffRebound(e)).length;
+
+  const homeDefRebounds = awayShots.filter(isDefRebound).length + homeEvents.filter((e) => e.event_type === "rebound" && isDefRebound(e)).length;
+  const awayDefRebounds = homeShots.filter(isDefRebound).length + awayEvents.filter((e) => e.event_type === "rebound" && isDefRebound(e)).length;
+
+  const homeTotalRebounds = homeOffRebounds + homeDefRebounds;
+  const awayTotalRebounds = awayOffRebounds + awayDefRebounds;
+
   // ---------------------------------------------------------
   // 2. RITMO Y TIEMPO DE POSESIÓN
   // ---------------------------------------------------------
@@ -188,6 +201,14 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
       away2Min,
       homeFreeThrows,
       awayFreeThrows,
+      homeOffRebounds,
+      awayOffRebounds,
+      homeDefRebounds,
+      awayDefRebounds,
+      homeTotalRebounds,
+      awayTotalRebounds,
+      homeRebounds: homeTotalRebounds,
+      awayRebounds: awayTotalRebounds,
       homePossCount,
       awayPossCount,
       homeTotalPossDuration,

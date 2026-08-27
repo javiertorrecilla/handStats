@@ -107,6 +107,9 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
   let totalSteals = 0;
   let totalSanctions = 0;
   let totalFreeThrows = 0;
+  let totalOffRebounds = 0;
+  let totalDefRebounds = 0;
+  let totalRebounds = 0;
   let totalPossessionsCount = 0;
   let sumPossessionDurations = 0;
   let sumPace = 0;
@@ -143,6 +146,13 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
     const freeThrows = isHome ? (mMetrics.overview.homeFreeThrows || 0) : (mMetrics.overview.awayFreeThrows || 0);
     totalFreeThrows += freeThrows;
 
+    const offReb = isHome ? (mMetrics.overview.homeOffRebounds || 0) : (mMetrics.overview.awayOffRebounds || 0);
+    const defReb = isHome ? (mMetrics.overview.homeDefRebounds || 0) : (mMetrics.overview.awayDefRebounds || 0);
+    const totReb = isHome ? (mMetrics.overview.homeTotalRebounds || 0) : (mMetrics.overview.awayTotalRebounds || 0);
+    totalOffRebounds += offReb;
+    totalDefRebounds += defReb;
+    totalRebounds += totReb;
+
     const possCount = isHome ? (mMetrics.overview.homePossCount || 0) : (mMetrics.overview.awayPossCount || 0);
     const avgPossDuration = isHome ? (mMetrics.overview.homeAvgPossDuration || 0) : (mMetrics.overview.awayAvgPossDuration || 0);
     totalPossessionsCount += possCount;
@@ -157,8 +167,8 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
       m.events.forEach((ev) => {
         const isTeamEvent = isEventOfTeam(ev, teamNameLower, isHome, m);
         if (isTeamEvent) {
+          allTeamShotsEvents.push(ev);
           if (ev.event_type === "shot") {
-            allTeamShotsEvents.push(ev);
             totalShots++;
             if (ev.result === "Gol") totalGoals++;
 
@@ -289,7 +299,7 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
       avgRating: parseFloat(avgRating),
       xg: p.xg.toFixed(2)
     };
-  }).sort((a, b) => (b.goals + b.saves) - (a.goals + a.saves));
+  }).sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
 
   const goalGrid = generateGoalGridMatrix(allTeamShotsEvents, false);
   const courtHeatmap = generateCourtHeatmap(allTeamShotsEvents, "shots", false);
@@ -328,6 +338,10 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
     totalSanctions,
     totalFreeThrows,
     avgFreeThrows: (totalFreeThrows / totalMatches).toFixed(1),
+    totalRebounds,
+    avgRebounds: (totalRebounds / totalMatches).toFixed(1),
+    totalOffRebounds,
+    totalDefRebounds,
     totalPossessionsCount,
     avgPossessionsPerMatch: (totalPossessionsCount / totalMatches).toFixed(1),
     avgPossessionDuration: (sumPossessionDurations / totalMatches).toFixed(0),
