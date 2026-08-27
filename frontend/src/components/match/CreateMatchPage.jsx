@@ -29,6 +29,8 @@ export default function CreateMatchPage({
   // Paso 1 — Equipos
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
+  const [homeLogo, setHomeLogo] = useState(null);
+  const [awayLogo, setAwayLogo] = useState(null);
 
   // Paso 2/3 — Jugadores
   const [homePlayers, setHomePlayers] = useState([]);
@@ -64,10 +66,12 @@ export default function CreateMatchPage({
 
     if (side === "home") {
       setHomeTeam(team.name);
+      if (team.logo_url) setHomeLogo(team.logo_url);
       setHomePlayers(mappedPlayers);
       setShowHomeSuggestions(false);
     } else {
       setAwayTeam(team.name);
+      if (team.logo_url) setAwayLogo(team.logo_url);
       setAwayPlayers(mappedPlayers);
       setShowAwaySuggestions(false);
     }
@@ -88,6 +92,8 @@ export default function CreateMatchPage({
 
     if (homeName) setHomeTeam(homeName);
     if (awayName) setAwayTeam(awayName);
+    if (result.home_logo) setHomeLogo(result.home_logo);
+    if (result.away_logo) setAwayLogo(result.away_logo);
 
     // Buscar si tenemos los equipos guardados para cruzar los roles de portero
     const savedHome = savedTeams.find(
@@ -100,7 +106,6 @@ export default function CreateMatchPage({
     const mapParsedPlayers = (parsedList, savedTeam) => {
       return (parsedList || []).map((p, idx) => {
         const selected = idx < 16;
-        // Si el equipo está guardado, buscar si el jugador existía para heredar su rol
         if (savedTeam && savedTeam.players) {
           const savedPlayer = savedTeam.players.find(
             (sp) => sp.number === p.number || sp.name.toLowerCase() === p.name.toLowerCase()
@@ -113,7 +118,6 @@ export default function CreateMatchPage({
             };
           }
         }
-        // Si no está en equipo guardado, usar heurística estándar (1, 12, 16)
         const isGk = [1, 12, 16].includes(p.number) || p.is_goalkeeper === true;
         return {
           ...p,
@@ -128,6 +132,24 @@ export default function CreateMatchPage({
     }
     if (result.away_players?.length > 0) {
       setAwayPlayers(mapParsedPlayers(result.away_players, savedAway));
+    }
+
+    // Auto-guardar/actualizar escudo extraído en la biblioteca de equipos del usuario
+    if (user?._id) {
+      if (homeName && result.home_logo) {
+        userService.saveTeam(user._id, {
+          name: homeName,
+          logo_url: result.home_logo,
+          players: result.home_players || []
+        }).catch(err => console.log("Auto-save team logo error:", err));
+      }
+      if (awayName && result.away_logo) {
+        userService.saveTeam(user._id, {
+          name: awayName,
+          logo_url: result.away_logo,
+          players: result.away_players || []
+        }).catch(err => console.log("Auto-save team logo error:", err));
+      }
     }
 
     // Ir directamente al paso de jugadores para comprobarlo y editarlo
@@ -145,6 +167,8 @@ export default function CreateMatchPage({
     onMatchCreated({
       home_team: homeTeam.trim(),
       away_team: awayTeam.trim(),
+      home_logo: homeLogo,
+      away_logo: awayLogo,
       home_players: homePlayers,
       away_players: awayPlayers,
     });
