@@ -1,7 +1,6 @@
 import React from "react";
 import { KPICard } from "../common/KPICard";
 import { DonutChart } from "../charts/DonutChart";
-import { TacticalHeatmapGrid } from "../charts/TacticalHeatmapGrid";
 
 export function AttackStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, teamFilter = "home" }) {
   if (!metrics) return null;
@@ -87,16 +86,6 @@ export function AttackStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, te
             </table>
           </div>
         </div>
-      </div>
-
-      {/* MAPA ESPACIAL DE CANCHA Y PORTERÍA RIVAL DE ATAQUE DE CADA EQUIPO */}
-      <div>
-        <TacticalHeatmapGrid
-          events={match?.events || []}
-          isOpponent={isAway}
-          match={match}
-          title={`ANÁLISIS DE DENSIDAD ESPACIAL Y EFICIENCIA DE TIRO RIVAL — ${targetTeam.toUpperCase()}`}
-        />
       </div>
     </div>
   );
