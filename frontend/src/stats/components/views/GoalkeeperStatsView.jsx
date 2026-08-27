@@ -138,14 +138,14 @@ export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps
         </div>
       </div>
 
-      {/* GRÁFICO EXCLUSIVO DE PORTERÍA (3X3) DE LANZAMIENTOS RECIBIDOS Y PARADAS */}
+      {/* GRÁFICO EXCLUSIVO DE PORTERÍA DE LANZAMIENTOS RECIBIDOS Y PARADAS */}
       <div>
         <GoalHeatmapGrid
           events={match?.events || []}
           isOpponent={opponentShotsFilter}
           match={match}
           selectedGkNumber={selectedGkNumber}
-          title={`MAPA TÁCTICO DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA (3x3) — ${activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase()}`}
+          title={`MAPA DE CALOR DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA — ${activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase()}`}
         />
       </div>
     </div>
