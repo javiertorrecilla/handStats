@@ -60,11 +60,15 @@ export function HorizontalBarChart({ items = [], homeTeam = "Local", awayTeam = 
 
       {/* FILAS DE MÉTRICAS COMPARATIVAS */}
       {items.map((item, idx) => {
-        const homeVal = item.homeValue || 0;
-        const awayVal = item.awayValue || 0;
-        const total = Math.max(1, homeVal + awayVal);
-        const homePct = Math.round((homeVal / total) * 100);
-        const awayPct = 100 - homePct;
+        const homeVal = Number(item.homeValue) || 0;
+        const awayVal = Number(item.awayValue) || 0;
+        let homePct = 50;
+        let awayPct = 50;
+
+        if (homeVal + awayVal > 0) {
+          homePct = Math.round((homeVal / (homeVal + awayVal)) * 100);
+          awayPct = 100 - homePct;
+        }
 
         return (
           <div key={idx} className="hs-comp-row" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>

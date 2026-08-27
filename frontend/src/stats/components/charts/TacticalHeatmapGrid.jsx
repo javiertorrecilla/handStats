@@ -1,36 +1,23 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+import { HandballCourtGraphic } from "./HandballCourtGraphic";
+import { HandballGoalGraphic } from "./HandballGoalGraphic";
+import { ContinuousHeatmapCanvas } from "./ContinuousHeatmapCanvas";
+import {
+  isAwayEvent,
+  generateContinuousCourtHeatmapData,
+  generateContinuousGoalHeatmapData
+} from "../../engine/heatmapEngine";
+import {
+  IconBall,
+  IconGlove,
+  IconXMark,
+  IconTurnover,
+  IconFilter,
+  IconLayers,
+  IconMapPin
+} from "../common/Icons";
 
-/**
- * Función de mapeo de color unificada por rangos de 10% de efectividad.
- */
-export function getEfficiencyColor(eff, volumeRatio = 1) {
-  let r, g, b;
-  if (eff >= 90) { r = 16; g = 185; b = 129; }       // 90-100%: Esmeralda brillante
-  else if (eff >= 80) { r = 22; g = 163; b = 74; }   // 80-89%: Verde intenso
-  else if (eff >= 70) { r = 34; g = 197; b = 94; }   // 70-79%: Verde claro
-  else if (eff >= 60) { r = 132; g = 204; b = 22; }  // 60-69%: Verde lima
-  else if (eff >= 50) { r = 217; g = 119; b = 6; }   // 50-59%: Ámbar / Dorado
-  else if (eff >= 40) { r = 249; g = 115; b = 22; }  // 40-49%: Naranja
-  else if (eff >= 30) { r = 234; g = 88; b = 12; }   // 30-39%: Naranja rojizo
-  else if (eff >= 20) { r = 220; g = 38; b = 38; }   // 20-29%: Rojo coral
-  else if (eff >= 10) { r = 185; g = 28; b = 28; }   // 10-19%: Rojo oscuro
-  else { r = 153; g = 27; b = 27; }                  // 0-9%: Carmesí intenso
-
-  const alpha = 0.35 + volumeRatio * 0.45;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-/**
- * Helper robusto para determinar si un evento pertenece al equipo visitante.
- */
-export function isAwayEvent(e, match) {
-  if (!e) return false;
-  if (e.is_opponent_action === true || e.is_opponent_action === "true") return true;
-  if (e.is_opponent === true || e.is_opponent === "true") return true;
-  if (e.team === "VISITANTE" || e.team === "away") return true;
-  if (match?.away_team && e.team && e.team.toLowerCase() === match.away_team.toLowerCase()) return true;
-  return false;
-}
+export { isAwayEvent };
 
 /**
  * Helper para filtrar eventos por portero específico.
@@ -45,154 +32,312 @@ export function matchesGoalkeeper(e, selectedGkNumber) {
 }
 
 /**
- * Visualización Exclusiva 3x3 de Portería para la Pestaña de Porteros.
+ * Pin/Marcador de tiro de alto contraste y máxima visibilidad con Iconos Vectoriales SVG Profesionales.
+ */
+export function ShotMarkerPin({ pt, isSelected = false, isDimmed = false, onClick = null }) {
+  const isGoal = pt.result === "Gol";
+  const isSave = pt.result === "Parada";
+  const isTurnover = pt.event_type === "turnover";
+  const isFailure = pt.result === "Poste" || pt.result === "Fuera" || pt.result === "Fallo" || pt.result === "Bloqueado" || (!isGoal && !isSave && !isTurnover);
+
+  let bg = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+  let borderColor = "#ffffff";
+  let shadow = "0 0 10px rgba(239, 68, 68, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
+  let iconSvg = <IconXMark size={12} color="#ffffff" strokeWidth={3} />;
+  let label = pt.result || "Fallo";
+
+  if (isGoal) {
+    bg = "linear-gradient(135deg, #10b981 0%, #047857 100%)";
+    shadow = isSelected
+      ? "0 0 18px #10b981, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
+      : "0 0 12px rgba(16, 185, 129, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
+    iconSvg = <IconBall size={12} color="#ffffff" />;
+    label = "Gol";
+  } else if (isSave) {
+    bg = "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)";
+    shadow = isSelected
+      ? "0 0 18px #f59e0b, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
+      : "0 0 12px rgba(245, 158, 11, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
+    iconSvg = <IconGlove size={12} color="#ffffff" />;
+    label = "Parada";
+  } else if (isTurnover) {
+    bg = "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)";
+    shadow = isSelected
+      ? "0 0 18px #8b5cf6, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
+      : "0 0 12px rgba(139, 92, 246, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
+    iconSvg = <IconTurnover size={11} color="#ffffff" />;
+    label = "Pérdida";
+  } else if (isFailure) {
+    bg = "linear-gradient(135deg, #ff1a1a 0%, #c40000 100%)";
+    borderColor = "#ffffff";
+    shadow = isSelected
+      ? "0 0 20px #ff0000, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
+      : "0 0 14px #ff0000, 0 0 4px #ffffff, 0 3px 8px rgba(0,0,0,0.95)";
+    iconSvg = <IconXMark size={13} color="#ffffff" strokeWidth={3.2} />;
+    label = `${pt.result || "Fallo"} (Fuera/Poste)`;
+  }
+
+  const tooltip = `${label} — #${pt.player_number || ""} ${pt.player_name || ""}${pt.shot_zone ? ` | Zona: ${pt.shot_zone}` : ""}${pt.goal_zone ? ` ➔ Portería: ${pt.goal_zone}` : ""}`;
+
+  return (
+    <div
+      title={tooltip}
+      onClick={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+          onClick(pt);
+        }
+      }}
+      style={{
+        position: "absolute",
+        left: `${pt.x}%`,
+        top: `${pt.y}%`,
+        transform: isSelected
+          ? "translate(-50%, -50%) scale(1.45)"
+          : "translate(-50%, -50%) scale(1)",
+        width: "22px",
+        height: "22px",
+        borderRadius: "50%",
+        background: bg,
+        border: `2px solid ${borderColor}`,
+        boxShadow: shadow,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        pointerEvents: "auto",
+        transition: "all 0.18s cubic-bezier(0.4, 0, 0.2, 1)",
+        opacity: isDimmed ? 0.35 : 1,
+        zIndex: isSelected ? 12 : 4
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.transform = "translate(-50%, -50%) scale(1.35)";
+          e.currentTarget.style.zIndex = "10";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.transform = "translate(-50%, -50%) scale(1)";
+          e.currentTarget.style.zIndex = "4";
+        }
+      }}
+    >
+      {iconSvg}
+    </div>
+  );
+}
+
+/**
+ * Visualización Exclusiva de Portería Continua para la Pestaña de Porteros.
  */
 export function GoalHeatmapGrid({
   events = [],
   isOpponent = false,
   match = null,
   selectedGkNumber = "all",
-  title = "MAPA TÁCTICO DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA (3x3)"
+  title = "MAPA DE CALOR DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA"
 }) {
-  const shots = (events || []).filter((e) => {
-    if (e.event_type !== "shot") return false;
-    const isAway = isAwayEvent(e, match);
-    const opponentMatch = isOpponent ? isAway : !isAway;
-    if (!opponentMatch) return false;
-    return matchesGoalkeeper(e, selectedGkNumber);
-  });
+  const [metricFilter, setMetricFilter] = useState("all_actions");
+  const [showShotMarkers, setShowShotMarkers] = useState(true);
+  const [selectedEventId, setSelectedEventId] = useState(null);
 
-  const goalGrid = {
-    TL: { shots: 0, goals: 0 }, TC: { shots: 0, goals: 0 }, TR: { shots: 0, goals: 0 },
-    ML: { shots: 0, goals: 0 }, C: { shots: 0, goals: 0 }, MR: { shots: 0, goals: 0 },
-    BL: { shots: 0, goals: 0 }, BC: { shots: 0, goals: 0 }, BR: { shots: 0, goals: 0 }
-  };
+  // Filtrar eventos recibidos en portería
+  const gkShots = useMemo(() => {
+    return (events || []).filter((e) => {
+      if (e.event_type !== "shot") return false;
+      const isAway = isAwayEvent(e, match);
+      const opponentMatch = isOpponent ? isAway : !isAway;
+      if (!opponentMatch) return false;
+      return matchesGoalkeeper(e, selectedGkNumber);
+    });
+  }, [events, isOpponent, match, selectedGkNumber]);
 
-  let maxShotsInGoalCell = 1;
+  // Conteos para el selector desplegable
+  const countAll = gkShots.length;
+  const countGoals = gkShots.filter((e) => e.result === "Gol").length;
+  const countSaves = gkShots.filter((e) => e.result === "Parada").length;
+  const countMisses = gkShots.filter((e) => e.result === "Poste" || e.result === "Fuera" || e.result === "Fallo" || e.result === "Bloqueado").length;
 
-  shots.forEach((s) => {
-    const goalZone = s.target_zone;
-    const isGoal = s.result === "Gol";
-    if (goalZone && goalGrid[goalZone]) {
-      goalGrid[goalZone].shots += 1;
-      if (isGoal) goalGrid[goalZone].goals += 1;
-      if (goalGrid[goalZone].shots > maxShotsInGoalCell) {
-        maxShotsInGoalCell = goalGrid[goalZone].shots;
-      }
-    }
-  });
+  // Generar puntos continuos
+  const goalPoints = useMemo(() => {
+    return generateContinuousGoalHeatmapData(gkShots, {
+      metricType: metricFilter,
+      selectedGoalkeeper: "all"
+    });
+  }, [gkShots, metricFilter]);
 
-  const goalZoneLabels = {
-    TL: "Sup. Izq", TC: "Sup. Cen", TR: "Sup. Der",
-    ML: "Med. Izq", C: "Centro", MR: "Med. Der",
-    BL: "Inf. Izq", BC: "Inf. Cen", BR: "Inf. Der"
-  };
+  // Marcadores visibles de portería: si hay uno seleccionado, solo se muestra ese
+  const visibleGoalPoints = useMemo(() => {
+    if (!selectedEventId) return goalPoints;
+    return goalPoints.filter((pt) => pt.id === selectedEventId);
+  }, [goalPoints, selectedEventId]);
 
-  const colorRanges = [
-    { label: "0-9%", range: 5 },
-    { label: "10-19%", range: 15 },
-    { label: "20-29%", range: 25 },
-    { label: "30-39%", range: 35 },
-    { label: "40-49%", range: 45 },
-    { label: "50-59%", range: 55 },
-    { label: "60-69%", range: 65 },
-    { label: "70-79%", range: 75 },
-    { label: "80-89%", range: 85 },
-    { label: "90-100%", range: 95 }
-  ];
+  const savePct = countAll > 0 ? Math.round((countSaves / countAll) * 100) : 0;
 
   return (
     <div className="hs-card" style={{ display: "flex", flexDirection: "column", gap: "var(--space-20)" }}>
-      {/* TÍTULO PRINCIPAL CON LÍNEA DIVISORIA INFERIOR */}
-      <h4 className="hs-card-title">
-        {title}
-      </h4>
+      {/* CABECERA Y FILTROS PROFESIONALES */}
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "var(--space-12)", borderBottom: "1px solid var(--border-color)", paddingBottom: "var(--space-12)" }}>
+        <h4 className="hs-card-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+          <IconGlove size={18} color="var(--brand-primary)" />
+          <span>{title}</span>
+        </h4>
 
-      {/* MARCO DE PORTERÍA (3X3) */}
-      <div
-        className="hs-goal-frame-box"
-        style={{
-          maxWidth: "460px",
-          width: "100%",
-          aspectRatio: "1 / 1",
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gridTemplateRows: "repeat(3, 1fr)",
-          gap: "6px"
-        }}
-      >
-        {["TL", "TC", "TR", "ML", "C", "MR", "BL", "BC", "BR"].map((zKey) => {
-          const cell = goalGrid[zKey] || { shots: 0, goals: 0 };
-          const saves = cell.shots - cell.goals;
-          const savePct = cell.shots > 0 ? Math.round((saves / cell.shots) * 100) : 0;
-          const volumeRatio = Math.min(1, cell.shots / maxShotsInGoalCell);
-
-          const bgStyle = cell.shots > 0
-            ? getEfficiencyColor(savePct, volumeRatio)
-            : "rgba(241, 245, 249, 0.45)";
-
-          return (
-            <div
-              key={zKey}
+        {/* SELECTOR DESPLEGABLE CON ESTILO PROFESIONAL */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--radius-sm)",
+              padding: "4px 10px",
+              boxShadow: "var(--shadow-sm)"
+            }}
+          >
+            <IconFilter size={14} color="var(--brand-primary)" />
+            <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Filtro:
+            </span>
+            <select
+              id="gk-heatmap-select"
+              value={metricFilter}
+              onChange={(e) => {
+                setMetricFilter(e.target.value);
+                setSelectedEventId(null);
+              }}
               style={{
-                background: bgStyle,
-                border: `1px solid ${cell.shots > 0 ? "rgba(15, 23, 42, 0.2)" : "var(--border-color)"}`,
-                borderRadius: "var(--radius-xs)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "var(--space-12)",
-                color: "#0f172a",
-                boxShadow: cell.shots > 0 ? "0 4px 10px rgba(0,0,0,0.08)" : "none",
-                transition: "all 0.2s ease"
+                border: "none",
+                background: "transparent",
+                color: "var(--text-primary)",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                outline: "none",
+                padding: "2px 4px"
               }}
             >
-              {cell.shots > 0 ? (
-                <>
-                  <span style={{ fontSize: "17px", fontWeight: 900, fontFamily: "var(--font-mono)" }}>
-                    {saves}/{cell.shots}
-                  </span>
-                  <span style={{ fontSize: "12px", fontWeight: 800, marginTop: "2px" }}>
-                    {savePct}% Paradas
-                  </span>
-                </>
-              ) : (
-                <span style={{ fontSize: "12px", fontWeight: 800, color: "#64748b" }}>
-                  {goalZoneLabels[zKey]}
-                </span>
-              )}
-            </div>
-          );
-        })}
+              <option value="all_actions">Todos los Lanzamientos ({countAll})</option>
+              <option value="all_shots">Tiros a Puerta ({countAll})</option>
+              <option value="goals">Goles Encajados ({countGoals})</option>
+              <option value="saves">Paradas ({countSaves})</option>
+              <option value="misses">Fuera / Postes ({countMisses})</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            className={`btn btn-sm ${showShotMarkers ? "btn-secondary" : "btn-ghost"}`}
+            onClick={() => setShowShotMarkers(!showShotMarkers)}
+            style={{ fontSize: "11px", fontWeight: 700, padding: "5px 12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            title="Mostrar u ocultar puntos individuales de tiro"
+          >
+            <IconMapPin size={13} />
+            <span>{showShotMarkers ? "Ocultar Marcadores" : "Ver Marcadores"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* ESCALA DE COLOR EN 1 LÍNEA HORIZONTAL CON ESPACIO AMPLIO SUPERIOR */}
-      <div style={{ width: "100%", paddingTop: "var(--space-24)" }}>
-        <h6 style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "var(--space-10)", textAlign: "center" }}>
-          ESCALA DE EFECTIVIDAD EN PARADAS (RANGOS DE 10%)
-        </h6>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: "4px", textAlign: "center" }}>
-          {colorRanges.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: getEfficiencyColor(item.range, 0.9),
-                borderRadius: "var(--radius-xs)",
-                padding: "6px 2px",
-                color: "#fff",
-                fontSize: "9px",
-                fontWeight: 800,
-                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                whiteSpace: "nowrap",
-                overflow: "hidden"
-              }}
-            >
-              {item.label}
+      {/* CONTENEDOR PRINCIPAL DE PORTERÍA */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--space-24)", alignItems: "center" }}>
+        {/* GRÁFICO DE PORTERÍA CON MAPA DE CALOR CONTINUO */}
+        <div style={{ width: "100%", maxWidth: "560px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "var(--space-10)" }}>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              aspectRatio: "360 / 220",
+              borderRadius: "var(--radius-sm)",
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "#081210"
+            }}
+          >
+            {/* 1. Capa SVG Oficial de Portería */}
+            <HandballGoalGraphic idPrefix="gk-page-goal" />
+
+            {/* 2. Capa Canvas de Calor Continuo */}
+            <ContinuousHeatmapCanvas points={goalPoints} radius={32} blur={0.85} opacity={0.92} />
+
+            {/* 3. Marcadores de Tiro Opcionales */}
+            {showShotMarkers && (
+              <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 3 }}>
+                {visibleGoalPoints.map((pt, idx) => (
+                  <ShotMarkerPin
+                    key={idx}
+                    pt={pt}
+                    isSelected={selectedEventId === pt.id}
+                    onClick={(p) => setSelectedEventId(selectedEventId === p.id ? null : p.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* TARJETAS RESUMEN DE RENDIMIENTO EN PORTERÍA */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "var(--space-10)" }}>
+            <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
+              <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
+                Total Lanzamientos
+              </span>
+              <span style={{ fontSize: "22px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "var(--text-primary)" }}>
+                {countAll}
+              </span>
             </div>
-          ))}
+
+            <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
+              <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
+                % Efectividad Paradas
+              </span>
+              <span style={{ fontSize: "22px", fontWeight: 900, fontFamily: "var(--font-mono)", color: savePct >= 35 ? "#10b981" : savePct >= 28 ? "#f59e0b" : "#ef4444" }}>
+                {savePct}%
+              </span>
+            </div>
+
+            <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
+              <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
+                Paradas Realizadas
+              </span>
+              <span style={{ fontSize: "20px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "#10b981" }}>
+                {countSaves}
+              </span>
+            </div>
+
+            <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
+              <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
+                Goles Encajados
+              </span>
+              <span style={{ fontSize: "20px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "#ef4444" }}>
+                {countGoals}
+              </span>
+            </div>
+          </div>
+
+          {/* LEYENDA CONTINUA DE CALOR */}
+          <div style={{ background: "var(--bg-surface)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)" }}>
+            <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
+              Escala de Densidad Térmica de Lanzamientos
+            </span>
+            <div
+              style={{
+                height: "12px",
+                borderRadius: "var(--radius-xs)",
+                background: "linear-gradient(90deg, #a3e635 0%, #facc15 28%, #f97316 55%, #ef4444 80%, #7f1d1d 100%)",
+                boxShadow: "inset 0 1px 2px rgba(0,0,0,0.3)"
+              }}
+            />
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "10px", fontWeight: 700, color: "var(--text-muted)" }}>
+              <span>Baja Frecuencia</span>
+              <span>Densidad Media</span>
+              <span>Máxima Concentración</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -200,7 +345,8 @@ export function GoalHeatmapGrid({
 }
 
 /**
- * Visualización Completa de Ataque (Cancha) + Portería (Rival o Paradas del Equipo).
+ * Visualización Completa de Ataque / Acumulado (Media Pista + Portería) con Mapas de Calor Continuos
+ * y Enlace Interactivo de Marcadores entre Pista y Portería.
  */
 export function TacticalHeatmapGrid({
   events = [],
@@ -208,576 +354,373 @@ export function TacticalHeatmapGrid({
   isOpponent = false,
   match = null,
   selectedGkNumber = "all",
-  title = "ANÁLISIS DE DENSIDAD ESPACIAL Y EFICIENCIA DE TIRO Y PORTERÍA"
+  selectedPlayerNumber = "all",
+  title = "MAPA DE DENSIDAD ESPACIAL Y EFECTIVIDAD EN PISTA Y PORTERÍA"
 }) {
-  // Tiros de ataque sobre el campo de cada equipo
-  const shots = (events || []).filter((e) => {
-    if (e.event_type !== "shot") return false;
-    const isAway = isAwayEvent(e, match);
-    const opponentMatch = isOpponent ? isAway : !isAway;
-    return opponentMatch;
-  });
+  const [metricFilter, setMetricFilter] = useState("all_actions");
+  const [showCourtZones, setShowCourtZones] = useState(false);
+  const [showShotMarkers, setShowShotMarkers] = useState(true);
+  const [selectedEventId, setSelectedEventId] = useState(null);
 
-  // Tiros recibidos en portería para el mapa 3x3
-  const isGkMode = Boolean(gkEvents);
-  let goalShots = isGkMode
-    ? (gkEvents || []).filter((e) => e.event_type === "shot")
-    : shots;
+  // Si gkEvents está presente o isOpponent no está definido (por ejemplo, en TeamsPage acumulado), los eventos ya vienen 100% pre-filtrados para el equipo
+  const isPreFiltered = Boolean(gkEvents) || isOpponent === null || isOpponent === undefined;
 
-  if (selectedGkNumber && selectedGkNumber !== "all") {
-    goalShots = goalShots.filter((e) => matchesGoalkeeper(e, selectedGkNumber));
-  }
-
-  const rows = ["EXT", "PIV", "PEN", "9M", "10L"];
-
-  const rowTooltips = {
-    EXT: "EXT — Extremos (6m)",
-    PIV: "PIV — Pivote (6m)",
-    PEN: "PEN — Penetración (6m)",
-    "9M": "9M — Primera Línea (9m)",
-    "10L": "10L — Transición (1ª Oleada)"
-  };
-
-  const grid = {
-    EXT: { izq: { shots: 0, goals: 0 }, der: { shots: 0, goals: 0 } },
-    PIV: { muy_izq: { shots: 0, goals: 0 }, izq: { shots: 0, goals: 0 }, cen: { shots: 0, goals: 0 }, der: { shots: 0, goals: 0 }, muy_der: { shots: 0, goals: 0 } },
-    PEN: { muy_izq: { shots: 0, goals: 0 }, izq: { shots: 0, goals: 0 }, cen: { shots: 0, goals: 0 }, der: { shots: 0, goals: 0 }, muy_der: { shots: 0, goals: 0 } },
-    "9M": { muy_izq: { shots: 0, goals: 0 }, izq: { shots: 0, goals: 0 }, cen: { shots: 0, goals: 0 }, der: { shots: 0, goals: 0 }, muy_der: { shots: 0, goals: 0 } },
-    "10L": { izq: { shots: 0, goals: 0 }, cen: { shots: 0, goals: 0 }, der: { shots: 0, goals: 0 } }
-  };
-
-  const goalGrid = {
-    TL: { shots: 0, goals: 0 }, TC: { shots: 0, goals: 0 }, TR: { shots: 0, goals: 0 },
-    ML: { shots: 0, goals: 0 }, C: { shots: 0, goals: 0 }, MR: { shots: 0, goals: 0 },
-    BL: { shots: 0, goals: 0 }, BC: { shots: 0, goals: 0 }, BR: { shots: 0, goals: 0 }
-  };
-
-  const special = {
-    sevenM: { shots: 0, goals: 0 }
-  };
-
-  let maxShotsInCell = 1;
-  let maxShotsInGoalCell = 1;
-
-  // Procesar tiros en cancha (Ataque)
-  shots.forEach((s) => {
-    const type = (s.shot_type || "").toLowerCase();
-    const pos = (s.shot_position || s.target_zone || "").toLowerCase();
-    const isGoal = s.result === "Gol";
-
-    if (!isGkMode) {
-      const goalZone = s.target_zone;
-      if (goalZone && goalGrid[goalZone]) {
-        goalGrid[goalZone].shots += 1;
-        if (isGoal) goalGrid[goalZone].goals += 1;
-        if (goalGrid[goalZone].shots > maxShotsInGoalCell) {
-          maxShotsInGoalCell = goalGrid[goalZone].shots;
-        }
-      }
+  // Filtrar eventos de ataque en pista
+  const shots = useMemo(() => {
+    const rawEvents = events || [];
+    if (isPreFiltered) {
+      return rawEvents;
     }
-
-    if (type.includes("7m") || type.includes("penalti")) {
-      special.sevenM.shots += 1;
-      if (isGoal) special.sevenM.goals += 1;
-      return;
-    }
-
-    let row = "9M";
-    if (type.includes("extremo")) row = "EXT";
-    else if (type.includes("pivote")) row = "PIV";
-    else if (type.includes("penetración") || type.includes("6m")) row = "PEN";
-    else if (type.includes("exterior") || type.includes("9m") || type.includes("distancia")) row = "9M";
-    else if (type.includes("contraataque") || type.includes("10m") || type.includes("oleada") || type.includes("transición") || type.includes("campo")) row = "10L";
-
-    let col = "cen";
-    if (pos.includes("muy izq") || pos.includes("muy izquierda")) col = "muy_izq";
-    else if (pos.includes("muy der") || pos.includes("muy derecha")) col = "muy_der";
-    else if (pos.includes("izq") || pos.includes("izquierda")) col = "izq";
-    else if (pos.includes("der") || pos.includes("derecha")) col = "der";
-    else col = "cen";
-
-    if (row === "EXT") {
-      if (col === "muy_izq" || col === "izq" || col === "cen") col = "izq";
-      else col = "der";
-    } else if (row === "10L") {
-      if (col === "muy_izq" || col === "izq") col = "izq";
-      else if (col === "muy_der" || col === "der") col = "der";
-      else col = "cen";
-    }
-
-    if (grid[row] && grid[row][col]) {
-      grid[row][col].shots += 1;
-      if (isGoal) grid[row][col].goals += 1;
-      if (grid[row][col].shots > maxShotsInCell) {
-        maxShotsInCell = grid[row][col].shots;
-      }
-    }
-  });
-
-  // Procesar tiros en portería en modo Porteros si se pasa gkEvents
-  if (isGkMode) {
-    goalShots.forEach((s) => {
-      const goalZone = s.target_zone;
-      const isGoal = s.result === "Gol";
-      if (goalZone && goalGrid[goalZone]) {
-        goalGrid[goalZone].shots += 1;
-        if (isGoal) goalGrid[goalZone].goals += 1;
-        if (goalGrid[goalZone].shots > maxShotsInGoalCell) {
-          maxShotsInGoalCell = goalGrid[goalZone].shots;
-        }
-      }
+    return rawEvents.filter((e) => {
+      const isAway = isAwayEvent(e, match);
+      const opponentMatch = isOpponent ? isAway : !isAway;
+      return opponentMatch;
     });
-  }
+  }, [events, isPreFiltered, isOpponent, match]);
 
-  const getCellBg = (cell, isGoal = false) => {
-    if (!cell || cell.shots === 0) {
-      return "rgba(241, 245, 249, 0.45)";
+  // Tiros en portería
+  const isGkMode = Boolean(gkEvents);
+  const goalShots = useMemo(() => {
+    let base = isGkMode
+      ? (gkEvents || []).filter((e) => e.event_type === "shot")
+      : shots.filter((e) => e.event_type === "shot");
+
+    if (selectedGkNumber && selectedGkNumber !== "all") {
+      base = base.filter((e) => matchesGoalkeeper(e, selectedGkNumber));
     }
+    return base;
+  }, [isGkMode, gkEvents, shots, selectedGkNumber]);
 
-    const eff = isGoal && isGkMode
-      ? Math.round(((cell.shots - cell.goals) / cell.shots) * 100)
-      : Math.round((cell.goals / cell.shots) * 100);
+  // Conteos dinámicos para el desplegable
+  const countAllActions = shots.length;
+  const countAllShots = shots.filter((e) => e.event_type === "shot").length;
+  const countGoals = shots.filter((e) => e.event_type === "shot" && e.result === "Gol").length;
+  const countSaves = shots.filter((e) => e.event_type === "shot" && e.result === "Parada").length;
+  const countMisses = shots.filter((e) => e.event_type === "shot" && (e.result === "Poste" || e.result === "Fuera" || e.result === "Fallo" || e.result === "Bloqueado")).length;
+  const countTurnovers = shots.filter((e) => e.event_type === "turnover").length;
 
-    const maxVal = isGoal ? maxShotsInGoalCell : maxShotsInCell;
-    const volumeRatio = Math.min(1, cell.shots / maxVal);
+  // Generar puntos continuos para la Cancha
+  const courtPoints = useMemo(() => {
+    return generateContinuousCourtHeatmapData(shots, {
+      metricType: metricFilter,
+      selectedPlayer: selectedPlayerNumber
+    });
+  }, [shots, metricFilter, selectedPlayerNumber]);
 
-    return getEfficiencyColor(eff, volumeRatio);
-  };
+  // Generar puntos continuos para la Portería
+  const goalPoints = useMemo(() => {
+    return generateContinuousGoalHeatmapData(goalShots, {
+      metricType: metricFilter,
+      selectedPlayer: selectedPlayerNumber,
+      selectedGoalkeeper: isGkMode ? selectedGkNumber : "all"
+    });
+  }, [goalShots, metricFilter, selectedPlayerNumber, isGkMode, selectedGkNumber]);
 
-  const sevenMEff = special.sevenM.shots > 0 ? Math.round((special.sevenM.goals / special.sevenM.shots) * 100) : 0;
-
-  const colorRanges = [
-    { label: "0-9%", range: 5 },
-    { label: "10-19%", range: 15 },
-    { label: "20-29%", range: 25 },
-    { label: "30-39%", range: 35 },
-    { label: "40-49%", range: 45 },
-    { label: "50-59%", range: 55 },
-    { label: "60-69%", range: 65 },
-    { label: "70-79%", range: 75 },
-    { label: "80-89%", range: 85 },
-    { label: "90-100%", range: 95 }
-  ];
-
-  const goalZoneLabels = {
-    TL: "Sup. Izq", TC: "Sup. Cen", TR: "Sup. Der",
-    ML: "Med. Izq", C: "Centro", MR: "Med. Der",
-    BL: "Inf. Izq", BC: "Inf. Cen", BR: "Inf. Der"
-  };
-
-  const renderCellContent = (cell) => {
-    if (!cell || cell.shots === 0) {
-      return (
-        <span style={{ fontSize: "15px", fontWeight: 700, color: "#64748b" }}>0</span>
-      );
+  // Marcadores visibles de Portería:
+  // - Si hay una acción seleccionada en pista: SOLO se muestra el marcador de portería que coincide con esa acción (si es tiro) y se ocultan los no relacionados. Si es pérdida, se ocultan todos los marcadores de portería.
+  // - Si no hay ninguna acción seleccionada: si el filtro es 'turnovers' se ocultan todos; de lo contrario se muestran todos los marcadores de tiro de portería.
+  const visibleGoalPoints = useMemo(() => {
+    if (selectedEventId) {
+      return goalPoints.filter((pt) => pt.id === selectedEventId);
     }
+    if (metricFilter === "turnovers") {
+      return [];
+    }
+    return goalPoints;
+  }, [goalPoints, selectedEventId, metricFilter]);
 
-    const eff = Math.round((cell.goals / cell.shots) * 100);
+  // Detalle de la acción seleccionada actualmente (si existe)
+  const selectedActionDetail = useMemo(() => {
+    if (!selectedEventId) return null;
+    const fromCourt = courtPoints.find((p) => p.id === selectedEventId);
+    const fromGoal = goalPoints.find((p) => p.id === selectedEventId);
+    return fromCourt || fromGoal || null;
+  }, [selectedEventId, courtPoints, goalPoints]);
 
-    return (
-      <>
-        <span style={{ fontSize: "18px", fontWeight: 900, fontFamily: "var(--font-mono)", lineHeight: "1.1", color: "#0f172a" }}>{cell.shots}</span>
-        <span style={{ fontSize: "11px", fontWeight: 800, marginTop: "2px", color: "#0f172a" }}>{cell.goals}/{cell.shots}</span>
-        <span style={{ fontSize: "10px", fontWeight: 800, color: "#0f172a" }}>({eff}%)</span>
-      </>
-    );
-  };
+  const effPct = countAllShots > 0 ? Math.round((countGoals / countAllShots) * 100) : 0;
 
   return (
     <div className="hs-card" style={{ display: "flex", flexDirection: "column", gap: "var(--space-20)" }}>
-      {/* TÍTULO PRINCIPAL CON LÍNEA DIVISORIA INFERIOR */}
-      <h4 className="hs-card-title">
-        {title}
-      </h4>
+      {/* CABECERA CON TÍTULO Y CONTROLES PROFESIONALES */}
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "var(--space-12)", borderBottom: "1px solid var(--border-color)", paddingBottom: "var(--space-12)" }}>
+        <h4 className="hs-card-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+          <span>{title}</span>
+        </h4>
 
-      {/* AMBOS MAPAS LADO A LADO */}
+        {/* SELECTOR DESPLEGABLE Y CONMUTADORES CON ESTÉTICA PREMIUM */}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          {/* DESPLEGABLE CON CONTENEDOR ESTILIZADO */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--radius-sm)",
+              padding: "4px 10px",
+              boxShadow: "var(--shadow-sm)"
+            }}
+          >
+            <IconFilter size={14} color="var(--brand-primary)" />
+            <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Filtro:
+            </span>
+            <select
+              id="tactical-heatmap-select"
+              value={metricFilter}
+              onChange={(e) => {
+                setMetricFilter(e.target.value);
+                setSelectedEventId(null);
+              }}
+              style={{
+                border: "none",
+                background: "transparent",
+                color: "var(--text-primary)",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                outline: "none",
+                padding: "2px 4px"
+              }}
+            >
+              <option value="all_actions">Todas las acciones ({countAllActions})</option>
+              <option value="all_shots">Todos los lanzamientos ({countAllShots})</option>
+              <option value="goals">Goles ({countGoals})</option>
+              <option value="saves">Paradas ({countSaves})</option>
+              <option value="misses">Fallos (incl. postes) ({countMisses})</option>
+              <option value="turnovers">Pérdidas ({countTurnovers})</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            className={`btn btn-sm ${showCourtZones ? "btn-secondary" : "btn-ghost"}`}
+            onClick={() => setShowCourtZones(!showCourtZones)}
+            style={{ fontSize: "11px", fontWeight: 700, padding: "5px 12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            title="Mostrar u ocultar delimitación de zonas xG"
+          >
+            <IconLayers size={13} />
+            <span>{showCourtZones ? "Ocultar Zonas" : "Ver Zonas"}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`btn btn-sm ${showShotMarkers ? "btn-secondary" : "btn-ghost"}`}
+            onClick={() => setShowShotMarkers(!showShotMarkers)}
+            style={{ fontSize: "11px", fontWeight: 700, padding: "5px 12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            title="Mostrar u ocultar marcadores de tiro individuales"
+          >
+            <IconMapPin size={13} />
+            <span>{showShotMarkers ? "Ocultar Marcadores" : "Ver Marcadores"}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* BANNER INFORMATIVO CUANDO HAY UNA ACCIÓN ESPECÍFICA SELECCIONADA */}
+      {selectedActionDetail && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+            background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.12) 100%)",
+            border: "1px solid rgba(16, 185, 129, 0.35)",
+            padding: "8px 16px",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "12px",
+            fontWeight: 800
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <span style={{ color: "var(--brand-primary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              🎯 Acción Seleccionada:
+            </span>
+            <span style={{ color: "var(--text-primary)" }}>
+              #{selectedActionDetail.player_number || ""} {selectedActionDetail.player_name || "Jugador"}
+            </span>
+            <span
+              style={{
+                padding: "2px 8px",
+                borderRadius: "var(--radius-full)",
+                background: selectedActionDetail.result === "Gol" ? "#10b981" : selectedActionDetail.result === "Parada" ? "#f59e0b" : selectedActionDetail.event_type === "turnover" ? "#8b5cf6" : "#ef4444",
+                color: "#ffffff",
+                fontSize: "11px"
+              }}
+            >
+              {selectedActionDetail.result || selectedActionDetail.event_type || "Acción"}
+            </span>
+            {selectedActionDetail.shot_zone && (
+              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
+                Pista: <strong>{selectedActionDetail.shot_zone}</strong>
+              </span>
+            )}
+            {selectedActionDetail.goal_zone && (
+              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
+                ➔ Portería: <strong>{selectedActionDetail.goal_zone}</strong>
+              </span>
+            )}
+            {selectedActionDetail.match_time_seconds > 0 && (
+              <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
+                ⏱ {Math.floor(selectedActionDetail.match_time_seconds / 60)}:{(selectedActionDetail.match_time_seconds % 60).toString().padStart(2, "0")}
+              </span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => setSelectedEventId(null)}
+            style={{ fontSize: "11px", fontWeight: 800, padding: "2px 8px" }}
+          >
+            ✕ Ver todos los marcadores
+          </button>
+        </div>
+      )}
+
+      {/* AMBOS MAPAS SIEMPRE LADO A LADO */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "var(--space-24)", alignItems: "start" }}>
-        {/* BLOQUE 1: MAPA ESPACIAL EN CANCHA */}
+        {/* BLOQUE 1: MEDIA PISTA DE BALONMANO (400x300) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)", width: "100%" }}>
           <h5 style={{ fontSize: "12px", fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0, textAlign: "center", border: "none" }}>
-            DENSIDAD ESPACIAL Y EFECTIVIDAD POR ZONA DE CANCHA
+            DENSIDAD TÉRMICA EN MEDIA PISTA ({courtPoints.length} ACCIONES)
           </h5>
 
-          {/* HEADER DE 5 COLUMNAS */}
-          <div style={{ display: "grid", gridTemplateColumns: "55px repeat(5, 1fr)", gap: "6px", textAlign: "center", fontSize: "11px", fontWeight: 900, color: "var(--text-muted)", textTransform: "uppercase" }}>
-            <div></div>
-            <div>MUY IZQ</div>
-            <div>IZQUIERDA</div>
-            <div>CENTRO</div>
-            <div>DERECHA</div>
-            <div>MUY DER</div>
-          </div>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              aspectRatio: "400 / 300",
+              borderRadius: "var(--radius-sm)",
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "#061c0e"
+            }}
+          >
+            {/* 1. Capa SVG Oficial de Media Pista */}
+            <HandballCourtGraphic showZones={showCourtZones} idPrefix="tactical-court" />
 
-          {/* ETIQUETAS + CANCHA DE ASPECT RATIO 1:1 */}
-          <div style={{ display: "grid", gridTemplateColumns: "55px 1fr", gap: "6px", alignItems: "stretch" }}>
-            {/* ETIQUETAS LATERALES DE LAS FILAS */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              {rows.map((rKey) => (
-                <div
-                  key={rKey}
-                  title={rowTooltips[rKey]}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "var(--bg-surface)",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "var(--radius-xs)",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                    color: "var(--text-primary)",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    flex: 1
-                  }}
-                >
-                  {rKey}
-                </div>
-              ))}
-            </div>
+            {/* 2. Capa Canvas de Calor Continuo */}
+            <ContinuousHeatmapCanvas points={courtPoints} radius={36} blur={0.85} opacity={0.90} />
 
-            {/* CONTENEDOR DE CELDAS CON ASPECT RATIO 1:1 Y FONDO BLANCO */}
-            <div style={{ position: "relative", width: "100%", aspectRatio: "1 / 1", borderRadius: "var(--radius)", overflow: "hidden", border: "2px solid #000000", boxShadow: "0 4px 12px rgba(0,0,0,0.15)", background: "#ffffff" }}>
-              {/* SVG PISTA BLANCA CON LÍNEAS NEGRAS */}
-              <svg
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  pointerEvents: "none",
-                  zIndex: 0
-                }}
-              >
-                <rect x="0" y="0" width="100" height="100" fill="#ffffff" />
-                <rect x="0.5" y="0.5" width="99" height="99" fill="none" stroke="#000000" strokeWidth="2" />
-                <line x1="38" y1="0" x2="62" y2="0" stroke="#000000" strokeWidth="6" />
-                <line x1="38" y1="0" x2="62" y2="0" stroke="#ef4444" strokeWidth="6" strokeDasharray="4 4" />
-                <rect x="36" y="0" width="4" height="4" fill="#000000" />
-                <rect x="60" y="0" width="4" height="4" fill="#000000" />
-                <path
-                  d="M 0 0 C 0 40, 100 40, 100 0"
-                  fill="rgba(16, 185, 129, 0.05)"
-                  stroke="#000000"
-                  strokeWidth="2.5"
-                />
-                <line x1="44" y1="16" x2="56" y2="16" stroke="#000000" strokeWidth="3" />
-                <line x1="43" y1="38" x2="57" y2="38" stroke="#000000" strokeWidth="3.5" />
-                <path
-                  d="M 0 20 C 0 60, 100 60, 100 20"
-                  fill="none"
-                  stroke="#000000"
-                  strokeWidth="2.5"
-                  strokeDasharray="5 4"
-                />
-                <line x1="0" y1="99.5" x2="100" y2="99.5" stroke="#000000" strokeWidth="2.5" />
-              </svg>
-
-              {/* MATRIZ DE CELDAS CON BORDES DEFINIDOS */}
-              <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "4px", position: "relative", zIndex: 1, padding: "2px" }}>
-                {/* FILA 1: EXT */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px", flex: 1 }}>
-                  <div
-                    style={{
-                      gridColumn: "span 2",
-                      background: getCellBg(grid.EXT.izq),
-                      border: "1px solid rgba(15, 23, 42, 0.18)",
-                      borderRadius: "var(--radius-xs)",
-                      padding: "var(--space-4)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backdropFilter: "blur(1px)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    {renderCellContent(grid.EXT.izq)}
-                  </div>
-
-                  <div
-                    style={{
-                      gridColumn: "span 1",
-                      background: "rgba(241, 245, 249, 0.5)",
-                      border: "1px dashed rgba(15, 23, 42, 0.15)",
-                      borderRadius: "var(--radius-xs)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: 0.6,
-                      color: "#64748b",
-                      fontSize: "14px",
-                      fontWeight: 700
-                    }}
-                  >
-                    -
-                  </div>
-
-                  <div
-                    style={{
-                      gridColumn: "span 2",
-                      background: getCellBg(grid.EXT.der),
-                      border: "1px solid rgba(15, 23, 42, 0.18)",
-                      borderRadius: "var(--radius-xs)",
-                      padding: "var(--space-4)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backdropFilter: "blur(1px)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    {renderCellContent(grid.EXT.der)}
-                  </div>
-                </div>
-
-                {/* FILA 2: PIV */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px", flex: 1 }}>
-                  {["muy_izq", "izq", "cen", "der", "muy_der"].map((cKey) => {
-                    const cell = grid.PIV[cKey];
-                    return (
-                      <div
-                        key={cKey}
-                        style={{
-                          background: getCellBg(cell),
-                          border: "1px solid rgba(15, 23, 42, 0.18)",
-                          borderRadius: "var(--radius-xs)",
-                          padding: "var(--space-4)",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backdropFilter: "blur(1px)",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                          transition: "all 0.2s ease"
-                        }}
-                      >
-                        {renderCellContent(cell)}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* FILA 3: PEN */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px", flex: 1 }}>
-                  {["muy_izq", "izq", "cen", "der", "muy_der"].map((cKey) => {
-                    const cell = grid.PEN[cKey];
-                    return (
-                      <div
-                        key={cKey}
-                        style={{
-                          background: getCellBg(cell),
-                          border: "1px solid rgba(15, 23, 42, 0.18)",
-                          borderRadius: "var(--radius-xs)",
-                          padding: "var(--space-4)",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backdropFilter: "blur(1px)",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                          transition: "all 0.2s ease"
-                        }}
-                      >
-                        {renderCellContent(cell)}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* FILA 4: 9M */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px", flex: 1 }}>
-                  {["muy_izq", "izq", "cen", "der", "muy_der"].map((cKey) => {
-                    const cell = grid["9M"][cKey];
-                    return (
-                      <div
-                        key={cKey}
-                        style={{
-                          background: getCellBg(cell),
-                          border: "1px solid rgba(15, 23, 42, 0.18)",
-                          borderRadius: "var(--radius-xs)",
-                          padding: "var(--space-4)",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backdropFilter: "blur(1px)",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                          transition: "all 0.2s ease"
-                        }}
-                      >
-                        {renderCellContent(cell)}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* FILA 5: 10L */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "4px", flex: 1 }}>
-                  <div
-                    style={{
-                      gridColumn: "span 2",
-                      background: getCellBg(grid["10L"].izq),
-                      border: "1px solid rgba(15, 23, 42, 0.18)",
-                      borderRadius: "var(--radius-xs)",
-                      padding: "var(--space-4)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backdropFilter: "blur(1px)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    {renderCellContent(grid["10L"].izq)}
-                  </div>
-
-                  <div
-                    style={{
-                      gridColumn: "span 1",
-                      background: getCellBg(grid["10L"].cen),
-                      border: "1px solid rgba(15, 23, 42, 0.18)",
-                      borderRadius: "var(--radius-xs)",
-                      padding: "var(--space-4)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backdropFilter: "blur(1px)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    {renderCellContent(grid["10L"].cen)}
-                  </div>
-
-                  <div
-                    style={{
-                      gridColumn: "span 2",
-                      background: getCellBg(grid["10L"].der),
-                      border: "1px solid rgba(15, 23, 42, 0.18)",
-                      borderRadius: "var(--radius-xs)",
-                      padding: "var(--space-4)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backdropFilter: "blur(1px)",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    {renderCellContent(grid["10L"].der)}
-                  </div>
-                </div>
+            {/* 3. Marcadores de Tiro Opcionales */}
+            {showShotMarkers && (
+              <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 3 }}>
+                {courtPoints.map((pt, idx) => (
+                  <ShotMarkerPin
+                    key={idx}
+                    pt={pt}
+                    isSelected={selectedEventId === pt.id}
+                    isDimmed={Boolean(selectedEventId && selectedEventId !== pt.id)}
+                    onClick={(p) => setSelectedEventId(selectedEventId === p.id ? null : p.id)}
+                  />
+                ))}
               </div>
-            </div>
+            )}
           </div>
 
-          {/* BARRA INFERIOR DE TIROS DE 7M */}
-          <div style={{ background: "var(--bg-inset)", padding: "var(--space-12) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
-            <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>Tiros de 7m (Penaltis)</span>
-            <span style={{ fontSize: "var(--text-sm)", fontWeight: 900, color: "var(--color-primary)" }}>
-              {special.sevenM.goals}/{special.sevenM.shots} ({sevenMEff}%)
-            </span>
+          <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
+            <span>Efectividad en Pista: <strong style={{ color: effPct >= 60 ? "#10b981" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
+            <span>Pérdidas de Balón: <strong style={{ color: "#ef4444" }}>{countTurnovers}</strong></span>
           </div>
         </div>
 
-        {/* BLOQUE 2: MARCO DE PORTERÍA (3X3) */}
+        {/* BLOQUE 2: PORTERÍA EN DETALLE (Siempre presente en la vista) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)", width: "100%" }}>
           <h5 style={{ fontSize: "12px", fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0, textAlign: "center", border: "none" }}>
-            {isGkMode ? "RENDIMIENTO Y PARADAS DE LOS PORTEROS DEL EQUIPO (3x3)" : "MAPA DE IMPACTO Y EFICIENCIA EN PORTERÍA RIVAL (3x3)"}
+            {isGkMode ? `DENSIDAD DE TIROS RECIBIDOS EN PORTERÍA (${goalPoints.length} TIROS)` : `DENSIDAD DE IMPACTO EN PORTERÍA RIVAL (${goalPoints.length} TIROS)`}
           </h5>
 
-          {/* ESPACIADOR DE ALINEACIÓN DE CABECERA IGUAL AL HEADER DE 5 COLUMNAS */}
-          <div style={{ height: "17px" }}></div>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              aspectRatio: "360 / 220",
+              borderRadius: "var(--radius-sm)",
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "#081210"
+            }}
+          >
+            {/* 1. Capa SVG Oficial de Portería */}
+            <HandballGoalGraphic idPrefix="tactical-goal" />
 
-          {/* MARCO DE PORTERÍA DE PROPORCIÓN 1:1 */}
-          <div style={{ display: "grid", gridTemplateColumns: "55px 1fr", gap: "6px", alignItems: "stretch" }}>
-            <div style={{ opacity: 0 }}></div>
-            <div
-              className="hs-goal-frame-box"
-              style={{
-                width: "100%",
-                aspectRatio: "1 / 1",
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gridTemplateRows: "repeat(3, 1fr)",
-                gap: "6px",
-                padding: "2px",
-                margin: 0,
-                maxWidth: "none"
-              }}
-            >
-              {["TL", "TC", "TR", "ML", "C", "MR", "BL", "BC", "BR"].map((zKey) => {
-                const cell = goalGrid[zKey] || { shots: 0, goals: 0 };
-                const isGk = isGkMode;
-                const saves = cell.shots - cell.goals;
-                const eff = cell.shots > 0 ? (isGk ? Math.round((saves / cell.shots) * 100) : Math.round((cell.goals / cell.shots) * 100)) : 0;
-                const bgStyle = getCellBg(cell, true);
+            {/* 2. Capa Canvas de Calor Continuo */}
+            <ContinuousHeatmapCanvas points={goalPoints} radius={32} blur={0.85} opacity={0.92} />
 
-                return (
-                  <div
-                    key={zKey}
-                    style={{
-                      background: bgStyle,
-                      border: `1px solid ${cell.shots > 0 ? "rgba(15, 23, 42, 0.2)" : "var(--border-color)"}`,
-                      borderRadius: "var(--radius-xs)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "var(--space-10)",
-                      color: "#0f172a",
-                      boxShadow: cell.shots > 0 ? "0 4px 10px rgba(0,0,0,0.08)" : "none",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    <span style={{ fontSize: "18px", fontWeight: 900, fontFamily: "var(--font-mono)" }}>
-                      {isGk ? `${saves}/${cell.shots}` : `${cell.goals}/${cell.shots}`}
-                    </span>
-                    <span style={{ fontSize: "13px", fontWeight: 800, marginTop: "4px" }}>
-                      {cell.shots > 0 ? `${eff}% ${isGk ? "Paradas" : ""}` : goalZoneLabels[zKey]}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            {/* 3. Marcadores de Tiro Opcionales: solo muestra el marcador específico de la acción seleccionada y oculta los no relacionados */}
+            {showShotMarkers && (
+              <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 3 }}>
+                {visibleGoalPoints.map((pt, idx) => (
+                  <ShotMarkerPin
+                    key={idx}
+                    pt={pt}
+                    isSelected={selectedEventId === pt.id}
+                    onClick={(p) => setSelectedEventId(selectedEventId === p.id ? null : p.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
+            <span>Goles en Portería: <strong style={{ color: "#10b981" }}>{countGoals}</strong></span>
+            <span>Paradas del Portero: <strong style={{ color: "#f59e0b" }}>{countSaves}</strong></span>
           </div>
         </div>
       </div>
 
-      {/* BLOQUE 3: LEYENDA UNIFICADA DE COLOR EN RANGOS DE 10% CON ESPACIO AMPLIO SUPERIOR */}
-      <div style={{ width: "100%", paddingTop: "var(--space-24)" }}>
-        <h6 style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "var(--space-10)", textAlign: "center" }}>
-          {isGkMode ? "ESCALA DE EFECTIVIDAD EN PARADAS DE PORTERÍA (RANGOS DE 10%)" : "ESCALA DE COLOR UNIFICADA POR EFECTIVIDAD (RANGOS DE 10%)"}
-        </h6>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: "4px", textAlign: "center" }}>
-          {colorRanges.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: getEfficiencyColor(item.range, 0.9),
-                borderRadius: "var(--radius-xs)",
-                padding: "6px 2px",
-                color: "#fff",
-                fontSize: "9px",
-                fontWeight: 800,
-                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                whiteSpace: "nowrap",
-                overflow: "hidden"
-              }}
-            >
-              {item.label}
-            </div>
-          ))}
+      {/* BLOQUE 3: LEYENDA VECTORIAL ELEGANTE Y ESCALA TÉRMICA */}
+      <div style={{ width: "100%", paddingTop: "var(--space-12)", borderTop: "1px solid var(--border-color)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "8px" }}>
+          <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            Leyenda de Marcadores & Densidad Térmica
+          </span>
+          <div style={{ display: "flex", gap: "14px", alignItems: "center", flexWrap: "wrap", fontSize: "11px", fontWeight: 800 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+              <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#10b981", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(16, 185, 129, 0.6)" }}>
+                <IconBall size={10} color="#ffffff" />
+              </span>
+              <span>Gol</span>
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+              <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#f59e0b", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(245, 158, 11, 0.6)" }}>
+                <IconGlove size={10} color="#ffffff" />
+              </span>
+              <span>Parada</span>
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+              <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#ff1a1a", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 8px #ff0000" }}>
+                <IconXMark size={10} color="#ffffff" strokeWidth={3} />
+              </span>
+              <span>Fallo / Poste</span>
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+              <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#8b5cf6", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(139, 92, 246, 0.6)" }}>
+                <IconTurnover size={9} color="#ffffff" />
+              </span>
+              <span>Pérdida</span>
+            </span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            height: "10px",
+            borderRadius: "var(--radius-xs)",
+            background: "linear-gradient(90deg, #a3e635 0%, #facc15 28%, #f97316 55%, #ef4444 80%, #7f1d1d 100%)",
+            boxShadow: "inset 0 1px 2px rgba(0,0,0,0.3)"
+          }}
+        />
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "10px", fontWeight: 700, color: "var(--text-muted)" }}>
+          <span>Baja Densidad</span>
+          <span>Densidad Media</span>
+          <span>Máxima Concentración de Acciones</span>
         </div>
       </div>
     </div>
