@@ -1,19 +1,29 @@
 /* ==========================================================
-   HANDSTATS — DESIGN SYSTEM
+   HANDSTATS — DESIGN SYSTEM v2.0
    Plataforma profesional de análisis de balonmano
+   Paleta: #0C1B13 · #12843A · #2DBE60 · #7ED321 · #E5E7EB
+   Tipografía: Raleway · Montserrat · Exo 2
    ========================================================== */
 
 /* ==========================================================
    1. CSS VARIABLES — LIGHT MODE (DEFAULT)
    ========================================================== */
 
-:root {
-    /* ---- Identidad ---- */
-    --color-primary:        #16a34a;
-    --color-primary-hover:  #15803d;
-    --color-primary-subtle: rgba(22, 163, 74, 0.08);
-    --color-primary-ring:   rgba(22, 163, 74, 0.20);
-    --color-primary-border: rgba(22, 163, 74, 0.25);
+:root,
+[data-theme="light"] {
+    /* ---- Brand Identity ---- */
+    --brand-dark:       #0C1B13;
+    --brand-primary:    #12843A;
+    --brand-accent:     #12843A;
+    --brand-highlight:  #7ED321;
+    --brand-neutral:    #E5E7EB;
+
+    /* ---- Primary ---- */
+    --color-primary:        #12843A;
+    --color-primary-hover:  #0e6b2e;
+    --color-primary-subtle: rgba(18, 132, 58, 0.08);
+    --color-primary-ring:   rgba(18, 132, 58, 0.20);
+    --color-primary-border: rgba(18, 132, 58, 0.25);
 
     --color-secondary:        #ea580c;
     --color-secondary-hover:  #c2410c;
@@ -34,66 +44,74 @@
     --color-danger-subtle:  rgba(220, 38, 38, 0.08);
     --color-danger-border:  rgba(220, 38, 38, 0.20);
 
-    --color-success:        #16a34a;
-    --color-success-subtle: rgba(22, 163, 74, 0.08);
+    --color-success:        #12843A;
+    --color-success-subtle: rgba(18, 132, 58, 0.08);
 
     /* ---- Superficies (Modo Claro) ---- */
-    --bg-primary:   #f5f5f7;
+    --bg-primary:   #f4f6f5;
     --bg-surface:   #ffffff;
     --bg-elevated:  #ffffff;
-    --bg-inset:     #eeeef0;
+    --bg-inset:     #eef1f0;
 
     /* ---- Textos ---- */
-    --text-primary:   #1a1a1a;
-    --text-secondary: #555555;
-    --text-muted:     #8a8a8e;
+    --text-primary:   #0C1B13;
+    --text-secondary: #3d5347;
+    --text-muted:     #7a8f84;
     --text-inverse:   #ffffff;
     --text-color:     var(--text-primary);
 
     /* ---- Bordes ---- */
-    --border-color:  #e0e0e2;
-    --border-subtle: #ececee;
-    --border-strong: #c7c7ca;
+    --border-color:  #dce3df;
+    --border-subtle: #e8ece9;
+    --border-strong: #b8c5bd;
 
     /* ---- Sombras ---- */
     --shadow-none: none;
-    --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md:   0 2px 8px rgba(0, 0, 0, 0.06);
-    --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.10);
-    --shadow-xl:   0 16px 48px rgba(0, 0, 0, 0.12);
+    --shadow-sm:   0 1px 2px rgba(12, 27, 19, 0.05);
+    --shadow-md:   0 2px 8px rgba(12, 27, 19, 0.08);
+    --shadow-lg:   0 8px 24px rgba(12, 27, 19, 0.12);
+    --shadow-xl:   0 16px 48px rgba(12, 27, 19, 0.16);
 
     /* ---- Radio ---- */
     --radius:    8px;
     --radius-sm: 6px;
     --radius-lg: 12px;
+    --radius-xl: 16px;
     --radius-full: 9999px;
 
     /* ---- Espaciado ---- */
     --space-4:  4px;
+    --space-6:  6px;
     --space-8:  8px;
+    --space-10: 10px;
     --space-12: 12px;
+    --space-14: 14px;
     --space-16: 16px;
+    --space-20: 20px;
     --space-24: 24px;
     --space-32: 32px;
     --space-48: 48px;
     --space-64: 64px;
 
-    /* ---- Tipografía (Montserrat / Exo 2 / Inter) ---- */
-    --font-sans: 'Montserrat', 'Exo 2', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    /* ---- Tipografía ---- */
+    --font-display: 'Raleway', 'Montserrat', sans-serif;
+    --font-sans:    'Montserrat', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-data:    'Exo 2', 'SF Mono', 'Fira Code', monospace;
+    --font-mono:    'Exo 2', 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
 
-    --text-xs:  0.75rem;   /* 12px */
-    --text-sm:  0.875rem;  /* 14px */
-    --text-base: 1rem;     /* 16px */
-    --text-lg:  1.25rem;   /* 20px */
-    --text-xl:  1.5rem;    /* 24px */
-    --text-2xl: 2rem;      /* 32px */
-    --text-3xl: 2.5rem;    /* 40px */
-    --text-4xl: 3rem;      /* 48px */
+    --text-xs:   0.75rem;   /* 12px */
+    --text-sm:   0.875rem;  /* 14px */
+    --text-base: 1rem;      /* 16px */
+    --text-lg:   1.25rem;   /* 20px */
+    --text-xl:   1.5rem;    /* 24px */
+    --text-2xl:  2rem;      /* 32px */
+    --text-3xl:  2.5rem;    /* 40px */
+    --text-4xl:  3rem;      /* 48px */
 
     /* ---- Animaciones ---- */
-    --duration: 150ms;
-    --easing:   ease-out;
+    --duration:      150ms;
+    --duration-slow: 300ms;
+    --easing:        cubic-bezier(0.4, 0, 0.2, 1);
 
     /* ---- Z-index ---- */
     --z-sidebar:  50;
@@ -101,7 +119,7 @@
     --z-modal:    200;
     --z-toast:    300;
 
-    /* ---- Legacy aliases (para compatibilidad) ---- */
+    /* ---- Legacy aliases ---- */
     --accent-primary:   var(--color-primary);
     --accent-secondary: var(--color-success);
     --accent-danger:    var(--color-danger);
@@ -109,33 +127,37 @@
 }
 
 /* ==========================================================
-   2. DARK MODE (VERDE OSCURO #0D1B16 + #16A34A + #7ED321)
+   2. DARK MODE — OS Preference (Default fallback)
    ========================================================== */
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --bg-primary:   #0d1b16;
-        --bg-surface:   #12241d;
-        --bg-elevated:  #183027;
-        --bg-inset:     #08120e;
+        --brand-accent: #2DBE60;
 
-        --text-primary:   #e6e6e6;
-        --text-secondary: #a3b8b0;
-        --text-muted:     #6b8278;
+        --bg-primary:   #0C1B13;
+        --bg-surface:   #12261a;
+        --bg-elevated:  #183527;
+        --bg-inset:     #081210;
+
+        --text-primary:   #e8ede9;
+        --text-secondary: #a3b8ac;
+        --text-muted:     #6b8c78;
         --text-color:     var(--text-primary);
 
-        --border-color:  #1d3b30;
-        --border-subtle: #142821;
-        --border-strong: #2a5243;
+        --border-color:  #1d3b2e;
+        --border-subtle: #152a20;
+        --border-strong: #2a5a42;
 
-        --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.20);
-        --shadow-md:   0 2px 8px rgba(0, 0, 0, 0.30);
-        --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.40);
-        --shadow-xl:   0 16px 48px rgba(0, 0, 0, 0.50);
+        --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.25);
+        --shadow-md:   0 2px 8px rgba(0, 0, 0, 0.35);
+        --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.45);
+        --shadow-xl:   0 16px 48px rgba(0, 0, 0, 0.55);
 
-        --color-primary-subtle: rgba(22, 163, 74, 0.12);
-        --color-primary-ring:   rgba(22, 163, 74, 0.30);
-        --color-primary-border: rgba(22, 163, 74, 0.35);
+        --color-primary:        #2DBE60;
+        --color-primary-hover:  #25a352;
+        --color-primary-subtle: rgba(45, 190, 96, 0.12);
+        --color-primary-ring:   rgba(45, 190, 96, 0.30);
+        --color-primary-border: rgba(45, 190, 96, 0.30);
 
         --color-secondary-subtle: rgba(234, 88, 12, 0.12);
         --color-secondary-border: rgba(234, 88, 12, 0.30);
@@ -149,33 +171,42 @@
         --color-danger-subtle:  rgba(220, 38, 38, 0.12);
         --color-danger-border:  rgba(220, 38, 38, 0.30);
 
-        --color-success-subtle: rgba(22, 163, 74, 0.12);
+        --color-success:        #2DBE60;
+        --color-success-subtle: rgba(45, 190, 96, 0.12);
     }
 }
 
-[data-theme="dark"] {
-    --bg-primary:   #1c1c1e;
-    --bg-surface:   #2c2c2e;
-    --bg-elevated:  #3a3a3c;
-    --bg-inset:     #1c1c1e;
+/* ==========================================================
+   2b. DARK MODE — Explicit Attribute Override
+   ========================================================== */
 
-    --text-primary:   #f5f5f7;
-    --text-secondary: #a1a1a6;
-    --text-muted:     #6e6e73;
+[data-theme="dark"] {
+    --brand-accent: #2DBE60;
+
+    --bg-primary:   #0C1B13;
+    --bg-surface:   #12261a;
+    --bg-elevated:  #183527;
+    --bg-inset:     #081210;
+
+    --text-primary:   #e8ede9;
+    --text-secondary: #a3b8ac;
+    --text-muted:     #6b8c78;
     --text-color:     var(--text-primary);
 
-    --border-color:  #3a3a3c;
-    --border-subtle: #2c2c2e;
-    --border-strong: #545458;
+    --border-color:  #1d3b2e;
+    --border-subtle: #152a20;
+    --border-strong: #2a5a42;
 
-    --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.20);
-    --shadow-md:   0 2px 8px rgba(0, 0, 0, 0.30);
-    --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.40);
-    --shadow-xl:   0 16px 48px rgba(0, 0, 0, 0.50);
+    --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-md:   0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-lg:   0 8px 24px rgba(0, 0, 0, 0.45);
+    --shadow-xl:   0 16px 48px rgba(0, 0, 0, 0.55);
 
-    --color-primary-subtle: rgba(22, 163, 74, 0.12);
-    --color-primary-ring:   rgba(22, 163, 74, 0.30);
-    --color-primary-border: rgba(22, 163, 74, 0.35);
+    --color-primary:        #2DBE60;
+    --color-primary-hover:  #25a352;
+    --color-primary-subtle: rgba(45, 190, 96, 0.12);
+    --color-primary-ring:   rgba(45, 190, 96, 0.30);
+    --color-primary-border: rgba(45, 190, 96, 0.30);
 
     --color-secondary-subtle: rgba(234, 88, 12, 0.12);
     --color-secondary-border: rgba(234, 88, 12, 0.30);
@@ -189,7 +220,8 @@
     --color-danger-subtle:  rgba(220, 38, 38, 0.12);
     --color-danger-border:  rgba(220, 38, 38, 0.30);
 
-    --color-success-subtle: rgba(22, 163, 74, 0.12);
+    --color-success:        #2DBE60;
+    --color-success-subtle: rgba(45, 190, 96, 0.12);
 }
 
 /* ==========================================================
@@ -224,6 +256,7 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color var(--duration-slow) var(--easing), color var(--duration-slow) var(--easing);
 }
 
 /* ==========================================================
@@ -249,7 +282,15 @@ a {
 }
 
 /* ==========================================================
-   6. BUTTONS
+   6. HEADINGS (Raleway)
+   ========================================================== */
+
+h1, h2, h3 {
+    font-family: var(--font-display);
+}
+
+/* ==========================================================
+   7. BUTTONS
    ========================================================== */
 
 button {
@@ -284,6 +325,7 @@ button:disabled {
     white-space: nowrap;
     user-select: none;
     border: 1px solid transparent;
+    font-family: var(--font-sans);
 }
 
 .btn:hover:not(:disabled) {
@@ -301,22 +343,23 @@ button:disabled {
     outline-offset: 2px;
 }
 
-/* Primary — Verde */
+/* Primary — Verde Corporativo */
 .btn-primary {
-    background: var(--color-primary);
-    color: var(--text-inverse);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+    color: #ffffff;
     border-color: var(--color-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
+    background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
     border-color: var(--color-primary-hover);
+    box-shadow: 0 4px 14px var(--color-primary-ring);
 }
 
 /* Secondary — Gris neutro */
 .btn-secondary {
     background: #6b7280;
-    color: var(--text-inverse);
+    color: #ffffff;
     border-color: #6b7280;
 }
 
@@ -328,7 +371,7 @@ button:disabled {
 /* Danger — Rojo */
 .btn-danger {
     background: var(--color-danger);
-    color: var(--text-inverse);
+    color: #ffffff;
     border-color: var(--color-danger);
 }
 
@@ -357,7 +400,7 @@ button:disabled {
 }
 
 /* ==========================================================
-   7. INPUTS
+   8. INPUTS
    ========================================================== */
 
 .input-field {
@@ -371,7 +414,8 @@ button:disabled {
     font-size: var(--text-sm);
     line-height: 1.5;
     transition: border-color var(--duration) var(--easing),
-                box-shadow var(--duration) var(--easing);
+                box-shadow var(--duration) var(--easing),
+                background-color var(--duration-slow) var(--easing);
 }
 
 .input-field::placeholder {
@@ -392,14 +436,14 @@ label {
 
 select.input-field {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238a8a8e' d='M6 8.825a.5.5 0 0 1-.354-.146l-3.5-3.5a.5.5 0 0 1 .708-.708L6 7.618l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5A.5.5 0 0 1 6 8.825z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8f84' d='M6 8.825a.5.5 0 0 1-.354-.146l-3.5-3.5a.5.5 0 0 1 .708-.708L6 7.618l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5A.5.5 0 0 1 6 8.825z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right var(--space-12) center;
     padding-right: var(--space-32);
 }
 
 /* ==========================================================
-   8. CARDS
+   9. CARDS
    ========================================================== */
 
 .card {
@@ -407,10 +451,11 @@ select.input-field {
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: var(--space-24);
+    transition: background-color var(--duration-slow) var(--easing), border-color var(--duration-slow) var(--easing);
 }
 
 /* ==========================================================
-   9. LAYOUT
+   10. LAYOUT
    ========================================================== */
 
 .app-layout {
@@ -425,6 +470,7 @@ select.input-field {
     margin-left: 260px;
     width: calc(100% - 260px);
     min-height: 100vh;
+    transition: background-color var(--duration-slow) var(--easing);
 }
 
 @media (max-width: 992px) {
@@ -432,17 +478,19 @@ select.input-field {
         margin-left: 0;
         width: 100%;
         padding: var(--space-24);
+        padding-top: calc(60px + var(--space-24));
     }
 }
 
 @media (max-width: 576px) {
     .app-main {
         padding: var(--space-16);
+        padding-top: calc(60px + var(--space-16));
     }
 }
 
 /* ==========================================================
-   10. SCROLLBAR
+   11. SCROLLBAR
    ========================================================== */
 
 ::-webkit-scrollbar {
@@ -464,7 +512,7 @@ select.input-field {
 }
 
 /* ==========================================================
-   11. UTILITIES
+   12. UTILITIES
    ========================================================== */
 
 .text-center { text-align: center; }
@@ -482,7 +530,7 @@ select.input-field {
 .w-100 { width: 100%; }
 
 /* ==========================================================
-   12. LOADING SPINNER
+   13. LOADING SPINNER
    ========================================================== */
 
 @keyframes hs-spin {
@@ -496,4 +544,28 @@ select.input-field {
     border-top-color: var(--color-primary);
     border-radius: 50%;
     animation: hs-spin 0.6s linear infinite;
+}
+
+/* ==========================================================
+   14. ANIMATIONS
+   ========================================================== */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ma-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
