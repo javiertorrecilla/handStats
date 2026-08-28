@@ -7,6 +7,7 @@ import { matchService } from "./services/handstatsService";
 import userService from "./services/userService";
 
 import AuthPage from "./components/auth/AuthPage";
+import LandingPage from "./components/landing/LandingPage";
 import Sidebar from "./components/layout/SideBar";
 import MatchesPage from "./components/match/MatchesPage";
 import CreateMatchPage from "./components/match/CreateMatchPage";
@@ -62,6 +63,7 @@ function App() {
   const [initialAnalyzeMode, setInitialAnalyzeMode] = useState("live");
   const [matchesList, setMatchesList] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
 
   // --------------------------------------------------
   // CARGA DE PARTIDOS
@@ -114,6 +116,16 @@ function App() {
   }
 
   if (!user) {
+    if (showLanding) {
+      return (
+        <LandingPage
+          theme={theme}
+          toggleTheme={toggleTheme}
+          onTryApp={() => setShowLanding(false)}
+        />
+      );
+    }
+
     return (
       <AuthPage
         login={login}
@@ -122,6 +134,7 @@ function App() {
         loginAsGuest={loginAsGuest}
         theme={theme}
         toggleTheme={toggleTheme}
+        onBackToLanding={() => setShowLanding(true)}
       />
     );
   }
