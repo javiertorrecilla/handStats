@@ -213,6 +213,35 @@
     height: 18px;
 }
 
+/* ---- Back to Landing ---- */
+
+.auth-back-to-landing {
+    position: absolute;
+    top: var(--space-24);
+    left: var(--space-24);
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-8) var(--space-14);
+    border-radius: var(--radius-full);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all var(--duration) var(--easing);
+    font-family: var(--font-sans);
+}
+
+.auth-back-to-landing:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    color: var(--color-primary);
+}
+
 /* ==========================================================
    RESPONSIVE
    ========================================================== */
@@ -232,6 +261,11 @@
     .auth-theme-toggle-top {
         top: var(--space-12);
         right: var(--space-12);
+    }
+
+    .auth-back-to-landing {
+        top: var(--space-12);
+        left: var(--space-12);
     }
 
     .auth-title {
