@@ -1,7 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { IconAlertTriangle, IconCheckCircle, IconLightbulb } from "./Icons";
 
 export function InsightAlert({ insight }) {
+  const { t } = useTranslation();
   if (!insight) return null;
 
   const { type, title, message, recommendation } = insight;
@@ -46,7 +48,7 @@ export function InsightAlert({ insight }) {
       {recommendation && (
         <div className="hs-insight-recommendation" style={{ display: "flex", alignItems: "flex-start", gap: "var(--space-6)" }}>
           <span style={{ color: "var(--color-primary)", display: "inline-flex", marginTop: 2 }}><IconLightbulb size={14} /></span>
-          <span><strong>Recomendación:</strong> {recommendation}</span>
+          <span><strong>{t("common.recommendation", "Recomendación")}:</strong> {recommendation}</span>
         </div>
       )}
     </div>

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../common/LanguageSelector";
 import logoHorizontal from "../../assets/logoHorizontal.png";
 import "./LandingPage.css";
 
@@ -141,178 +143,7 @@ const IconTablet = () => (
   </svg>
 );
 
-/* ==========================================================
-   DATA
-   ========================================================== */
-
-const MARQUEE_ITEMS_1 = [
-  "Análisis en Directo", "Modelos xG & xSaves", "Mapas de Calor 3D",
-  "Valoración 0-10", "Exportación PDF", "Rendimiento Defensivo",
-  "Gestión de Plantillas", "Campograma Interactivo", "Handball Pro Analytics"
-];
-
-const MARQUEE_ITEMS_2 = [
-  "Analyze", "Improve", "Win", "Analyze", "Improve", "Win", "Analyze", "Improve", "Win"
-];
-
-const STATS_DATA = [
-  { value: 8, suffix: "+", label: "Módulos Estadísticos Pro" },
-  { value: 96, suffix: "%", label: "Precisión Algorítmica xG" },
-  { value: 500, suffix: "+", label: "Partidos Procesados" },
-  { value: 100, suffix: "%", label: "Disponibilidad Cloud 24/7" },
-];
-
-const PRODUCT_TABS = [
-  {
-    id: "dashboard",
-    label: "Dashboard General",
-    tag: "Panel Central",
-    title: "Visión Global del Partido en Tiempo Real",
-    desc: "Consulta el marcador dinámico, posesión, efectividad por fases y tendencias de ataque/defensa en un panel interactivo diseñado para la toma rápida de decisiones.",
-    checks: [
-      "Control de posesiones y ritmo de partido",
-      "Evolución del marcador y rachas goleadoras",
-      "Eficiencia de lanzamientos en tiempo real"
-    ],
-    image: "/dashboard-mockup.jpg"
-  },
-  {
-    id: "shots",
-    label: "Campograma & xG",
-    tag: "Táctico",
-    title: "Mapas de Lanzamiento y Expected Goals (xG)",
-    desc: "Registra el punto exacto de tiro y la zona de portería. Visualiza mapas de calor dinámicos y la calidad esperada de cada ocasión generada.",
-    checks: [
-      "Campograma con filtrado por posición y jugador",
-      "Cálculo de probabilidad de gol (xG) individualizado",
-      "Identificación de zonas débiles del rival"
-    ],
-    image: "/laptop-mockup.jpg"
-  },
-  {
-    id: "players",
-    label: "Jugadores & Ratings",
-    tag: "Rendimiento",
-    title: "Valoración Científica 0.0 - 10.0 por Jugador",
-    desc: "Algoritmo ponderado que premia goles decisivos, paradas, asistencias, recuperaciones y penaliza pérdidas y exclusiones con rigor profesional.",
-    checks: [
-      "Tabla clasificada de rendimiento por minutos",
-      "Seguimiento acumulado a lo largo de la temporada",
-      "Informes individuales listos para el cuerpo técnico"
-    ],
-    image: "/tablet-mockup.jpg"
-  },
-  {
-    id: "reports",
-    label: "Informes PDF",
-    tag: "Exportación",
-    title: "Reportes Profesionales Descargables al Instante",
-    desc: "Genera dossiers técnicos completos en PDF con mapas de calor, gráficos circulares y tablas de rendimiento para entregar a jugadores o directiva.",
-    checks: [
-      "Exportación en alta resolución lista para imprimir",
-      "Personalizado con escudos y nombres de los equipos",
-      "Compatible con cualquier dispositivo y proyector"
-    ],
-    image: "/dashboard-mockup.jpg"
-  }
-];
-
-const DEVICE_DETAILS = {
-  desktop: {
-    badge: "Escritorio / Portátil",
-    title: "Suite de Análisis Táctico en Pantalla Completa",
-    desc: "Diseñado para analistas, entrenadores principales y sesiones de vídeo post-partido con un entorno multiventana de máxima productividad.",
-    points: [
-      { bold: "Visualización Multivariable:", text: "Campograma interactivo, cronología al segundo y tabla de valoraciones en una sola vista panorámica." },
-      { bold: "Informes y Exportación Inmediata:", text: "Generación de dossiers completos en PDF listos para imprimir o proyectar en el vestuario." },
-      { bold: "Comparativa Histórica:", text: "Filtros acumulados de temporada para estudiar tendencias del equipo y rivales." }
-    ],
-    image: "/laptop-mockup.jpg"
-  },
-  tablet: {
-    badge: "Tablet / Banquillo",
-    title: "Toma de Datos Táctil a Pie de Pista",
-    desc: "Optimizada para registrar cada acción del partido en directo desde el banquillo sin apartar la mirada del juego ni un segundo.",
-    points: [
-      { bold: "Registro Ultra Rápido en 2 Toques:", text: "Toca el punto de lanzamiento en pista y el cuadrante de portería con respuesta instantánea." },
-      { bold: "Control Táctil de Posesiones:", text: "Cambio de posesión, exclusiones y tiempos muertos con botones ergonómicos de gran tamaño." },
-      { bold: "Sincronización Cloud Automática:", text: "Tus datos se transmiten en tiempo real para que el cuerpo técnico los consulte al instante." }
-    ],
-    image: "/tablet-mockup.jpg"
-  }
-};
-
-const FEATURES_LIST = [
-  {
-    icon: <IconZap />,
-    title: "Toma de Datos Instantánea",
-    desc: "Campograma táctico ágil con registro en dos toques para lanzamientos, 7 metros, sanciones disciplinarias y tiempos muertos."
-  },
-  {
-    icon: <IconBarChart />,
-    title: "Métricas Avanzadas (xG / xSaves)",
-    desc: "Algoritmos matemáticos adaptados específicamente a la biomecánica y distancias del balonmano moderno."
-  },
-  {
-    icon: <IconFlame />,
-    title: "Mapas de Calor Interactivos",
-    desc: "Visualización térmica de las zonas de mayor peligro ofensivo y sectores vulnerables en la defensa rival."
-  },
-  {
-    icon: <IconShield />,
-    title: "Eficiencia Defensiva & Portería",
-    desc: "Mapas de portería 3x2 divididos en 9 cuadrantes para estudiar los patrones de parada de tus guardametas."
-  },
-  {
-    icon: <IconUsers />,
-    title: "Gestión de Equipos y Jugadores",
-    desc: "Crea tu plantilla, guarda formaciones habituales y lleva un histórico del crecimiento deportivo de cada atleta."
-  },
-  {
-    icon: <IconFileText />,
-    title: "Exportación & Dossiers Técnicos",
-    desc: "Comparte informes completos post-partido con un solo clic en formato PDF profesional de alto impacto visual."
-  }
-];
-
-const HOW_STEPS = [
-  {
-    num: "01",
-    title: "Configura el Encuentro",
-    desc: "Introduce equipos, plantillas y dorsales en menos de 60 segundos con nuestra interfaz optimizada."
-  },
-  {
-    num: "02",
-    title: "Registra en Directo",
-    desc: "Anota goles, paradas, faltas y pérdidas en el campograma táctico durante el partido o en diferido."
-  },
-  {
-    num: "03",
-    title: "Analiza y Gana",
-    desc: "Accede de inmediato a valoraciones, mapas de calor y conclusiones estadísticas para preparar el siguiente reto."
-  }
-];
-
-const TESTIMONIALS_DATA = [
-  {
-    quote: "HandStats nos ha permitido detectar patrones de tiro del rival que antes pasaban desapercibidos. La claridad de los mapas de calor es insuperable.",
-    name: "Carlos Mendoza",
-    role: "Entrenador — División de Honor",
-    initials: "CM"
-  },
-  {
-    quote: "El sistema de valoración de jugadores y el modelo xG aporta un nivel de rigor que motiva a toda la plantilla a mejorar en cada entrenamiento.",
-    name: "Laura Vázquez",
-    role: "Analista Táctica Profesional",
-    initials: "LV"
-  },
-  {
-    quote: "Poder exportar el informe PDF justo al terminar el partido y compartirlo con el cuerpo técnico nos ahorra horas de trabajo cada semana.",
-    name: "Miguel Ángel Torres",
-    role: "Director Deportivo",
-    initials: "MT"
-  }
-];
+/* Data objects localized inside LandingPage component via useTranslation */
 
 /* ==========================================================
    HOOKS
@@ -370,6 +201,7 @@ function StatCounterCard({ value, suffix, label }) {
    ========================================================== */
 
 export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
+  const { t } = useTranslation();
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTabId, setActiveTabId] = useState("dashboard");
@@ -390,8 +222,170 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
     if (onTryApp) onTryApp();
   };
 
-  const currentTab = PRODUCT_TABS.find(t => t.id === activeTabId) || PRODUCT_TABS[0];
-  const activeDeviceData = DEVICE_DETAILS[selectedDevice] || DEVICE_DETAILS.desktop;
+  const marqueeItems1 = t("stats_marquee.items", { returnObjects: true }) || [];
+  const marqueeItems2 = t("stats_marquee.motto", { returnObjects: true }) || [];
+
+  const statsData = [
+    { value: 8, suffix: "+", label: t("landing_stats.stat1_label") },
+    { value: 96, suffix: "%", label: t("landing_stats.stat2_label") },
+    { value: 500, suffix: "+", label: t("landing_stats.stat3_label") },
+    { value: 100, suffix: "%", label: t("landing_stats.stat4_label") },
+  ];
+
+  const productTabs = [
+    {
+      id: "dashboard",
+      label: t("product.tab_dashboard"),
+      tag: t("product.dashboard_tag"),
+      title: t("product.dashboard_title"),
+      desc: t("product.dashboard_desc"),
+      checks: [
+        t("product.dashboard_check1"),
+        t("product.dashboard_check2"),
+        t("product.dashboard_check3")
+      ],
+      image: "/dashboard-mockup.jpg"
+    },
+    {
+      id: "shots",
+      label: t("product.tab_shots"),
+      tag: t("product.shots_tag"),
+      title: t("product.shots_title"),
+      desc: t("product.shots_desc"),
+      checks: [
+        t("product.shots_check1"),
+        t("product.shots_check2"),
+        t("product.shots_check3")
+      ],
+      image: "/laptop-mockup.jpg"
+    },
+    {
+      id: "players",
+      label: t("product.tab_players"),
+      tag: t("product.players_tag"),
+      title: t("product.players_title"),
+      desc: t("product.players_desc"),
+      checks: [
+        t("product.players_check1"),
+        t("product.players_check2"),
+        t("product.players_check3")
+      ],
+      image: "/tablet-mockup.jpg"
+    },
+    {
+      id: "reports",
+      label: t("product.tab_reports"),
+      tag: t("product.reports_tag"),
+      title: t("product.reports_title"),
+      desc: t("product.reports_desc"),
+      checks: [
+        t("product.reports_check1"),
+        t("product.reports_check2"),
+        t("product.reports_check3")
+      ],
+      image: "/dashboard-mockup.jpg"
+    }
+  ];
+
+  const deviceDetails = {
+    desktop: {
+      badge: t("product.device_desktop_badge"),
+      title: t("product.device_desktop_title"),
+      desc: t("product.device_desktop_desc"),
+      points: [
+        { bold: t("product.device_desktop_p1_bold"), text: t("product.device_desktop_p1_text") },
+        { bold: t("product.device_desktop_p2_bold"), text: t("product.device_desktop_p2_text") },
+        { bold: t("product.device_desktop_p3_bold"), text: t("product.device_desktop_p3_text") }
+      ],
+      image: "/laptop-mockup.jpg"
+    },
+    tablet: {
+      badge: t("product.device_tablet_badge"),
+      title: t("product.device_tablet_title"),
+      desc: t("product.device_tablet_desc"),
+      points: [
+        { bold: t("product.device_tablet_p1_bold"), text: t("product.device_tablet_p1_text") },
+        { bold: t("product.device_tablet_p2_bold"), text: t("product.device_tablet_p2_text") },
+        { bold: t("product.device_tablet_p3_bold"), text: t("product.device_tablet_p3_text") }
+      ],
+      image: "/tablet-mockup.jpg"
+    }
+  };
+
+  const featuresList = [
+    {
+      icon: <IconZap />,
+      title: t("features.f1_title"),
+      desc: t("features.f1_desc")
+    },
+    {
+      icon: <IconBarChart />,
+      title: t("features.f2_title"),
+      desc: t("features.f2_desc")
+    },
+    {
+      icon: <IconFlame />,
+      title: t("features.f3_title"),
+      desc: t("features.f3_desc")
+    },
+    {
+      icon: <IconShield />,
+      title: t("features.f4_title"),
+      desc: t("features.f4_desc")
+    },
+    {
+      icon: <IconUsers />,
+      title: t("features.f5_title"),
+      desc: t("features.f5_desc")
+    },
+    {
+      icon: <IconFileText />,
+      title: t("features.f6_title"),
+      desc: t("features.f6_desc")
+    }
+  ];
+
+  const howSteps = [
+    {
+      num: "01",
+      title: t("how_it_works.step1_title"),
+      desc: t("how_it_works.step1_desc")
+    },
+    {
+      num: "02",
+      title: t("how_it_works.step2_title"),
+      desc: t("how_it_works.step2_desc")
+    },
+    {
+      num: "03",
+      title: t("how_it_works.step3_title"),
+      desc: t("how_it_works.step3_desc")
+    }
+  ];
+
+  const testimonialsData = [
+    {
+      quote: t("testimonials.t1_quote"),
+      name: t("testimonials.t1_name"),
+      role: t("testimonials.t1_role"),
+      initials: "CM"
+    },
+    {
+      quote: t("testimonials.t2_quote"),
+      name: t("testimonials.t2_name"),
+      role: t("testimonials.t2_role"),
+      initials: "LV"
+    },
+    {
+      quote: t("testimonials.t3_quote"),
+      name: t("testimonials.t3_name"),
+      role: t("testimonials.t3_role"),
+      initials: "MT"
+    }
+  ];
+
+  const currentTab = productTabs.find(t => t.id === activeTabId) || productTabs[0];
+  const activeDeviceData = deviceDetails[selectedDevice] || deviceDetails.desktop;
 
   return (
     <div className="landing-page">
@@ -403,19 +397,21 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
           </a>
 
           <nav className="landing-nav-menu">
-            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>Funciones</a>
-            <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>Producto</a>
-            <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>Cómo Funciona</a>
-            <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollTo("testimonials"); }}>Opiniones</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
+            <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
+            <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
+            <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollTo("testimonials"); }}>{t("nav.testimonials")}</a>
           </nav>
 
           <div className="landing-nav-actions">
+            <LanguageSelector compact />
+
             {toggleTheme && (
               <button 
                 type="button"
                 className="btn-theme-toggle-lp"
                 onClick={toggleTheme}
-                title={`Cambiar a modo ${theme === "dark" ? "claro" : "oscuro"}`}
+                title={theme === "dark" ? t("common.switch_to_light") : t("common.switch_to_dark")}
                 aria-label="Cambiar tema de color"
               >
                 {theme === "dark" ? <IconSun /> : <IconMoon />}
@@ -423,14 +419,14 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             )}
 
             <button className="btn-nav-try" onClick={handleTry}>
-              <span>Probar HandStats</span>
+              <span>{t("nav.try_handstats")}</span>
               <IconArrowRight />
             </button>
 
             <button 
               className="landing-nav-toggle" 
               onClick={() => setMobileMenuOpen(true)}
-              aria-label="Abrir menú de navegación"
+              aria-label={t("nav.open_menu")}
             >
               <IconMenu />
             </button>
@@ -443,16 +439,20 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         <button 
           className="landing-nav-mobile-close" 
           onClick={() => setMobileMenuOpen(false)}
-          aria-label="Cerrar menú"
+          aria-label={t("nav.close_menu")}
         >
           <IconX />
         </button>
 
-        <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>Funciones</a>
-        <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>Producto</a>
-        <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>Cómo Funciona</a>
-        <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollTo("testimonials"); }}>Opiniones</a>
+        <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
+        <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
+        <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
+        <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollTo("testimonials"); }}>{t("nav.testimonials")}</a>
         
+        <div style={{ padding: "6px 0", display: "flex", justifyContent: "center" }}>
+          <LanguageSelector />
+        </div>
+
         {toggleTheme && (
           <button 
             type="button"
@@ -461,180 +461,200 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             style={{ width: "100%", justifyContent: "center" }}
           >
             {theme === "dark" ? <IconSun /> : <IconMoon />}
-            <span>{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+            <span>{theme === "dark" ? t("common.light_mode") : t("common.dark_mode")}</span>
           </button>
         )}
 
         <button className="btn-hero-primary" onClick={handleTry} style={{ width: "100%", justifyContent: "center" }}>
-          <span>Probar HandStats Ahora</span>
+          <span>{t("nav.try_handstats_now")}</span>
           <IconArrowRight />
         </button>
       </div>
 
-      {/* ======== 2. HERO WITH FREE-MOVING STATS & 3D HANDBALLS ======== */}
+      {/* ======== 2. HERO WITH STYLIZED HANDBALL COURT & SCOREBOARD PLACARS ======== */}
       <section className="landing-hero" id="hero">
-        <div className="hero-glow-orb-1" />
-        <div className="hero-glow-orb-2" />
-        <div className="hero-court-grid" />
+        {/* Authentic Handball Court Geometry Vector Backdrop */}
+        <div className="hero-handball-court-bg" aria-hidden="true">
+          <svg viewBox="0 0 1200 600" className="hero-court-svg" preserveAspectRatio="none">
+            {/* Perimeter Line */}
+            <rect x="2" y="2" width="1196" height="596" fill="none" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.14" />
+            {/* Center Line & Center Throw-off Circle */}
+            <line x1="600" y1="0" x2="600" y2="600" stroke="currentColor" strokeWidth="2" strokeOpacity="0.18" />
+            <circle cx="600" cy="300" r="90" fill="none" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.16" />
+            {/* Left 6m Goal Area (D-zone) */}
+            <path d="M 0 190 L 110 190 A 110 110 0 0 1 110 410 L 0 410" fill="none" stroke="currentColor" strokeWidth="2" strokeOpacity="0.22" />
+            {/* Left 7m Penalty Mark */}
+            <line x1="155" y1="285" x2="155" y2="315" stroke="currentColor" strokeWidth="3" strokeOpacity="0.30" />
+            {/* Left 9m Free Throw Line (Dashed) */}
+            <path d="M 0 135 L 165 135 A 165 165 0 0 1 165 465 L 0 465" fill="none" stroke="currentColor" strokeWidth="1.8" strokeDasharray="10 8" strokeOpacity="0.18" />
+            {/* Left 4m Goalkeeper Line */}
+            <line x1="75" y1="288" x2="75" y2="312" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
+            {/* Right 6m Goal Area (D-zone) */}
+            <path d="M 1200 190 L 1090 190 A 110 110 0 0 0 1090 410 L 1200 410" fill="none" stroke="currentColor" strokeWidth="2" strokeOpacity="0.22" />
+            {/* Right 7m Penalty Mark */}
+            <line x1="1045" y1="285" x2="1045" y2="315" stroke="currentColor" strokeWidth="3" strokeOpacity="0.30" />
+            {/* Right 9m Free Throw Line (Dashed) */}
+            <path d="M 1200 135 L 1035 135 A 165 165 0 0 0 1035 465 L 1200 465" fill="none" stroke="currentColor" strokeWidth="1.8" strokeDasharray="10 8" strokeOpacity="0.18" />
+            {/* Right 4m Goalkeeper Line */}
+            <line x1="1125" y1="288" x2="1125" y2="312" stroke="currentColor" strokeWidth="2.5" strokeOpacity="0.25" />
+          </svg>
+          <div className="hero-court-grain-filter" />
+        </div>
 
-        {/* 3D Floating & Spinning Handball Spheres drifting freely */}
-        <div className="hero-3d-ball-wrap hero-3d-ball-1">
-          <div className="handball-3d-sphere" />
-        </div>
-        <div className="hero-3d-ball-wrap hero-3d-ball-2">
-          <div className="handball-3d-sphere" />
-        </div>
-        <div className="hero-3d-ball-wrap hero-3d-ball-3">
-          <div className="handball-3d-sphere" />
-        </div>
-        <div className="hero-3d-ball-wrap hero-3d-ball-4">
-          <div className="handball-3d-sphere" />
-        </div>
-
-        {/* Floating Animated Stat Elements Drifting Freely in Hero */}
+        {/* Floating Animated Scoreboard & Tactical Placars (Asymmetric, Sports Character) */}
         <div className="hero-floating-elements-layer">
-          {/* Card 1: Donut Efficiency */}
-          <div className="hero-stat-card hero-card-donut">
-            <div className="donut-card-inner">
-              <div className="donut-svg-wrap">
-                <svg width="50" height="50" viewBox="0 0 36 36">
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="rgba(18, 132, 58, 0.15)"
-                    strokeWidth="3.8"
-                  />
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#2dbe60"
-                    strokeWidth="3.8"
-                    strokeDasharray="78, 100"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="donut-center-text">78%</div>
+          {/* Placar 1: Live Match Scorebug Placar (Top Left - High visual hierarchy) */}
+          <div className="hero-placar-tile hero-placar-scorebug">
+            <div className="placar-top-bar">
+              <div className="placar-live-indicator">
+                <span className="live-dot-pulse" />
+                <span>{t("hero.card_live")}</span>
               </div>
-              <div>
-                <div className="stat-card-title">Efectividad de Tiro</div>
-                <div className="stat-card-val-big">28 / 36 Goles</div>
-                <span className="stat-card-badge-pill">+14% vs rival</span>
+              <span className="scorebug-tag amber">{t("hero.card_live_tag")}</span>
+            </div>
+            <div className="placar-scoreboard-grid">
+              <div className="scoreboard-team-row">
+                <span className="scoreboard-team-name">BM GRANOLLERS</span>
+                <span className="scoreboard-team-pts">28</span>
+              </div>
+              <div className="scoreboard-team-row">
+                <span className="scoreboard-team-name">CD BADAJOZ</span>
+                <span className="scoreboard-team-pts">24</span>
+              </div>
+            </div>
+            <div className="placar-possession-bar-wrap">
+              <div className="possession-labels">
+                <span>{t("hero.card_possession")}: 56%</span>
+                <span>44%</span>
+              </div>
+              <div className="possession-split-track">
+                <div className="possession-fill-home" style={{ width: "56%" }} />
+                <div className="possession-fill-away" style={{ width: "44%" }} />
               </div>
             </div>
           </div>
 
-          {/* Card 2: xG Expected Goals */}
-          <div className="hero-stat-card hero-card-xg">
-            <div className="stat-card-title">Expected Goals (xG)</div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <div className="stat-card-val-big" style={{ color: "#2dbe60" }}>8.4 xG</div>
-              <span className="stat-card-badge-pill">Alta Calidad</span>
+          {/* Placar 2: Expected Goals (xG) Model (Top Right) */}
+          <div className="hero-placar-tile hero-placar-xg">
+            <div className="placar-top-bar">
+              <span className="placar-tag-label">{t("hero.card_xg_label")}</span>
+              <span className="scorebug-tag green">{t("hero.card_xg_tag")}</span>
+            </div>
+            <div className="xg-main-readout">
+              <div className="xg-big-digit">8.4 <span className="xg-unit">xG</span></div>
+              <span className="xg-quality-badge">{t("hero.card_xg_quality")}</span>
             </div>
             <div className="xg-card-bars">
               <div className="xg-bar-col"><div className="xg-bar-fill" style={{ height: "45%" }} /></div>
               <div className="xg-bar-col"><div className="xg-bar-fill" style={{ height: "70%" }} /></div>
-              <div className="xg-bar-col"><div className="xg-bar-fill" style={{ height: "90%" }} /></div>
+              <div className="xg-bar-col"><div className="xg-bar-fill amber" style={{ height: "92%" }} /></div>
               <div className="xg-bar-col"><div className="xg-bar-fill" style={{ height: "60%" }} /></div>
               <div className="xg-bar-col"><div className="xg-bar-fill" style={{ height: "85%" }} /></div>
-              <div className="xg-bar-col"><div className="xg-bar-fill" style={{ height: "100%" }} /></div>
+              <div className="xg-bar-col"><div className="xg-bar-fill amber" style={{ height: "100%" }} /></div>
             </div>
           </div>
 
-          {/* Card 3: Shot Map / Court */}
-          <div className="hero-stat-card hero-card-court">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div className="stat-card-title">Zonas de Peligro</div>
-              <span className="stat-card-badge-pill">6 Metros</span>
+          {/* Placar 3: Shot Efficiency Gauge (Mid-Left) */}
+          <div className="hero-placar-tile hero-placar-donut">
+            <div className="placar-top-bar">
+              <span className="placar-tag-label">{t("hero.card_shot_eff_label")}</span>
+              <span className="scorebug-tag green">78%</span>
             </div>
-            <div className="court-mini-visual">
-              <div className="court-arc-mini" />
-              <div className="court-hit-point" style={{ top: "35%", left: "25%" }} />
-              <div className="court-hit-point" style={{ top: "45%", left: "48%", background: "#2dbe60" }} />
-              <div className="court-hit-point" style={{ top: "30%", left: "70%" }} />
-              <div className="court-hit-point" style={{ top: "50%", left: "80%" }} />
+            <div className="donut-card-inner">
+              <div className="donut-svg-wrap">
+                <svg width="48" height="48" viewBox="0 0 36 36">
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="var(--border-color)"
+                    strokeWidth="3.6"
+                  />
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="var(--color-primary)"
+                    strokeWidth="3.6"
+                    strokeDasharray="78, 100"
+                    strokeLinecap="square"
+                  />
+                </svg>
+                <div className="donut-center-text">78%</div>
+              </div>
+              <div className="donut-data-text">
+                <div className="stat-card-val-big">28 / 36</div>
+                <div className="donut-sub-label">{t("hero.card_shot_eff_sub")}</div>
+              </div>
             </div>
           </div>
 
-          {/* Card 4: Player MVP Rating */}
-          <div className="hero-stat-card hero-card-player">
-            <div className="stat-card-title">MVP del Partido</div>
+          {/* Placar 4: Scouting MVP Placar (Bottom Right) */}
+          <div className="hero-placar-tile hero-placar-player">
+            <div className="placar-top-bar">
+              <span className="placar-tag-label">{t("hero.card_mvp_label")}</span>
+              <span className="scorebug-tag amber">{t("hero.card_mvp_tag")}</span>
+            </div>
             <div className="player-card-flex">
               <div>
-                <div className="stat-card-val-big" style={{ fontSize: "1.02rem" }}>M. Andersson</div>
-                <div style={{ fontSize: "0.76rem", color: "var(--lp-text-muted)" }}>7 Goles · 4 Asist.</div>
+                <div className="scout-player-name">M. ANDERSSON</div>
+                <div className="scout-player-dorsal">{t("hero.card_mvp_pos")}</div>
+                <div className="scout-player-stats">{t("hero.card_mvp_stats")}</div>
               </div>
-              <div className="player-rating-badge">9.2</div>
+              <div className="player-rating-box">9.2</div>
             </div>
           </div>
 
-          {/* Card 5: Goalkeeper Saves % (NEW) */}
-          <div className="hero-stat-card hero-card-gk">
-            <div className="stat-card-title">
-              <IconShield />
-              <span>Portería</span>
+          {/* Placar 5: Goalkeeper Saves % (Bottom Left) */}
+          <div className="hero-placar-tile hero-placar-gk">
+            <div className="placar-top-bar">
+              <span className="placar-tag-label">{t("hero.card_gk_label")}</span>
+              <span className="scorebug-tag blue">{t("hero.card_gk_tag")}</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div className="stat-card-val-big" style={{ color: "#2dbe60" }}>42% Paradas</div>
-              <span className="stat-card-badge-pill">14 Salvadas</span>
-            </div>
-          </div>
-
-          {/* Card 6: Live Possession (NEW) */}
-          <div className="hero-stat-card hero-card-possession">
-            <div className="stat-card-title">
-              <span className="live-pulse-dot" />
-              <span>En Directo · 48:15</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-              <span style={{ fontWeight: 800, fontSize: "0.95rem" }}>Posesión</span>
-              <span style={{ fontWeight: 800, color: "#2dbe60", fontSize: "0.95rem" }}>56% - 44%</span>
+            <div className="gk-readout-row">
+              <div className="gk-big-pct">42%</div>
+              <div className="gk-breakdown">
+                <div>6m: 5/11 (45%)</div>
+                <div>9m: 7/14 (50%)</div>
+              </div>
             </div>
           </div>
 
-          {/* Card 7: Fastbreak Transition (NEW) */}
-          <div className="hero-stat-card hero-card-fastbreak">
-            <div className="stat-card-title">
-              <IconZap />
-              <span>Contraataques</span>
+          {/* Placar 6: 7m Penalty Record (Bottom Center Right) */}
+          <div className="hero-placar-tile hero-placar-7m">
+            <div className="placar-top-bar">
+              <span className="placar-tag-label">{t("hero.card_penalty_label")}</span>
+              <span className="scorebug-tag green">{t("hero.card_penalty_tag")}</span>
             </div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 800 }}>+6 Goles en Transición</div>
-          </div>
-
-          {/* Card 8: 7m Penalty Efficiency (NEW) */}
-          <div className="hero-stat-card hero-card-7m">
-            <div className="stat-card-title">
-              <IconTarget />
-              <span>Penaltis 7m</span>
-            </div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 800, color: "#2dbe60" }}>5 / 5 (100% Éxito)</div>
+            <div className="penalty-readout-val">5 / 5 <span className="penalty-note">{t("hero.card_penalty_shots")}</span></div>
           </div>
         </div>
 
-        {/* Central Hero Content */}
+        {/* Central Hero Content — Broadcast Typography */}
         <div className="hero-content-center">
-          <div className="landing-badge">
-            <IconActivity />
-            <span>Plataforma Profesional de Balonmano</span>
+          {/* Architectural Sports Eyebrow */}
+          <div className="hero-eyebrow-bar">
+            <span className="hero-eyebrow-accent">{t("hero.eyebrow_pro")}</span>
+            <span className="hero-eyebrow-sep">/</span>
+            <span className="hero-eyebrow-spec">{t("hero.eyebrow_spec")}</span>
           </div>
 
           <h1 className="hero-main-title">
-            Lleva tu equipo al<br />
-            <span className="hero-title-highlight">siguiente nivel</span>
+            {t("hero.title_line1")}<br />
+            <span className="hero-title-highlight">{t("hero.title_line2")}</span>
           </h1>
 
           <p className="hero-desc">
-            Analítica táctica en tiempo real, modelos matemáticos xG, mapas de calor interactivos y valoraciones de jugadores. Todo en una sola plataforma profesional.
+            {t("hero.subtitle")}
           </p>
 
           <div className="hero-buttons-row">
             <button className="btn-hero-primary" onClick={handleTry}>
-              <span>Probar HandStats Gratis</span>
+              <span>{t("hero.btn_try")}</span>
               <IconArrowRight />
             </button>
 
             <button className="btn-hero-secondary" onClick={() => scrollTo("product")}>
               <IconBarChart />
-              <span>Ver Demostración</span>
+              <span>{t("hero.btn_demo")}</span>
             </button>
           </div>
         </div>
@@ -643,7 +663,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       {/* ======== 3. MARQUEE BARS ======== */}
       <div className="landing-marquee">
         <div className="marquee-content">
-          {[...MARQUEE_ITEMS_1, ...MARQUEE_ITEMS_1].map((item, i) => (
+          {[...marqueeItems1, ...marqueeItems1].map((item, i) => (
             <div key={i} className="marquee-item">
               <span>{item}</span>
               <span className="marquee-dot">◆</span>
@@ -656,7 +676,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <section className="landing-stats-row">
         <div className="landing-container">
           <div className="stats-grid-4">
-            {STATS_DATA.map((s, i) => (
+            {statsData.map((s, i) => (
               <StatCounterCard key={i} {...s} />
             ))}
           </div>
@@ -665,7 +685,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
 
       <div className="landing-marquee green-accent reverse">
         <div className="marquee-content">
-          {[...MARQUEE_ITEMS_2, ...MARQUEE_ITEMS_2].map((item, i) => (
+          {[...marqueeItems2, ...marqueeItems2].map((item, i) => (
             <div key={i} className="marquee-item">
               <span>{item}</span>
               <span className="marquee-dot">●</span>
@@ -678,19 +698,19 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <section className="landing-product-section" id="product">
         <div className="landing-container">
           <div className="center-header">
-            <div className="landing-badge">
-              <IconBarChart />
-              <span>Producto & Visualizaciones</span>
+            <div className="section-broadcast-kicker">
+              <span className="section-kicker-num">{t("product.kicker_num")}</span>
+              <span className="section-kicker-title">{t("product.kicker_title")}</span>
             </div>
-            <h2 className="landing-title">Una suite analítica diseñada para ganar</h2>
+            <h2 className="landing-title">{t("product.title")}</h2>
             <p className="landing-subtitle">
-              Explora las herramientas que utilizan entrenadores y analistas tácticos para transformar datos en victorias.
+              {t("product.subtitle")}
             </p>
           </div>
 
           {/* Interactive Feature Tabs */}
           <div className="product-tabs-nav">
-            {PRODUCT_TABS.map((tab) => (
+            {productTabs.map((tab) => (
               <button
                 key={tab.id}
                 className={`btn-product-tab ${activeTabId === tab.id ? "active" : ""}`}
@@ -748,8 +768,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
           {/* ---- DEDICATED DEVICE SELECTOR SUB-SECTION ---- */}
           <div className="device-selector-section">
             <div className="device-selector-header">
-              <h3 className="device-selector-title">Elige tu dispositivo de trabajo</h3>
-              <p className="device-selector-subtitle">Adaptado a la perfección tanto para el trabajo táctico en despacho como para el banquillo en directo.</p>
+              <h3 className="device-selector-title">{t("product.device_title")}</h3>
+              <p className="device-selector-subtitle">{t("product.device_subtitle")}</p>
             </div>
 
             {/* Toggle Buttons: Desktop/Laptop vs Tablet */}
@@ -760,7 +780,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
                 onClick={() => setSelectedDevice("desktop")}
               >
                 <IconLaptop />
-                <span>Versión Escritorio / Portátil</span>
+                <span>{t("product.device_desktop_btn")}</span>
               </button>
 
               <button
@@ -769,7 +789,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
                 onClick={() => setSelectedDevice("tablet")}
               >
                 <IconTablet />
-                <span>Versión Tablet</span>
+                <span>{t("product.device_tablet_btn")}</span>
               </button>
             </div>
 
@@ -808,18 +828,18 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <section className="landing-features-section" id="features">
         <div className="landing-container">
           <div className="center-header">
-            <div className="landing-badge">
-              <IconZap />
-              <span>Funcionalidades Clave</span>
+            <div className="section-broadcast-kicker">
+              <span className="section-kicker-num">{t("features.kicker_num")}</span>
+              <span className="section-kicker-title">{t("features.kicker_title")}</span>
             </div>
-            <h2 className="landing-title">Todo lo que tu equipo necesita</h2>
+            <h2 className="landing-title">{t("features.title")}</h2>
             <p className="landing-subtitle">
-              Diseñado mano a mano con profesionales del balonmano para cubrir cada fase del partido.
+              {t("features.subtitle")}
             </p>
           </div>
 
           <div className="features-grid-3">
-            {FEATURES_LIST.map((feat, i) => (
+            {featuresList.map((feat, i) => (
               <div key={i} className="feature-box-3d">
                 <div className="feature-icon-bubble">{feat.icon}</div>
                 <h3 className="feature-title-text">{feat.title}</h3>
@@ -834,18 +854,18 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <section className="landing-how-section" id="how">
         <div className="landing-container">
           <div className="center-header">
-            <div className="landing-badge">
-              <IconTrendingUp />
-              <span>Flujo de Trabajo</span>
+            <div className="section-broadcast-kicker">
+              <span className="section-kicker-num">{t("how_it_works.kicker_num")}</span>
+              <span className="section-kicker-title">{t("how_it_works.kicker_title")}</span>
             </div>
-            <h2 className="landing-title">En 3 sencillos pasos</h2>
+            <h2 className="landing-title">{t("how_it_works.title")}</h2>
             <p className="landing-subtitle">
-              Sin configuraciones complejas ni curvas de aprendizaje tediosas.
+              {t("how_it_works.subtitle")}
             </p>
           </div>
 
           <div className="how-steps-flex">
-            {HOW_STEPS.map((step, i) => (
+            {howSteps.map((step, i) => (
               <div key={i} className="how-step-card">
                 <div className="how-step-circle">{step.num}</div>
                 <h3 className="how-card-title">{step.title}</h3>
@@ -860,25 +880,25 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <section className="landing-testimonials-section" id="testimonials">
         <div className="landing-container">
           <div className="center-header">
-            <div className="landing-badge">
-              <IconUsers />
-              <span>Opiniones & Casos de Éxito</span>
+            <div className="section-broadcast-kicker">
+              <span className="section-kicker-num">{t("testimonials.kicker_num")}</span>
+              <span className="section-kicker-title">{t("testimonials.kicker_title")}</span>
             </div>
-            <h2 className="landing-title">La confianza de los técnicos</h2>
+            <h2 className="landing-title">{t("testimonials.title")}</h2>
             <p className="landing-subtitle">
-              Clubes y analistas de diferentes categorías ya potencian sus plantillas con HandStats.
+              {t("testimonials.subtitle")}
             </p>
           </div>
 
           <div className="testimonials-grid-3">
-            {TESTIMONIALS_DATA.map((t, i) => (
+            {testimonialsData.map((tItem, i) => (
               <div key={i} className="testimonial-bubble">
-                <p className="testimonial-quote">"{t.quote}"</p>
+                <p className="testimonial-quote">"{tItem.quote}"</p>
                 <div className="testimonial-user-row">
-                  <div className="testimonial-user-avatar">{t.initials}</div>
+                  <div className="testimonial-user-avatar">{tItem.initials}</div>
                   <div>
-                    <div className="testimonial-user-name">{t.name}</div>
-                    <div className="testimonial-user-role">{t.role}</div>
+                    <div className="testimonial-user-name">{tItem.name}</div>
+                    <div className="testimonial-user-role">{tItem.role}</div>
                   </div>
                 </div>
               </div>
@@ -891,13 +911,13 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <section className="landing-cta-banner">
         <div className="cta-box-center">
           <h2 className="cta-main-title">
-            ¿Preparado para revolucionar tu balonmano?
+            {t("cta.title")}
           </h2>
           <p className="cta-desc-p">
-            Únete a la nueva era del análisis deportivo. Comienza a registrar partidos de forma gratuita hoy mismo.
+            {t("cta.desc")}
           </p>
           <button className="btn-hero-primary" onClick={handleTry} style={{ margin: "0 auto" }}>
-            <span>Probar HandStats Ahora</span>
+            <span>{t("cta.btn")}</span>
             <IconArrowRight />
           </button>
         </div>
@@ -911,7 +931,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             <span className="footer-tagline">Analyze. Improve. Win.</span>
           </div>
           <div className="footer-copy">
-            © {new Date().getFullYear()} HandStats. Todos los derechos reservados.
+            © {new Date().getFullYear()} {t("footer.rights")}
           </div>
         </div>
       </footer>

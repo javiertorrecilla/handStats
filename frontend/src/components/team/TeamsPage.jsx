@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 const IconUploadCloud = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -73,6 +74,7 @@ const IconArrowLeft = () => (
 );
 
 export default function TeamsPage({ user, matchesList = [] }) {
+  const { t } = useTranslation();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,7 +97,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
   const processLogoFile = (file) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert("Por favor, selecciona un archivo de imagen válido (PNG, JPG, SVG, WebP).");
+      alert(t("teams.badge_formats"));
       return;
     }
     const reader = new FileReader();
@@ -167,7 +169,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
     const numberVal = parseInt(newPlayerNumber, 10);
     if (editPlayers.some((p) => p.number === numberVal)) {
-      alert("Ya existe un jugador con ese dorsal.");
+      alert(t("create_match.dorsal_exists"));
       return;
     }
 
@@ -196,14 +198,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
   const handleSaveTeam = async (e) => {
     e.preventDefault();
     if (!editName.trim()) {
-      alert("El nombre del equipo no puede estar vacío.");
+      alert(t("teams.team_name_empty"));
       return;
     }
 
     try {
       if (isCreating) {
-        if (teams.some((t) => t.name.toLowerCase() === editName.trim().toLowerCase())) {
-          alert("Ya existe un equipo con este nombre.");
+        if (teams.some((tItem) => tItem.name.toLowerCase() === editName.trim().toLowerCase())) {
+          alert(t("teams.team_name_exists"));
           return;
         }
         await userService.saveTeam(user._id, {
@@ -211,7 +213,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
           logo_url: editLogoUrl || null,
           players: editPlayers,
         });
-        alert("Equipo creado correctamente.");
+        alert(t("teams.team_created_success"));
         setSelectedTeam(null);
         setIsCreating(false);
       } else if (selectedTeam) {
@@ -220,7 +222,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
           logo_url: editLogoUrl || null,
           players: editPlayers,
         });
-        alert("Equipo y escudo actualizados correctamente.");
+        alert(t("teams.team_saved_success"));
         setSelectedTeam((prev) => ({
           ...prev,
           name: editName.trim(),
@@ -237,7 +239,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
   };
 
   const handleDeleteTeam = async (teamName) => {
-    if (!confirm(`¿Estás seguro de que quieres eliminar el equipo "${teamName}"?`)) return;
+    if (!confirm(t("teams.delete_team_confirm", { name: teamName }))) return;
 
     try {
       await userService.deleteSavedTeam(user._id, teamName);
@@ -245,7 +247,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
         setSelectedTeam(null);
       }
       loadTeams();
-      alert("Equipo eliminado correctamente.");
+      alert(t("teams.delete_team_success"));
     } catch (err) {
       console.error(err);
       alert("Error al eliminar el equipo.");
@@ -387,15 +389,15 @@ export default function TeamsPage({ user, matchesList = [] }) {
             <div>
               <h2 style={{ display: "flex", alignItems: "center" }}>
                 <IconTeams />
-                <span>Gestión y Estadísticas de Equipos</span>
+                <span>{t("teams.title")}</span>
               </h2>
               <p className="teams-subtitle">
-                Selecciona un equipo para ver su Dashboard de Rendimiento Acumulado a pantalla completa o gestionar su plantilla.
+                {t("teams.subtitle")}
               </p>
             </div>
             <button className="btn btn-primary" onClick={handleStartCreate} style={{ display: "inline-flex", alignItems: "center" }}>
               <IconPlus />
-              <span>Nuevo Equipo</span>
+              <span>{t("teams.new_team")}</span>
             </button>
           </div>
 
@@ -403,20 +405,20 @@ export default function TeamsPage({ user, matchesList = [] }) {
             <input
               type="text"
               className="input-field"
-              placeholder="Buscar equipo por nombre..."
+              placeholder={t("teams.search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           {loading ? (
-            <div className="teams-loading">Cargando equipos...</div>
+            <div className="teams-loading">{t("teams.loading")}</div>
           ) : filteredTeams.length === 0 ? (
             <div className="teams-empty-state">
               <IconShieldSvg />
-              <p style={{ fontSize: "var(--text-sm)", margin: "8px 0" }}>No se encontraron equipos creados.</p>
+              <p style={{ fontSize: "var(--text-sm)", margin: "8px 0" }}>{t("teams.empty_title")}</p>
               <button className="btn btn-primary btn-sm" onClick={handleStartCreate} style={{ marginTop: "12px" }}>
-                <IconPlus /> Crear el Primer Equipo
+                <IconPlus /> {t("teams.empty_btn")}
               </button>
             </div>
           ) : (
@@ -447,7 +449,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                         <div>
                           <h3 style={{ margin: 0, fontSize: "var(--text-base)", fontWeight: 800 }}>{team.name}</h3>
                           <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                            {team.players?.length || 0} Jugadores en plantilla
+                            {t("teams.players_in_roster", { count: team.players?.length || 0 })}
                           </span>
                         </div>
                       </div>
@@ -457,7 +459,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                           e.stopPropagation();
                           handleDeleteTeam(team.name);
                         }}
-                        title="Eliminar equipo"
+                        title={t("common.delete")}
                       >
                         <IconTrash />
                       </button>
@@ -465,12 +467,11 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "var(--space-12)", borderTop: "1px solid var(--border-color)", gap: "8px" }}>
                       <span style={{ fontSize: "var(--text-xs)", color: "var(--brand-primary)", fontWeight: 700 }}>
-                        {teamMatchesCount} Partidos
+                        {t("teams.matches_count", { count: teamMatchesCount })}
                       </span>
                       <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-
                         <button className="btn btn-sm btn-ghost" style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--brand-primary)" }}>
-                          Ver →
+                          {t("teams.view_arrow")}
                         </button>
                       </div>
                     </div>
@@ -490,14 +491,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
                 type="button"
                 className="btn-icon-back"
                 onClick={handleBackToList}
-                title="Volver a Equipos"
+                title={t("common.back")}
               >
                 <IconArrowLeft />
               </button>
               <div
                 className="team-hero-badge"
                 onClick={() => setRightPanelTab("roster")}
-                title="Haz clic para editar el escudo y datos del equipo"
+                title={t("teams.badge_change_hint")}
                 style={{ overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                 {editLogoUrl ? (
@@ -509,12 +510,12 @@ export default function TeamsPage({ user, matchesList = [] }) {
                 )}
               </div>
               <div className="team-hero-title-group">
-                <h3>{isCreating ? "Crear Nuevo Equipo" : selectedTeam.name}</h3>
+                <h3>{isCreating ? t("teams.create_team_title") : selectedTeam.name}</h3>
                 {!isCreating && (
                   <div className="team-hero-stats-pill">
-                    <span>{cumulativeStats?.totalMatches || 0} Partidos Analizados</span>
+                    <span>{t("teams.matches_analyzed", { count: cumulativeStats?.totalMatches || 0 })}</span>
                     {cumulativeStats && (
-                      <span>• {cumulativeStats.wins}V - {cumulativeStats.draws}E - {cumulativeStats.losses}D</span>
+                      <span>• {t("teams.w_d_l", { wins: cumulativeStats.wins, draws: cumulativeStats.draws, losses: cumulativeStats.losses })}</span>
                     )}
                   </div>
                 )}
@@ -528,14 +529,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
                   className={`btn btn-sm ${rightPanelTab === "stats" ? "btn-primary" : "btn-ghost"}`}
                   onClick={() => setRightPanelTab("stats")}
                 >
-                  <IconBarChart size={14} /> Dashboard Global
+                  <IconBarChart size={14} /> {t("teams.global_dashboard")}
                 </button>
                 <button
                   type="button"
                   className={`btn btn-sm ${rightPanelTab === "roster" ? "btn-primary" : "btn-ghost"}`}
                   onClick={() => setRightPanelTab("roster")}
                 >
-                  <IconUsers size={14} /> Plantilla ({editPlayers.length})
+                  <IconUsers size={14} /> {t("teams.roster_tab", { count: editPlayers.length })}
                 </button>
               </div>
             )}
@@ -546,21 +547,21 @@ export default function TeamsPage({ user, matchesList = [] }) {
             <div className="team-stats-dashboard" style={{ display: "flex", flexDirection: "column", gap: "var(--space-32)" }}>
               {/* TARJETAS KPI DE RENDIMIENTO ACUMULADO */}
               <div className="hs-grid hs-grid-4">
-                <KPICard title="PARTIDOS JUGADOS" value={cumulativeStats.totalMatches} subtitle={`${cumulativeStats.wins}V - ${cumulativeStats.draws}E - ${cumulativeStats.losses}D`} />
-                <KPICard title="GOLES A FAVOR / CONTRA" value={`${cumulativeStats.goalsFor} / ${cumulativeStats.goalsAgainst}`} subtitle={`Media: ${cumulativeStats.avgGoalsFor} - ${cumulativeStats.avgGoalsAgainst}`} />
-                <KPICard title="xG Y xGA ACUMULADO" value={`${cumulativeStats.totalXG} vs ${cumulativeStats.totalXGA}`} subtitle={`Dif: ${(cumulativeStats.totalXG - cumulativeStats.totalXGA).toFixed(2)}`} />
-                <KPICard title="EFICACIA OFENSIVA" value={`${cumulativeStats.avgOffEfficiency}%`} subtitle={`Eficacia tiro: ${cumulativeStats.shotEfficiency}%`} />
-                <KPICard title="PARADAS Y EFICACIA PORTERÍA" value={`${cumulativeStats.totalSaves}/${cumulativeStats.totalShotsFaced}`} subtitle={`${cumulativeStats.savePct}% Paradas`} />
-                <KPICard title="PÉRDIDAS TOTALES" value={cumulativeStats.totalTurnovers} subtitle={`Media: ${cumulativeStats.avgTurnovers} por partido`} />
-                <KPICard title="DURACIÓN MEDIA POSESIÓN" value={`${cumulativeStats.avgPossessionDuration}s`} subtitle={`Media: ${cumulativeStats.avgPossessionsPerMatch} pos. / partido`} />
-                <KPICard title="EFICACIA DEFENSIVA" value={`${cumulativeStats.avgDefEfficiency}%`} subtitle="Basada en goles encajados/posesión" />
+                <KPICard title={t("teams.kpis.matches_played")} value={cumulativeStats.totalMatches} subtitle={t("teams.w_d_l", { wins: cumulativeStats.wins, draws: cumulativeStats.draws, losses: cumulativeStats.losses })} />
+                <KPICard title={t("teams.kpis.goals_for_against")} value={`${cumulativeStats.goalsFor} / ${cumulativeStats.goalsAgainst}`} subtitle={t("teams.kpis.goals_avg_sub", { gf: cumulativeStats.avgGoalsFor, ga: cumulativeStats.avgGoalsAgainst })} />
+                <KPICard title={t("teams.kpis.xg_xga_title")} value={`${cumulativeStats.totalXG} vs ${cumulativeStats.totalXGA}`} subtitle={t("teams.kpis.xg_xga_diff", { diff: (cumulativeStats.totalXG - cumulativeStats.totalXGA).toFixed(2) })} />
+                <KPICard title={t("teams.kpis.off_eff_title")} value={`${cumulativeStats.avgOffEfficiency}%`} subtitle={t("teams.kpis.shot_eff_sub", { val: cumulativeStats.shotEfficiency })} />
+                <KPICard title={t("teams.kpis.saves_eff_title")} value={`${cumulativeStats.totalSaves}/${cumulativeStats.totalShotsFaced}`} subtitle={t("teams.kpis.saves_pct_sub", { val: cumulativeStats.savePct })} />
+                <KPICard title={t("teams.kpis.total_turnovers_title")} value={cumulativeStats.totalTurnovers} subtitle={t("teams.kpis.turnovers_avg_sub", { val: cumulativeStats.avgTurnovers })} />
+                <KPICard title={t("teams.kpis.avg_poss_duration")} value={`${cumulativeStats.avgPossessionDuration}s`} subtitle={t("teams.kpis.poss_avg_sub", { val: cumulativeStats.avgPossessionsPerMatch })} />
+                <KPICard title={t("teams.kpis.def_eff_title")} value={`${cumulativeStats.avgDefEfficiency}%`} subtitle={t("teams.kpis.def_eff_sub")} />
               </div>
 
               {/* ESTADÍSTICAS ACUMULADAS DE LA PLANTILLA EN LA TEMPORADA */}
               <div className="hs-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-12)", flexWrap: "wrap", gap: "8px" }}>
                   <h4 className="hs-card-title" style={{ margin: 0 }}>
-                    <IconUsers size={15} /> RENDIMIENTO ACUMULADO DE LA PLANTILLA
+                    <IconUsers size={15} /> {t("teams.roster_performance_title")}
                   </h4>
                   <div style={{ display: "flex", gap: "4px", background: "var(--bg-inset)", padding: "3px", borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
                     <button
@@ -569,7 +570,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                       onClick={() => setPlayerTableFilter("all")}
                       style={{ fontSize: "0.72rem", padding: "3px 8px" }}
                     >
-                      Resumen ({cumulativeStats.playerStats.length})
+                      {t("common.summary")} ({cumulativeStats.playerStats.length})
                     </button>
                     <button
                       type="button"
@@ -577,7 +578,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                       onClick={() => setPlayerTableFilter("field")}
                       style={{ fontSize: "0.72rem", padding: "3px 8px" }}
                     >
-                      Jugadores Campo ({cumulativeStats.playerStats.filter(p => !p.is_goalkeeper).length})
+                      {t("common.field_players")} ({cumulativeStats.playerStats.filter(p => !p.is_goalkeeper).length})
                     </button>
                     <button
                       type="button"
@@ -585,14 +586,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
                       onClick={() => setPlayerTableFilter("goalkeepers")}
                       style={{ fontSize: "0.72rem", padding: "3px 8px" }}
                     >
-                      Porteros ({cumulativeStats.playerStats.filter(p => p.is_goalkeeper === true || p.is_goalkeeper === "true").length})
+                      {t("common.goalkeepers")} ({cumulativeStats.playerStats.filter(p => p.is_goalkeeper === true || p.is_goalkeeper === "true").length})
                     </button>
                   </div>
                 </div>
 
                 {cumulativeStats.playerStats.length === 0 ? (
                   <p style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", margin: 0 }}>
-                    No hay estadísticas de jugadores acumuladas todavía.
+                    {t("teams.no_players")}
                   </p>
                 ) : (
                   <div className="hs-table-container" style={{ overflowX: "hidden" }}>
@@ -601,37 +602,37 @@ export default function TeamsPage({ user, matchesList = [] }) {
                         {playerTableFilter === "field" ? (
                           <tr>
                             <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
-                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">Jugador{renderSortIndicator("name")}</th>
+                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">{t("players_table.col_name")}{renderSortIndicator("name")}</th>
                             <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
-                            <th onClick={() => handlePlayerSort("shotsCount")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por tiros a campo">Tiros Campo{renderSortIndicator("shotsCount")}</th>
-                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">Goles{renderSortIndicator("goals")}</th>
-                            <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% Efic.{renderSortIndicator("efficiency")}</th>
-                            <th onClick={() => handlePlayerSort("xg")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xG">xG{renderSortIndicator("xg")}</th>
-                            <th onClick={() => handlePlayerSort("turnovers")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por pérdidas">Pérdidas{renderSortIndicator("turnovers")}</th>
-                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">Rating{renderSortIndicator("avgRating")}</th>
+                            <th onClick={() => handlePlayerSort("shotsCount")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por tiros a campo">{t("players_table.col_shots")}{renderSortIndicator("shotsCount")}</th>
+                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")}{renderSortIndicator("goals")}</th>
+                            <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% {t("common.efficiency")}{renderSortIndicator("efficiency")}</th>
+                            <th onClick={() => handlePlayerSort("xg")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xG">{t("players_table.col_xg")}{renderSortIndicator("xg")}</th>
+                            <th onClick={() => handlePlayerSort("turnovers")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por pérdidas">{t("players_table.col_turnovers")}{renderSortIndicator("turnovers")}</th>
+                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
                           </tr>
                         ) : playerTableFilter === "goalkeepers" ? (
                           <tr>
                             <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
-                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por portero">Portero{renderSortIndicator("name")}</th>
+                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por portero">{t("common.goalkeeper")}{renderSortIndicator("name")}</th>
                             <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
-                            <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">Paradas / Rec.{renderSortIndicator("saves")}</th>
-                            <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% Paradas{renderSortIndicator("savePct")}</th>
-                            <th onClick={() => handlePlayerSort("goalkeeperXSaves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xSaves">xSaves{renderSortIndicator("goalkeeperXSaves")}</th>
-                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">Goles{renderSortIndicator("goals")}</th>
-                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">Rating{renderSortIndicator("avgRating")}</th>
+                            <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">{t("players_table.col_saves")} / Rec.{renderSortIndicator("saves")}</th>
+                            <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% {t("players_table.col_saves")}{renderSortIndicator("savePct")}</th>
+                            <th onClick={() => handlePlayerSort("goalkeeperXSaves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xSaves">{t("players_table.col_xsaves")}{renderSortIndicator("goalkeeperXSaves")}</th>
+                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")}{renderSortIndicator("goals")}</th>
+                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
                           </tr>
                         ) : (
                           <tr>
                             <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
-                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">Jugador{renderSortIndicator("name")}</th>
-                            <th onClick={() => handlePlayerSort("role")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rol">Rol{renderSortIndicator("role")}</th>
+                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">{t("players_table.col_name")}{renderSortIndicator("name")}</th>
+                            <th onClick={() => handlePlayerSort("role")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rol">{t("players_table.col_role")}{renderSortIndicator("role")}</th>
                             <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
-                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">Goles / Tiros{renderSortIndicator("goals")}</th>
-                            <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% Efic.{renderSortIndicator("efficiency")}</th>
-                            <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">Paradas{renderSortIndicator("saves")}</th>
+                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")} / {t("common.shots")}{renderSortIndicator("goals")}</th>
+                            <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% {t("common.efficiency")}{renderSortIndicator("efficiency")}</th>
+                            <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">{t("players_table.col_saves")}{renderSortIndicator("saves")}</th>
                             <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% Par.{renderSortIndicator("savePct")}</th>
-                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">Rating{renderSortIndicator("avgRating")}</th>
+                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
                           </tr>
                         )}
                       </thead>
@@ -694,7 +695,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                         border: `1px solid ${isGk ? "rgba(16, 185, 129, 0.25)" : "var(--border-color)"}`
                                       }}
                                     >
-                                      {isGk ? "Portero" : "Jugador"}
+                                      {isGk ? t("players_table.role_gk") : t("players_table.role_player")}
                                     </span>
                                   </td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
@@ -737,14 +738,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
                 {teamGoalkeepers.length > 0 && (
                   <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--space-8)", background: "var(--bg-surface)", padding: "var(--space-12) var(--space-16)", borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
                     <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", marginRight: "var(--space-4)" }}>
-                      FILTRAR PARADAS DE PORTERÍA DE LA TEMPORADA:
+                      {t("teams.filter_season_saves")}
                     </span>
                     <button
                       type="button"
                       className={`btn btn-sm ${selectedTeamGkNumber === "all" ? "btn-primary" : "btn-ghost"}`}
                       onClick={() => setSelectedTeamGkNumber("all")}
                     >
-                      Todos los Porteros del Equipo
+                      {t("teams.all_team_goalkeepers")}
                     </button>
                     {teamGoalkeepers.map((gk) => (
                       <button
@@ -763,7 +764,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                   events={cumulativeStats.allTeamShotsEvents || []}
                   gkEvents={cumulativeStats.allTeamGkShotsFaced || []}
                   selectedGkNumber={selectedTeamGkNumber}
-                  title={`MAPA ACUMULADO DE LANZAMIENTOS Y PARADAS DE PORTERÍA DE LA TEMPORADA — ${activeTeamGk ? `#${activeTeamGk.number} ${activeTeamGk.name.toUpperCase()}` : selectedTeam.name.toUpperCase()}`}
+                  title={t("teams.cumulative_court_title", { name: activeTeamGk ? `#${activeTeamGk.number} ${activeTeamGk.name.toUpperCase()}` : selectedTeam.name.toUpperCase() })}
                 />
               </div>
             </div>
@@ -773,12 +774,12 @@ export default function TeamsPage({ user, matchesList = [] }) {
           {(isCreating || rightPanelTab === "roster") && (
             <form onSubmit={handleSaveTeam} className="team-editor-form">
               <div className="form-group">
-                <label htmlFor="team-name">Nombre del Equipo</label>
+                <label htmlFor="team-name">{t("teams.team_name_label")}</label>
                 <input
                   id="team-name"
                   type="text"
                   className="input-field"
-                  placeholder="Ej. BM Málaga"
+                  placeholder={t("teams.team_name_placeholder")}
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   required
@@ -787,7 +788,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
               <div className="form-group" style={{ marginBottom: "24px" }}>
                 <label className="form-label" style={{ display: "block", marginBottom: "8px", fontWeight: 700, fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  Escudo del Equipo (Foto / Imagen):
+                  {t("teams.badge_label")}
                 </label>
 
                 <div
@@ -833,10 +834,10 @@ export default function TeamsPage({ user, matchesList = [] }) {
                         </div>
                         <div>
                           <div style={{ fontWeight: 800, fontSize: "var(--text-sm)", color: "var(--brand-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                            ✓ Escudo asignado correctamente
+                            {t("teams.badge_assigned")}
                           </div>
                           <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                            Haz clic para cambiar la imagen o arrastra un nuevo archivo
+                            {t("teams.badge_change_hint")}
                           </span>
                         </div>
                       </div>
@@ -850,7 +851,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                         }}
                         style={{ color: "var(--color-danger)", fontSize: "11px", fontWeight: 700 }}
                       >
-                        Quitar Foto
+                        {t("teams.remove_photo")}
                       </button>
                     </div>
                   ) : (
@@ -860,10 +861,10 @@ export default function TeamsPage({ user, matchesList = [] }) {
                       </div>
                       <div className="pdf-dropzone-text">
                         <p style={{ margin: 0, fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--text-primary)" }}>
-                          Arrastra aquí la foto o escudo del equipo, o <span style={{ color: "var(--brand-primary)", textDecoration: "underline" }}>examina tus archivos</span>
+                          {t("teams.drag_badge")} <span style={{ color: "var(--brand-primary)", textDecoration: "underline" }}>{t("teams.browse_files")}</span>
                         </p>
                         <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", marginTop: "2px", display: "block" }}>
-                          Admite cualquier formato de imagen (PNG, JPG, SVG, WebP). También se extraerá automáticamente al subir un acta PDF.
+                          {t("teams.badge_formats")}
                         </span>
                       </div>
                     </div>
@@ -872,18 +873,18 @@ export default function TeamsPage({ user, matchesList = [] }) {
               </div>
 
               <div className="team-roster-section">
-                <h4>Jugadores ({editPlayers.length})</h4>
+                <h4>{t("teams.roster_tab", { count: editPlayers.length })}</h4>
 
                 {editPlayers.length === 0 ? (
                   <p className="no-players-text">
-                    No hay jugadores en la plantilla. ¡Añade el primero abajo!
+                    {t("teams.no_players")}
                   </p>
                 ) : (
                   <div className="roster-table">
                     <div className="roster-header">
                       <span className="col-num">#</span>
-                      <span className="col-name" style={{ width: "50%" }}>Nombre</span>
-                      <span className="col-role" style={{ width: "30%", textAlign: "center" }}>Rol</span>
+                      <span className="col-name" style={{ width: "50%" }}>{t("players_table.col_name")}</span>
+                      <span className="col-role" style={{ width: "30%", textAlign: "center" }}>{t("players_table.col_role")}</span>
                       <span className="col-action"></span>
                     </div>
                     <div className="roster-rows">
@@ -899,7 +900,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                 className={`role-badge-btn ${isGk ? "gk" : "field"}`}
                                 onClick={() => handleToggleGoalkeeper(index)}
                               >
-                                {isGk ? "Portero" : "Jugador"}
+                                {isGk ? t("players_table.role_gk") : t("players_table.role_player")}
                               </button>
                             </span>
                             <span className="col-action">
@@ -907,7 +908,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                 type="button"
                                 className="btn-remove-player"
                                 onClick={() => handleRemovePlayer(index)}
-                                title="Eliminar"
+                                title={t("common.delete")}
                               >
                                 &times;
                               </button>
@@ -924,7 +925,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                   <input
                     type="number"
                     className="input-field player-num-input"
-                    placeholder="Dorsal"
+                    placeholder={t("create_match.dorsal_placeholder")}
                     min="0"
                     max="99"
                     value={newPlayerNumber}
@@ -933,7 +934,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                   <input
                     type="text"
                     className="input-field player-name-input"
-                    placeholder="Nombre del jugador"
+                    placeholder={t("create_match.player_name_placeholder")}
                     value={newPlayerName}
                     onChange={(e) => setNewPlayerName(e.target.value)}
                   />
@@ -942,7 +943,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                     className="btn btn-secondary btn-sm"
                     onClick={handleAddPlayer}
                   >
-                    Añadir
+                    {t("create_match.add_player_btn")}
                   </button>
                 </div>
               </div>
@@ -953,11 +954,11 @@ export default function TeamsPage({ user, matchesList = [] }) {
                   className="btn btn-secondary"
                   onClick={handleBackToList}
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center" }}>
                   <IconSave />
-                  <span>Guardar Equipo</span>
+                  <span>{t("teams.save_team")}</span>
                 </button>
               </div>
             </form>

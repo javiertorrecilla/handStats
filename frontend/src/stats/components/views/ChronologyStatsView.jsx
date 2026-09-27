@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getEventCategory, ACTION_CATEGORIES, formatCourtZoneName, formatGoalZoneName } from "../../engine/types";
 
 export function ChronologyStatsView({ match }) {
+  const { t } = useTranslation();
   const [filterType, setFilterType] = useState(ACTION_CATEGORIES.TODOS);
   const events = match?.events || [];
 
@@ -38,69 +40,69 @@ export function ChronologyStatsView({ match }) {
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.TODOS ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.TODOS)}
         >
-          Todos ({events.length})
+          {t("chronology.tab_all", "Todos")} ({events.length})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.GOLES ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.GOLES)}
         >
-          Goles ({goalsCount})
+          {t("chronology.tab_goals", "Goles")} ({goalsCount})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.PARADAS ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.PARADAS)}
         >
-          Paradas ({savesCount})
+          {t("chronology.tab_saves", "Paradas")} ({savesCount})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.FALLO_LANZAMIENTO ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.FALLO_LANZAMIENTO)}
         >
-          Fallo Lanzamiento ({missedCount})
+          {t("chronology.tab_misses", "Fallo Lanzamiento")} ({missedCount})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.PERDIDAS ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.PERDIDAS)}
         >
-          Pérdidas ({turnoversCount})
+          {t("chronology.tab_turnovers", "Pérdidas")} ({turnoversCount})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.TIEMPO_MUERTO ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.TIEMPO_MUERTO)}
         >
-          Tiempo Muerto ({timeoutsCount})
+          {t("chronology.tab_timeouts", "Tiempo Muerto")} ({timeoutsCount})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.GOLPE_FRANCO ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.GOLPE_FRANCO)}
         >
-          Golpe Franco ({freeThrowsCount})
+          {t("chronology.tab_free_throws", "Golpe Franco")} ({freeThrowsCount})
         </button>
 
         <button
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.SANCIONES ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.SANCIONES)}
         >
-          Sanciones ({sanctionsCount})
+          {t("chronology.tab_sanctions", "Sanciones")} ({sanctionsCount})
         </button>
       </div>
 
       <div className="hs-card">
-        <h4 className="hs-card-title">TIMELINE CRONOLÓGICO COMPLETO DEL PARTIDO</h4>
+        <h4 className="hs-card-title">{t("chronology.timeline_title", "TIMELINE CRONOLÓGICO COMPLETO DEL PARTIDO")}</h4>
         <div className="hs-timeline-list">
           {filteredEvents.length > 0 ? (
             [...filteredEvents].reverse().map(({ event: ev, cat }, idx) => {
               const teamName = ev.is_opponent_action ? match.away_team : match.home_team;
               const fromZoneRaw = ev.shot_zone || ev.court_zone || ev.shot_position || "";
               const toZoneRaw = ev.goal_zone || ev.target_zone || "";
-              const formattedFrom = formatCourtZoneName(fromZoneRaw);
-              const formattedTo = formatGoalZoneName(toZoneRaw);
+              const formattedFrom = formatCourtZoneName(fromZoneRaw, t);
+              const formattedTo = formatGoalZoneName(toZoneRaw, t);
               const trajectory = (formattedFrom && formattedTo) ? `${formattedFrom} -> ${formattedTo}` : (formattedFrom || formattedTo || "");
 
               return (
@@ -111,7 +113,7 @@ export function ChronologyStatsView({ match }) {
                   <span className="hs-timeline-desc">
                     {cat === ACTION_CATEGORIES.GOLES && (
                       <>
-                        <strong>GOL</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
+                        <strong>{t("chronology.action_gol", "GOL")}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
                         {ev.goalkeeper_name && (
                           <span style={{ marginLeft: 6, color: "var(--text-muted)", fontSize: "0.9em" }}>
                             vs POR #{ev.goalkeeper_number} {ev.goalkeeper_name}
@@ -121,7 +123,7 @@ export function ChronologyStatsView({ match }) {
                     )}
                     {cat === ACTION_CATEGORIES.PARADAS && (
                       <>
-                        <strong>PARADA</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
+                        <strong>{t("chronology.action_parada", "PARADA")}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
                         {ev.goalkeeper_name && (
                           <span style={{ marginLeft: 6, color: "var(--text-muted)", fontSize: "0.9em" }}>
                             POR #{ev.goalkeeper_number} {ev.goalkeeper_name}
@@ -131,27 +133,29 @@ export function ChronologyStatsView({ match }) {
                     )}
                     {cat === ACTION_CATEGORIES.FALLO_LANZAMIENTO && (
                       <>
-                        <strong>{(ev.result || "FALLO").toUpperCase()}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
+                        <strong>{(ev.result || t("chronology.action_fallo", "FALLO")).toUpperCase()}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
                       </>
                     )}
                     {cat === ACTION_CATEGORIES.PERDIDAS && (
-                      `Pérdida de balón (${ev.turnover_type || ev.end_reason || "Acción"})`
+                      t("chronology.turnover_desc", { type: ev.turnover_type || ev.end_reason || "Acción", defaultValue: `Pérdida de balón (${ev.turnover_type || ev.end_reason || "Acción"})` })
                     )}
                     {cat === ACTION_CATEGORIES.TIEMPO_MUERTO && (
-                      "Tiempo Muerto solicitado"
+                      t("chronology.timeout_desc", "Tiempo Muerto solicitado")
                     )}
                     {cat === ACTION_CATEGORIES.GOLPE_FRANCO && (
-                      "Golpe Franco cometido"
+                      t("chronology.free_throw_desc", "Golpe Franco cometido")
                     )}
                     {cat === ACTION_CATEGORIES.SANCIONES && (
-                      `Sanción disciplinaria: ${ev.sanction_type || "Sanción"}`
+                      t("chronology.sanction_desc", { type: ev.sanction_type || "Sanción", defaultValue: `Sanción disciplinaria: ${ev.sanction_type || "Sanción"}` })
                     )}
                   </span>
                 </div>
               );
             })
           ) : (
-            <div style={{ textAlign: "center", color: "var(--text-muted)", padding: 20 }}>No se encontraron eventos coincidentes con el filtro.</div>
+            <div style={{ textAlign: "center", color: "var(--text-muted)", padding: 20 }}>
+              {t("chronology.no_events", "No se encontraron eventos coincidentes con el filtro.")}
+            </div>
           )}
         </div>
       </div>

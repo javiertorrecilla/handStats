@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Pure SVG 5-Axis Radar Chart for Tactical Team/Player Profiles
@@ -7,14 +8,26 @@ import React from "react";
 export function RadarChart({
   homeValues = [60, 70, 80, 65, 75],
   awayValues = [50, 60, 55, 70, 60],
-  labels = ["Eficiencia", "Defensa", "Portería", "xG Generado", "Ritmo"],
+  labels,
   size = 240,
-  homeTeam = "Local",
-  awayTeam = "Visitante"
+  homeTeam,
+  awayTeam
 }) {
+  const { t } = useTranslation();
+  const resolvedHomeTeam = homeTeam || t("common.home", "Local");
+  const resolvedAwayTeam = awayTeam || t("common.away", "Visitante");
+  const defaultLabels = [
+    t("dashboard.radar.efficiency", "Eficiencia"),
+    t("dashboard.radar.defense", "Defensa"),
+    t("dashboard.radar.goalkeeping", "Portería"),
+    t("dashboard.radar.xg_generated", "xG Generado"),
+    t("dashboard.radar.pace", "Ritmo")
+  ];
+  const axisLabels = labels || defaultLabels;
+
   const center = size / 2;
   const radius = center - 35;
-  const numAxes = labels.length;
+  const numAxes = axisLabels.length;
   const angleStep = (Math.PI * 2) / numAxes;
 
   const getCoordinates = (value, index) => {
@@ -37,8 +50,8 @@ export function RadarChart({
   return (
     <div className="hs-radar-container" style={{ textAlign: "center" }}>
       <div className="hs-chart-legend mb-2">
-        <span style={{ color: "var(--color-primary)", fontWeight: 700 }}>■ {homeTeam}</span>
-        <span style={{ color: "var(--color-info)", fontWeight: 700, marginLeft: 12 }}>■ {awayTeam}</span>
+        <span style={{ color: "var(--color-primary)", fontWeight: 700 }}>■ {resolvedHomeTeam}</span>
+        <span style={{ color: "var(--color-info)", fontWeight: 700, marginLeft: 12 }}>■ {resolvedAwayTeam}</span>
       </div>
 
       <svg viewBox={`0 0 ${size} ${size}`} style={{ maxWidth: size, margin: "0 auto", overflow: "visible" }}>
@@ -56,7 +69,7 @@ export function RadarChart({
         ))}
 
         {/* Ejes radiales */}
-        {labels.map((label, i) => {
+        {axisLabels.map((label, i) => {
           const endPos = getCoordinates(100, i);
           const labelPos = getCoordinates(120, i);
           return (

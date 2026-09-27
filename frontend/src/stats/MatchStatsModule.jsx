@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMatchStats } from "./hooks/useMatchStats";
 import { StatsDashboardView } from "./components/views/StatsDashboardView";
 import { AttackStatsView } from "./components/views/AttackStatsView";
@@ -21,6 +22,7 @@ import {
 import "./MatchStatsModule.css";
 
 export default function MatchStatsModule({ match, activePossession, timeSeconds, matchesList: matchesListProp }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [teamFilter, setTeamFilter] = useState("home"); // "home" | "away"
 
@@ -46,7 +48,7 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
     return (
       <div className="hs-card" style={{ textAlign: "center", padding: "var(--space-48)" }}>
         <div className="spinner" style={{ margin: "0 auto var(--space-16) auto" }}></div>
-        <h3>Calculando analíticas del partido...</h3>
+        <h3>{t("common.loading")}</h3>
       </div>
     );
   }
@@ -54,62 +56,62 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
   const tabs = [
     {
       id: "dashboard",
-      label: "Dashboard",
+      label: t("dashboard.tab_dashboard"),
       icon: <IconDashboard size={15} />,
       view: <StatsDashboardView metrics={metrics} insights={insights} teamFilter={teamFilter} matchesList={matchesList} />
     },
     {
       id: "attack",
-      label: "Ataque",
+      label: t("dashboard.tab_attack"),
       icon: <IconTarget size={15} />,
       view: <AttackStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} />
     },
     {
       id: "defense",
-      label: "Defensa",
+      label: t("dashboard.tab_defense"),
       icon: <IconShield size={15} />,
       view: <DefenseStatsView metrics={metrics} teamFilter={teamFilter} />
     },
     {
       id: "heatmaps",
-      label: "Mapas de Calor",
+      label: t("dashboard.tab_heatmaps"),
       icon: <IconFlame size={15} />,
       view: <HeatmapsStatsView match={match} teamFilter={teamFilter} />
     },
     {
       id: "goalkeeper",
-      label: "Portería",
+      label: t("dashboard.tab_goalkeeper"),
       icon: <IconGlove size={15} />,
       view: <GoalkeeperStatsView metrics={metrics} match={match} homeHeatmaps={homeHeatmaps} awayHeatmaps={awayHeatmaps} teamFilter={teamFilter} />
     },
     {
       id: "players",
-      label: "Jugadores",
+      label: t("dashboard.tab_players"),
       icon: <IconUsers size={15} />,
       view: <PlayersStatsView metrics={metrics} teamFilter={teamFilter} />
     },
     {
       id: "chronology",
-      label: "Cronología",
+      label: t("dashboard.tab_chronology"),
       icon: <IconClock size={15} />,
       view: <ChronologyStatsView match={match} teamFilter={teamFilter} />
     },
     {
       id: "report",
-      label: "Informe",
+      label: t("dashboard.tab_report"),
       icon: <IconFileText size={15} />,
       view: <ReportStatsView metrics={metrics} insights={insights} match={match} teamFilter={teamFilter} />
     }
   ];
 
-  const currentTab = tabs.find((t) => t.id === activeTab) || tabs[0];
+  const currentTab = tabs.find((tItem) => tItem.id === activeTab) || tabs[0];
 
   return (
     <div className="hs-stats-module">
       {/* PANEL DESTACADO DE DOS BOTONES DE EQUIPO */}
       <div className="hs-team-switcher-header">
         <div className="hs-team-switcher-label">
-          <span> -- SELECCIONAR EQUIPO PARA VER ESTADÍSTICAS: --</span>
+          <span>{t("dashboard.select_team_banner")}</span>
         </div>
 
         <div className="hs-team-switcher-buttons">
@@ -119,11 +121,11 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
             onClick={() => setTeamFilter("home")}
           >
             <span className="team-name">{match.home_team}</span>
-            <span className="team-role-tag">LOCAL</span>
-            <span className="team-goals-badge">{metrics.overview.homeGoals} Goles</span>
+            <span className="team-role-tag">{t("common.home").toUpperCase()}</span>
+            <span className="team-goals-badge">{metrics.overview.homeGoals} {t("common.goals")}</span>
           </button>
 
-          <div className="team-vs-divider">VS</div>
+          <div className="team-vs-divider">{t("common.vs")}</div>
 
           <button
             type="button"
@@ -131,8 +133,8 @@ export default function MatchStatsModule({ match, activePossession, timeSeconds,
             onClick={() => setTeamFilter("away")}
           >
             <span className="team-name">{match.away_team}</span>
-            <span className="team-role-tag">VISITANTE</span>
-            <span className="team-goals-badge">{metrics.overview.awayGoals} Goles</span>
+            <span className="team-role-tag">{t("common.away").toUpperCase()}</span>
+            <span className="team-goals-badge">{metrics.overview.awayGoals} {t("common.goals")}</span>
           </button>
         </div>
       </div>

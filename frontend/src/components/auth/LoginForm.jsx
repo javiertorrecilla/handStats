@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function LoginForm({
   login,
   loginWithGoogle,
   loginAsGuest,
 }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,7 +15,7 @@ function LoginForm({
     e.preventDefault();
 
     if (!email || !password) {
-      return alert("Completa todos los campos.");
+      return alert(t("auth.fill_all_fields"));
     }
 
     try {
@@ -23,13 +25,13 @@ function LoginForm({
       console.error(error);
       switch (error.code) {
         case "auth/invalid-credential":
-          alert("Correo o contraseña incorrectos.");
+          alert(t("auth.invalid_credentials"));
           break;
         case "auth/user-not-found":
-          alert("El usuario no existe.");
+          alert(t("auth.user_not_found"));
           break;
         case "auth/wrong-password":
-          alert("Contraseña incorrecta.");
+          alert(t("auth.wrong_password"));
           break;
         default:
           alert(error.message);
@@ -43,12 +45,12 @@ function LoginForm({
     <>
       <form className="auth-form" onSubmit={handleLogin}>
         <div className="form-group">
-          <label htmlFor="login-email">Correo electrónico</label>
+          <label htmlFor="login-email">{t("auth.email")}</label>
           <input
             id="login-email"
             className="input-field"
             type="email"
-            placeholder="ejemplo@correo.com"
+            placeholder={t("auth.email_placeholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -57,12 +59,12 @@ function LoginForm({
         </div>
 
         <div className="form-group">
-          <label htmlFor="login-password">Contraseña</label>
+          <label htmlFor="login-password">{t("auth.password")}</label>
           <input
             id="login-password"
             className="input-field"
             type="password"
-            placeholder="••••••••"
+            placeholder={t("auth.password_placeholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -75,19 +77,19 @@ function LoginForm({
           disabled={loading}
           type="submit"
         >
-          {loading ? "Entrando..." : "Iniciar sesión"}
+          {loading ? t("auth.logging_in") : t("auth.login_btn")}
         </button>
       </form>
 
       <div className="auth-divider">
-        <span>o</span>
+        <span>{t("auth.or")}</span>
       </div>
 
       <button
         className="google-btn"
         onClick={loginWithGoogle}
         type="button"
-        aria-label="Iniciar sesión con Google"
+        aria-label={t("auth.continue_google")}
       >
         <svg
           className="google-icon"
@@ -111,7 +113,7 @@ function LoginForm({
             d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.18 2.12 1.21 5.36l4.11 3.22c.94-2.85 3.57-4.96 6.68-4.96z"
           />
         </svg>
-        <span>Continuar con Google</span>
+        <span>{t("auth.continue_google")}</span>
       </button>
 
       <button
@@ -120,7 +122,7 @@ function LoginForm({
         onClick={loginAsGuest}
         type="button"
       >
-        Entrar como invitado
+        {t("auth.guest_btn")}
       </button>
     </>
   );

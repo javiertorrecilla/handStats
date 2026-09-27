@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Componente gráfico SVG oficial de la media pista de balonmano.
@@ -10,6 +11,7 @@ export function HandballCourtGraphic({
   style = {},
   idPrefix = "hc"
 }) {
+  const { t } = useTranslation();
   const courtGradId = `${idPrefix}-courtBgGrad`;
   const areaGradId = `${idPrefix}-areaGrad`;
   const netPatId = `${idPrefix}-netPattern`;
@@ -56,11 +58,11 @@ export function HandballCourtGraphic({
         <g className="court-zone-overlays" opacity="0.6">
           {/* Extremo Izquierdo */}
           <path d="M 8 8 L 40 8 L 40 63 L 8 63 Z" fill="rgba(249, 115, 22, 0.45)" stroke="#f97316" strokeWidth="2" />
-          <text x="24" y="38" fill="#fdba74" fontSize="9" fontWeight="bold" textAnchor="middle">EXT IZQ</text>
+          <text x="24" y="38" fill="#fdba74" fontSize="9" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.left_wing", "EXT IZQ")}</text>
 
           {/* Extremo Derecho */}
           <path d="M 360 8 L 392 8 L 392 63 L 360 63 Z" fill="rgba(249, 115, 22, 0.45)" stroke="#f97316" strokeWidth="2" />
-          <text x="376" y="38" fill="#fdba74" fontSize="9" fontWeight="bold" textAnchor="middle">EXT DER</text>
+          <text x="376" y="38" fill="#fdba74" fontSize="9" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.right_wing", "EXT DER")}</text>
 
           {/* Área Azul de Pivote / Penetración */}
           <path
@@ -69,19 +71,19 @@ export function HandballCourtGraphic({
             stroke="#3b82f6"
             strokeWidth="2.5"
           />
-          <text x="200" y="175" fill="#93c5fd" fontSize="10" fontWeight="bold" textAnchor="middle">PIVOTE 6M / PENETRACIÓN</text>
+          <text x="200" y="175" fill="#93c5fd" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.pivot_area_title", "PIVOTE 6M / PENETRACIÓN")}</text>
 
           {/* 9M Lateral Izquierdo */}
           <path d="M 8 63 A 195 195 0 0 0 124 196 L 124 288 L 8 288 Z" fill="rgba(236, 72, 153, 0.35)" stroke="#ec4899" strokeWidth="2" />
-          <text x="66" y="245" fill="#f472b6" fontSize="10" fontWeight="bold" textAnchor="middle">9M LAT IZQ</text>
+          <text x="66" y="245" fill="#f472b6" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.left_back_9m", "9M LAT IZQ")}</text>
 
           {/* 9M Central */}
           <path d="M 124 196 A 195 195 0 0 0 165 203 L 235 203 A 195 195 0 0 0 276 196 L 276 288 L 124 288 Z" fill="rgba(34, 197, 94, 0.35)" stroke="#22c55e" strokeWidth="2" />
-          <text x="200" y="245" fill="#86efac" fontSize="10" fontWeight="bold" textAnchor="middle">9M CENTRAL</text>
+          <text x="200" y="245" fill="#86efac" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.center_back_9m", "9M CENTRAL")}</text>
 
           {/* 9M Lateral Derecho */}
           <path d="M 276 196 A 195 195 0 0 0 392 63 L 392 288 L 276 288 Z" fill="rgba(255, 255, 255, 0.30)" stroke="#ffffff" strokeWidth="2" />
-          <text x="334" y="245" fill="#f1f5f9" fontSize="10" fontWeight="bold" textAnchor="middle">9M LAT DER</text>
+          <text x="334" y="245" fill="#f1f5f9" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.right_back_9m", "9M LAT DER")}</text>
         </g>
       )}
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import PlayerListEditor from "./PlayerListEditor";
 import PdfUploader from "./PdfUploader";
 import userService from "../../services/userService";
@@ -24,6 +25,7 @@ export default function CreateMatchPage({
   onMatchCreated,
   onCancel,
 }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
 
   // Paso 1 — Equipos
@@ -180,10 +182,10 @@ export default function CreateMatchPage({
       <div className="create-match-header">
         <h2 style={{ display: "flex", alignItems: "center" }}>
           <IconHandball />
-          <span>Nuevo Partido</span>
+          <span>{t("create_match.title")}</span>
         </h2>
         <button className="btn btn-secondary btn-sm" onClick={onCancel}>
-          Cancelar
+          {t("common.cancel")}
         </button>
       </div>
 
@@ -191,17 +193,17 @@ export default function CreateMatchPage({
       <div className="stepper">
         <div className={`stepper-step ${step >= 1 ? "active" : ""}`}>
           <div className="stepper-circle">1</div>
-          <span>Equipos</span>
+          <span>{t("create_match.step1")}</span>
         </div>
         <div className="stepper-line" />
         <div className={`stepper-step ${step >= 2 ? "active" : ""}`}>
           <div className="stepper-circle">2</div>
-          <span>Jugadores</span>
+          <span>{t("create_match.step2")}</span>
         </div>
         <div className="stepper-line" />
         <div className={`stepper-step ${step >= 3 ? "active" : ""}`}>
           <div className="stepper-circle">3</div>
-          <span>Confirmar</span>
+          <span>{t("create_match.step3")}</span>
         </div>
       </div>
 
@@ -212,12 +214,12 @@ export default function CreateMatchPage({
           <div className="teams-form">
 
             <div className="team-input-group">
-              <label>Equipo Local</label>
+              <label>{t("create_match.home_team")}</label>
               <div className="autocomplete-wrapper">
                 <input
                   className="input-field"
                   type="text"
-                  placeholder="Ej. BM Málaga"
+                  placeholder={t("create_match.home_placeholder")}
                   value={homeTeam}
                   onChange={(e) => {
                     setHomeTeam(e.target.value);
@@ -228,15 +230,15 @@ export default function CreateMatchPage({
                 />
                 {showHomeSuggestions && getFilteredTeams(homeTeam).length > 0 && (
                   <div className="autocomplete-dropdown">
-                    {getFilteredTeams(homeTeam).map((t, i) => (
+                    {getFilteredTeams(homeTeam).map((tItem, i) => (
                       <button
                         key={i}
                         className="autocomplete-item"
-                        onMouseDown={() => selectSavedTeam(t, "home")}
+                        onMouseDown={() => selectSavedTeam(tItem, "home")}
                       >
-                        {t.name}
+                        {tItem.name}
                         <span className="autocomplete-badge">
-                          {t.players?.length || 0} jugadores
+                          {t("create_match.players_count", { count: tItem.players?.length || 0 })}
                         </span>
                       </button>
                     ))}
@@ -245,15 +247,15 @@ export default function CreateMatchPage({
               </div>
             </div>
 
-            <div className="vs-divider">VS</div>
+            <div className="vs-divider">{t("common.vs")}</div>
 
             <div className="team-input-group">
-              <label>Equipo Visitante</label>
+              <label>{t("create_match.away_team")}</label>
               <div className="autocomplete-wrapper">
                 <input
                   className="input-field"
                   type="text"
-                  placeholder="Ej. CB Torremolinos"
+                  placeholder={t("create_match.away_placeholder")}
                   value={awayTeam}
                   onChange={(e) => {
                     setAwayTeam(e.target.value);
@@ -264,15 +266,15 @@ export default function CreateMatchPage({
                 />
                 {showAwaySuggestions && getFilteredTeams(awayTeam).length > 0 && (
                   <div className="autocomplete-dropdown">
-                    {getFilteredTeams(awayTeam).map((t, i) => (
+                    {getFilteredTeams(awayTeam).map((tItem, i) => (
                       <button
                         key={i}
                         className="autocomplete-item"
-                        onMouseDown={() => selectSavedTeam(t, "away")}
+                        onMouseDown={() => selectSavedTeam(tItem, "away")}
                       >
-                        {t.name}
+                        {tItem.name}
                         <span className="autocomplete-badge">
-                          {t.players?.length || 0} jugadores
+                          {t("create_match.players_count", { count: tItem.players?.length || 0 })}
                         </span>
                       </button>
                     ))}
@@ -285,7 +287,7 @@ export default function CreateMatchPage({
 
           <div className="pdf-section">
             <p className="pdf-hint">
-              ¿Tienes el acta en PDF? Sube el archivo y se extraerán los equipos y jugadores automáticamente.
+              {t("create_match.pdf_hint")}
             </p>
             <PdfUploader onParsed={handlePdfParsed} />
           </div>
@@ -296,7 +298,7 @@ export default function CreateMatchPage({
               disabled={!canGoStep2}
               onClick={() => setStep(2)}
             >
-              Siguiente →
+              {t("create_match.next")}
             </button>
           </div>
 
@@ -323,14 +325,14 @@ export default function CreateMatchPage({
 
           <div className="step-actions">
             <button className="btn btn-secondary" onClick={() => setStep(1)}>
-              ← Atrás
+              {t("create_match.back")}
             </button>
             <button
               className="btn btn-primary"
               disabled={!canCreate}
               onClick={() => setStep(3)}
             >
-              Siguiente →
+              {t("create_match.next")}
             </button>
           </div>
 
@@ -346,16 +348,16 @@ export default function CreateMatchPage({
             <div className="confirm-teams">
               <div className="confirm-team">
                 <h3>{homeTeam}</h3>
-                <span className="confirm-label">Local</span>
-                <p>{homePlayers.length} jugadores</p>
+                <span className="confirm-label">{t("common.home")}</span>
+                <p>{t("create_match.players_count", { count: homePlayers.length })}</p>
               </div>
 
-              <div className="confirm-vs">VS</div>
+              <div className="confirm-vs">{t("common.vs")}</div>
 
               <div className="confirm-team">
                 <h3>{awayTeam}</h3>
-                <span className="confirm-label">Visitante</span>
-                <p>{awayPlayers.length} jugadores</p>
+                <span className="confirm-label">{t("common.away")}</span>
+                <p>{t("create_match.players_count", { count: awayPlayers.length })}</p>
               </div>
             </div>
 
@@ -363,7 +365,7 @@ export default function CreateMatchPage({
 
           <div className="step-actions">
             <button className="btn btn-secondary" onClick={() => setStep(2)}>
-              ← Atrás
+              {t("create_match.back")}
             </button>
             <button
               className="btn btn-primary btn-lg"
@@ -371,7 +373,7 @@ export default function CreateMatchPage({
               style={{ display: "inline-flex", alignItems: "center" }}
             >
               <IconStadium />
-              <span>Crear Partido</span>
+              <span>{t("create_match.create_match_btn")}</span>
             </button>
           </div>
 

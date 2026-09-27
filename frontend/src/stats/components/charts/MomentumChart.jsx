@@ -1,11 +1,14 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Pure SVG Momentum Flow Chart con escala adaptativa, cuadrícula cada 5 minutos y línea bicolor Verde / Azul.
  */
 export function MomentumChart({ data = [], height = 220, homeTeam = "Local", awayTeam = "Visitante" }) {
+  const { t } = useTranslation();
+
   if (!data || data.length === 0) {
-    return <div className="hs-chart-placeholder">Esperando acciones registradas para calcular Momentum...</div>;
+    return <div className="hs-chart-placeholder">{t("dashboard.charts.momentum_waiting")}</div>;
   }
 
   const width = 600;
@@ -61,10 +64,16 @@ export function MomentumChart({ data = [], height = 220, homeTeam = "Local", awa
 
   return (
     <div className="hs-chart-container">
-      <div className="hs-chart-header" style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-        <span style={{ color: "var(--color-primary)", fontWeight: 700 }}>▲ Dominio {homeTeam} (+{limitBound})</span>
-        <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>Línea de Neutralidad (0)</span>
-        <span style={{ color: "var(--color-info)", fontWeight: 700 }}>▼ Dominio {awayTeam} (-{limitBound})</span>
+      <div className="hs-chart-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+        <span style={{ color: "var(--color-primary)", fontWeight: 800, fontFamily: "var(--font-display)", fontSize: "0.8rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+          {t("dashboard.charts.momentum_home", { team: homeTeam, limit: limitBound, defaultValue: `▲ DOMINIO ${homeTeam} (+${limitBound})` })}
+        </span>
+        <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "var(--font-mono)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+          {t("dashboard.charts.momentum_neutral", "Línea de Neutralidad (0)")}
+        </span>
+        <span style={{ color: "var(--color-info)", fontWeight: 800, fontFamily: "var(--font-display)", fontSize: "0.8rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+          {t("dashboard.charts.momentum_away", { team: awayTeam, limit: limitBound, defaultValue: `▼ DOMINIO ${awayTeam} (-${limitBound})` })}
+        </span>
       </div>
 
       <svg viewBox={`0 0 ${width} ${height}`} className="hs-svg-chart">
@@ -86,7 +95,8 @@ export function MomentumChart({ data = [], height = 220, homeTeam = "Local", awa
               y={height - paddingBottom + 16}
               textAnchor="middle"
               fill="var(--text-muted)"
-              fontSize="9"
+              fontSize="10"
+              fontFamily="var(--font-data)"
               fontWeight="600"
             >
               {interval.min}'
@@ -100,17 +110,17 @@ export function MomentumChart({ data = [], height = 220, homeTeam = "Local", awa
         <line x1={paddingLeft} y1={height - paddingBottom} x2={width - paddingRight} y2={height - paddingBottom} stroke="var(--border-color)" strokeWidth="0.8" strokeDasharray="2 2" />
 
         {/* Textos de valores límite en el eje Y */}
-        <text x={paddingLeft - 6} y={paddingTop + 4} textAnchor="end" fill="var(--color-primary)" fontSize="10" fontWeight="bold">+{limitBound}</text>
-        <text x={paddingLeft - 6} y={centerY + 3} textAnchor="end" fill="var(--text-muted)" fontSize="9">0</text>
-        <text x={paddingLeft - 6} y={height - paddingBottom + 3} textAnchor="end" fill="var(--color-info)" fontSize="10" fontWeight="bold">-{limitBound}</text>
+        <text x={paddingLeft - 6} y={paddingTop + 4} textAnchor="end" fill="var(--color-primary)" fontSize="11" fontFamily="var(--font-data)" fontWeight="bold">+{limitBound}</text>
+        <text x={paddingLeft - 6} y={centerY + 3} textAnchor="end" fill="var(--text-muted)" fontSize="10" fontFamily="var(--font-data)">0</text>
+        <text x={paddingLeft - 6} y={height - paddingBottom + 3} textAnchor="end" fill="var(--color-info)" fontSize="11" fontFamily="var(--font-data)" fontWeight="bold">-{limitBound}</text>
 
         {/* Gradientes SVG para área y línea */}
         <defs>
           <linearGradient id="momentumGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.4" />
-            <stop offset="50%" stopColor="var(--color-primary)" stopOpacity="0.05" />
-            <stop offset="50%" stopColor="var(--color-info)" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="var(--color-info)" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.3" />
+            <stop offset="50%" stopColor="var(--color-primary)" stopOpacity="0.04" />
+            <stop offset="50%" stopColor="var(--color-info)" stopOpacity="0.04" />
+            <stop offset="100%" stopColor="var(--color-info)" stopOpacity="0.3" />
           </linearGradient>
 
           <linearGradient id="momentumLineGrad" x1="0" y1={paddingTop} x2="0" y2={height - paddingBottom} gradientUnits="userSpaceOnUse">

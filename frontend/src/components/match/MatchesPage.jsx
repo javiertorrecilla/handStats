@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import "./Matches.css";
 
 import MatchCard from "./MatchCard";
@@ -29,6 +30,7 @@ export default function MatchesPage({
   isGuest,
   guestMatches,
 }) {
+  const { t } = useTranslation();
   const canCreate = !isGuest || guestMatches < 3;
 
   return (
@@ -37,7 +39,7 @@ export default function MatchesPage({
       <div className="matches-header">
         <h2 className="matches-header-title">
           <IconCalendar />
-          <span>Mis Partidos</span>
+          <span>{t("matches.title")}</span>
         </h2>
 
         <button
@@ -45,14 +47,14 @@ export default function MatchesPage({
           onClick={onCreateNew}
           disabled={!canCreate}
         >
-          + Nuevo Partido
+          {t("matches.new_match")}
         </button>
       </div>
 
       {isGuest && (
         <div className="guest-banner">
-          Modo invitado — {guestMatches}/3 partidos usados.
-          {!canCreate && " Has alcanzado el límite."}
+          {t("matches.guest_banner", { used: guestMatches })}
+          {!canCreate && t("matches.limit_reached")}
         </div>
       )}
 
@@ -64,14 +66,14 @@ export default function MatchesPage({
             <div className="empty-icon">
               <IconStadium />
             </div>
-            <h3>No hay partidos aún</h3>
-            <p>Crea tu primer partido para empezar a analizar.</p>
+            <h3>{t("matches.no_matches_title")}</h3>
+            <p>{t("matches.no_matches_desc")}</p>
             <button
               className="btn btn-primary"
               onClick={onCreateNew}
               disabled={!canCreate}
             >
-              Crear primer partido
+              {t("matches.create_first_match")}
             </button>
           </div>
 

@@ -16,10 +16,18 @@
     transition: background-color var(--duration-slow) var(--easing);
 }
 
-.auth-theme-toggle-top {
+.auth-top-actions {
     position: absolute;
     top: var(--space-24);
     right: var(--space-24);
+    display: flex;
+    align-items: center;
+    gap: var(--space-12);
+    z-index: 10;
+}
+
+.auth-theme-toggle-top {
+    position: static;
     display: flex;
     align-items: center;
     gap: var(--space-8);
@@ -99,7 +107,7 @@
 
 .auth-tabs button.active {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--text-contrast);
     box-shadow: 0 2px 8px var(--color-primary-ring);
 }
 

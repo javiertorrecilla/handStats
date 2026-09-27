@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { HandballCourtGraphic } from "./HandballCourtGraphic";
 import { HandballGoalGraphic } from "./HandballGoalGraphic";
 import { ContinuousHeatmapCanvas } from "./ContinuousHeatmapCanvas";
@@ -14,7 +15,8 @@ import {
   IconTurnover,
   IconFilter,
   IconLayers,
-  IconMapPin
+  IconMapPin,
+  IconTarget
 } from "../common/Icons";
 
 export { isAwayEvent };
@@ -35,6 +37,7 @@ export function matchesGoalkeeper(e, selectedGkNumber) {
  * Pin/Marcador de tiro de alto contraste y máxima visibilidad con Iconos Vectoriales SVG Profesionales.
  */
 export function ShotMarkerPin({ pt, isSelected = false, isDimmed = false, onClick = null }) {
+  const { t } = useTranslation();
   const isGoal = pt.result === "Gol";
   const isSave = pt.result === "Parada";
   const isTurnover = pt.event_type === "turnover";
@@ -52,21 +55,21 @@ export function ShotMarkerPin({ pt, isSelected = false, isDimmed = false, onClic
       ? "0 0 18px #10b981, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
       : "0 0 12px rgba(16, 185, 129, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
     iconSvg = <IconBall size={12} color="#ffffff" />;
-    label = "Gol";
+    label = t("heatmaps.goals", "Gol");
   } else if (isSave) {
     bg = "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)";
     shadow = isSelected
       ? "0 0 18px #f59e0b, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
       : "0 0 12px rgba(245, 158, 11, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
     iconSvg = <IconGlove size={12} color="#ffffff" />;
-    label = "Parada";
+    label = t("heatmaps.saves", "Parada");
   } else if (isTurnover) {
     bg = "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)";
     shadow = isSelected
       ? "0 0 18px #8b5cf6, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
       : "0 0 12px rgba(139, 92, 246, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
     iconSvg = <IconTurnover size={11} color="#ffffff" />;
-    label = "Pérdida";
+    label = t("heatmaps.turnovers", "Pérdida");
   } else if (isFailure) {
     bg = "linear-gradient(135deg, #ff1a1a 0%, #c40000 100%)";
     borderColor = "#ffffff";
@@ -74,10 +77,10 @@ export function ShotMarkerPin({ pt, isSelected = false, isDimmed = false, onClic
       ? "0 0 20px #ff0000, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
       : "0 0 14px #ff0000, 0 0 4px #ffffff, 0 3px 8px rgba(0,0,0,0.95)";
     iconSvg = <IconXMark size={13} color="#ffffff" strokeWidth={3.2} />;
-    label = `${pt.result || "Fallo"} (Fuera/Poste)`;
+    label = `${pt.result || "Fallo"} (${t("heatmaps.miss_post", "Fuera/Poste")})`;
   }
 
-  const tooltip = `${label} — #${pt.player_number || ""} ${pt.player_name || ""}${pt.shot_zone ? ` | Zona: ${pt.shot_zone}` : ""}${pt.goal_zone ? ` ➔ Portería: ${pt.goal_zone}` : ""}`;
+  const tooltip = `${label} — #${pt.player_number || ""} ${pt.player_name || ""}${pt.shot_zone ? ` | ${t("heatmaps.court_label", "Pista")}: ${pt.shot_zone}` : ""}${pt.goal_zone ? ` ➔ ${t("heatmaps.goal_label", "Portería")}: ${pt.goal_zone}` : ""}`;
 
   return (
     <div
@@ -138,6 +141,7 @@ export function GoalHeatmapGrid({
   selectedGkNumber = "all",
   title = "MAPA DE CALOR DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA"
 }) {
+  const { t } = useTranslation();
   const [metricFilter, setMetricFilter] = useState("all_actions");
   const [showShotMarkers, setShowShotMarkers] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -200,7 +204,7 @@ export function GoalHeatmapGrid({
           >
             <IconFilter size={14} color="var(--brand-primary)" />
             <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Filtro:
+              {t("heatmaps.filter_label", "Filtro:")}
             </span>
             <select
               id="gk-heatmap-select"
@@ -220,11 +224,11 @@ export function GoalHeatmapGrid({
                 padding: "2px 4px"
               }}
             >
-              <option value="all_actions">Todos los Lanzamientos ({countAll})</option>
-              <option value="all_shots">Tiros a Puerta ({countAll})</option>
-              <option value="goals">Goles Encajados ({countGoals})</option>
-              <option value="saves">Paradas ({countSaves})</option>
-              <option value="misses">Fuera / Postes ({countMisses})</option>
+              <option value="all_actions">{t("heatmaps.all_shots", "Todos los Lanzamientos")} ({countAll})</option>
+              <option value="all_shots">{t("heatmaps.all_shots", "Tiros a Puerta")} ({countAll})</option>
+              <option value="goals">{t("heatmaps.goals_conceded", "Goles Encajados")} ({countGoals})</option>
+              <option value="saves">{t("heatmaps.saves", "Paradas")} ({countSaves})</option>
+              <option value="misses">{t("heatmaps.misses", "Fuera / Postes")} ({countMisses})</option>
             </select>
           </div>
 
@@ -236,7 +240,7 @@ export function GoalHeatmapGrid({
             title="Mostrar u ocultar puntos individuales de tiro"
           >
             <IconMapPin size={13} />
-            <span>{showShotMarkers ? "Ocultar Marcadores" : "Ver Marcadores"}</span>
+            <span>{showShotMarkers ? t("heatmaps.hide_markers", "Ocultar Marcadores") : t("heatmaps.show_markers", "Ver Marcadores")}</span>
           </button>
         </div>
       </div>
@@ -284,7 +288,7 @@ export function GoalHeatmapGrid({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "var(--space-10)" }}>
             <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
               <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
-                Total Lanzamientos
+                {t("attack.col_shots", "Total Lanzamientos")}
               </span>
               <span style={{ fontSize: "22px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "var(--text-primary)" }}>
                 {countAll}
@@ -293,7 +297,7 @@ export function GoalHeatmapGrid({
 
             <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
               <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
-                % Efectividad Paradas
+                {t("dashboard.charts.metric_saves_pct", "% Efectividad Paradas")}
               </span>
               <span style={{ fontSize: "22px", fontWeight: 900, fontFamily: "var(--font-mono)", color: savePct >= 35 ? "#10b981" : savePct >= 28 ? "#f59e0b" : "#ef4444" }}>
                 {savePct}%
@@ -302,7 +306,7 @@ export function GoalHeatmapGrid({
 
             <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
               <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
-                Paradas Realizadas
+                {t("heatmaps.saves_made", "Paradas Realizadas")}
               </span>
               <span style={{ fontSize: "20px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "#10b981" }}>
                 {countSaves}
@@ -311,7 +315,7 @@ export function GoalHeatmapGrid({
 
             <div style={{ background: "var(--bg-inset)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", textAlign: "center" }}>
               <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
-                Goles Encajados
+                {t("heatmaps.goals_conceded", "Goles Encajados")}
               </span>
               <span style={{ fontSize: "20px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "#ef4444" }}>
                 {countGoals}
@@ -322,7 +326,7 @@ export function GoalHeatmapGrid({
           {/* LEYENDA CONTINUA DE CALOR */}
           <div style={{ background: "var(--bg-surface)", padding: "var(--space-12)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)" }}>
             <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
-              Escala de Densidad Térmica de Lanzamientos
+              {t("heatmaps.scale_title", "Escala de Densidad Térmica de Lanzamientos")}
             </span>
             <div
               style={{
@@ -333,9 +337,9 @@ export function GoalHeatmapGrid({
               }}
             />
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "10px", fontWeight: 700, color: "var(--text-muted)" }}>
-              <span>Baja Frecuencia</span>
-              <span>Densidad Media</span>
-              <span>Máxima Concentración</span>
+              <span>{t("heatmaps.scale_low", "Baja Frecuencia")}</span>
+              <span>{t("heatmaps.scale_mid", "Densidad Media")}</span>
+              <span>{t("heatmaps.scale_high", "Máxima Concentración")}</span>
             </div>
           </div>
         </div>
@@ -357,6 +361,7 @@ export function TacticalHeatmapGrid({
   selectedPlayerNumber = "all",
   title = "MAPA DE DENSIDAD ESPACIAL Y EFECTIVIDAD EN PISTA Y PORTERÍA"
 }) {
+  const { t } = useTranslation();
   const [metricFilter, setMetricFilter] = useState("all_actions");
   const [showCourtZones, setShowCourtZones] = useState(false);
   const [showShotMarkers, setShowShotMarkers] = useState(true);
@@ -464,7 +469,7 @@ export function TacticalHeatmapGrid({
           >
             <IconFilter size={14} color="var(--brand-primary)" />
             <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Filtro:
+              {t("heatmaps.filter_label", "Filtro:")}
             </span>
             <select
               id="tactical-heatmap-select"
@@ -484,12 +489,12 @@ export function TacticalHeatmapGrid({
                 padding: "2px 4px"
               }}
             >
-              <option value="all_actions">Todas las acciones ({countAllActions})</option>
-              <option value="all_shots">Todos los lanzamientos ({countAllShots})</option>
-              <option value="goals">Goles ({countGoals})</option>
-              <option value="saves">Paradas ({countSaves})</option>
-              <option value="misses">Fallos (incl. postes) ({countMisses})</option>
-              <option value="turnovers">Pérdidas ({countTurnovers})</option>
+              <option value="all_actions">{t("heatmaps.all_actions", "Todas las acciones")} ({countAllActions})</option>
+              <option value="all_shots">{t("heatmaps.all_shots", "Todos los lanzamientos")} ({countAllShots})</option>
+              <option value="goals">{t("heatmaps.goals", "Goles")} ({countGoals})</option>
+              <option value="saves">{t("heatmaps.saves", "Paradas")} ({countSaves})</option>
+              <option value="misses">{t("heatmaps.misses", "Fallos (incl. postes)")} ({countMisses})</option>
+              <option value="turnovers">{t("heatmaps.turnovers", "Pérdidas")} ({countTurnovers})</option>
             </select>
           </div>
 
@@ -501,7 +506,7 @@ export function TacticalHeatmapGrid({
             title="Mostrar u ocultar delimitación de zonas xG"
           >
             <IconLayers size={13} />
-            <span>{showCourtZones ? "Ocultar Zonas" : "Ver Zonas"}</span>
+            <span>{showCourtZones ? t("heatmaps.hide_zones", "Ocultar Zonas") : t("heatmaps.show_zones", "Ver Zonas")}</span>
           </button>
 
           <button
@@ -512,7 +517,7 @@ export function TacticalHeatmapGrid({
             title="Mostrar u ocultar marcadores de tiro individuales"
           >
             <IconMapPin size={13} />
-            <span>{showShotMarkers ? "Ocultar Marcadores" : "Ver Marcadores"}</span>
+            <span>{showShotMarkers ? t("heatmaps.hide_markers", "Ocultar Marcadores") : t("heatmaps.show_markers", "Ver Marcadores")}</span>
           </button>
         </div>
       </div>
@@ -535,8 +540,8 @@ export function TacticalHeatmapGrid({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-            <span style={{ color: "var(--brand-primary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              🎯 Acción Seleccionada:
+            <span style={{ color: "var(--brand-primary)", textTransform: "uppercase", letterSpacing: "0.5px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <IconTarget size={14} /> {t("heatmaps.selected_action", "Acción Seleccionada:")}
             </span>
             <span style={{ color: "var(--text-primary)" }}>
               #{selectedActionDetail.player_number || ""} {selectedActionDetail.player_name || "Jugador"}
@@ -544,22 +549,24 @@ export function TacticalHeatmapGrid({
             <span
               style={{
                 padding: "2px 8px",
-                borderRadius: "var(--radius-full)",
-                background: selectedActionDetail.result === "Gol" ? "#10b981" : selectedActionDetail.result === "Parada" ? "#f59e0b" : selectedActionDetail.event_type === "turnover" ? "#8b5cf6" : "#ef4444",
-                color: "#ffffff",
-                fontSize: "11px"
+                borderRadius: "var(--radius-xs)",
+                background: selectedActionDetail.result === "Gol" ? "var(--color-primary)" : selectedActionDetail.result === "Parada" ? "var(--color-secondary)" : selectedActionDetail.event_type === "turnover" ? "var(--color-info)" : "var(--color-danger)",
+                color: "var(--text-contrast)",
+                fontSize: "11px",
+                fontFamily: "var(--font-data)",
+                fontWeight: 800
               }}
             >
               {selectedActionDetail.result || selectedActionDetail.event_type || "Acción"}
             </span>
             {selectedActionDetail.shot_zone && (
               <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
-                Pista: <strong>{selectedActionDetail.shot_zone}</strong>
+                {t("heatmaps.court_label", "Pista")}: <strong>{selectedActionDetail.shot_zone}</strong>
               </span>
             )}
             {selectedActionDetail.goal_zone && (
               <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
-                ➔ Portería: <strong>{selectedActionDetail.goal_zone}</strong>
+                ➔ {t("heatmaps.goal_label", "Portería")}: <strong>{selectedActionDetail.goal_zone}</strong>
               </span>
             )}
             {selectedActionDetail.match_time_seconds > 0 && (
@@ -575,7 +582,7 @@ export function TacticalHeatmapGrid({
             onClick={() => setSelectedEventId(null)}
             style={{ fontSize: "11px", fontWeight: 800, padding: "2px 8px" }}
           >
-            ✕ Ver todos los marcadores
+            ✕ {t("heatmaps.see_all_markers", "Ver todos los marcadores")}
           </button>
         </div>
       )}
@@ -585,7 +592,7 @@ export function TacticalHeatmapGrid({
         {/* BLOQUE 1: MEDIA PISTA DE BALONMANO (400x300) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)", width: "100%" }}>
           <h5 style={{ fontSize: "12px", fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0, textAlign: "center", border: "none" }}>
-            DENSIDAD TÉRMICA EN MEDIA PISTA ({courtPoints.length} ACCIONES)
+            {t("heatmaps.court_density", { count: courtPoints.length, defaultValue: `DENSIDAD TÉRMICA EN MEDIA PISTA (${courtPoints.length} ACCIONES)` })}
           </h5>
 
           <div
@@ -623,15 +630,17 @@ export function TacticalHeatmapGrid({
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
-            <span>Efectividad en Pista: <strong style={{ color: effPct >= 60 ? "#10b981" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
-            <span>Pérdidas de Balón: <strong style={{ color: "#ef4444" }}>{countTurnovers}</strong></span>
+            <span>{t("heatmaps.court_eff", "Efectividad en Pista:")} <strong style={{ color: effPct >= 60 ? "#10b981" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
+            <span>{t("attack.turnovers_title", "Pérdidas de Balón")}: <strong style={{ color: "#ef4444" }}>{countTurnovers}</strong></span>
           </div>
         </div>
 
         {/* BLOQUE 2: PORTERÍA EN DETALLE (Siempre presente en la vista) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)", width: "100%" }}>
           <h5 style={{ fontSize: "12px", fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0, textAlign: "center", border: "none" }}>
-            {isGkMode ? `DENSIDAD DE TIROS RECIBIDOS EN PORTERÍA (${goalPoints.length} TIROS)` : `DENSIDAD DE IMPACTO EN PORTERÍA RIVAL (${goalPoints.length} TIROS)`}
+            {isGkMode
+              ? t("heatmaps.goal_density_conceded", { count: goalPoints.length, defaultValue: `DENSIDAD DE TIROS RECIBIDOS EN PORTERÍA (${goalPoints.length} TIROS)` })
+              : t("heatmaps.goal_density_rival", { count: goalPoints.length, defaultValue: `DENSIDAD DE IMPACTO EN PORTERÍA RIVAL (${goalPoints.length} TIROS)` })}
           </h5>
 
           <div
@@ -668,8 +677,8 @@ export function TacticalHeatmapGrid({
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
-            <span>Goles en Portería: <strong style={{ color: "#10b981" }}>{countGoals}</strong></span>
-            <span>Paradas del Portero: <strong style={{ color: "#f59e0b" }}>{countSaves}</strong></span>
+            <span>{t("heatmaps.goal_goals", "Goles en Portería:")} <strong style={{ color: "#10b981" }}>{countGoals}</strong></span>
+            <span>{t("heatmaps.gk_saves", "Paradas del Portero:")} <strong style={{ color: "#f59e0b" }}>{countSaves}</strong></span>
           </div>
         </div>
       </div>
@@ -678,32 +687,32 @@ export function TacticalHeatmapGrid({
       <div style={{ width: "100%", paddingTop: "var(--space-12)", borderTop: "1px solid var(--border-color)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px", marginBottom: "8px" }}>
           <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-            Leyenda de Marcadores & Densidad Térmica
+            {t("heatmaps.legend_title", "Leyenda de Marcadores & Densidad Térmica")}
           </span>
           <div style={{ display: "flex", gap: "14px", alignItems: "center", flexWrap: "wrap", fontSize: "11px", fontWeight: 800 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
               <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#10b981", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(16, 185, 129, 0.6)" }}>
                 <IconBall size={10} color="#ffffff" />
               </span>
-              <span>Gol</span>
+              <span>{t("heatmaps.goals", "Gol")}</span>
             </span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
               <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#f59e0b", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(245, 158, 11, 0.6)" }}>
                 <IconGlove size={10} color="#ffffff" />
               </span>
-              <span>Parada</span>
+              <span>{t("heatmaps.saves", "Parada")}</span>
             </span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
               <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#ff1a1a", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 8px #ff0000" }}>
                 <IconXMark size={10} color="#ffffff" strokeWidth={3} />
               </span>
-              <span>Fallo / Poste</span>
+              <span>{t("heatmaps.miss_post", "Fallo / Poste")}</span>
             </span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
               <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#8b5cf6", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(139, 92, 246, 0.6)" }}>
                 <IconTurnover size={9} color="#ffffff" />
               </span>
-              <span>Pérdida</span>
+              <span>{t("heatmaps.turnovers", "Pérdida")}</span>
             </span>
           </div>
         </div>
@@ -718,9 +727,9 @@ export function TacticalHeatmapGrid({
         />
 
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "10px", fontWeight: 700, color: "var(--text-muted)" }}>
-          <span>Baja Densidad</span>
-          <span>Densidad Media</span>
-          <span>Máxima Concentración de Acciones</span>
+          <span>{t("heatmaps.scale_low", "Baja Densidad")}</span>
+          <span>{t("heatmaps.scale_mid", "Densidad Media")}</span>
+          <span>{t("heatmaps.max_concentration", "Máxima Concentración de Acciones")}</span>
         </div>
       </div>
     </div>

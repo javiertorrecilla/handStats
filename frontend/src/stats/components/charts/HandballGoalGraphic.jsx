@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Componente gráfico SVG oficial de la portería de balonmano.
@@ -9,6 +10,7 @@ export function HandballGoalGraphic({
   style = {},
   idPrefix = "hg"
 }) {
+  const { t } = useTranslation();
   const netMeshId = `${idPrefix}-netMesh`;
   const stripedPostId = `${idPrefix}-stripedPost`;
 
@@ -41,9 +43,15 @@ export function HandballGoalGraphic({
       <rect x="330" y="24" width="30" height="196" fill="rgba(255,255,255,0.03)" />
 
       {/* Textos sutiles indicadores de zonas exteriores */}
-      <text x="180" y="16" fill="rgba(255,255,255,0.28)" fontSize="8.5" fontWeight="800" textAnchor="middle" letterSpacing="0.8">FUERA ARRIBA</text>
-      <text x="15" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(-90 15 120)" letterSpacing="0.8">FUERA IZQ</text>
-      <text x="345" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(90 345 120)" letterSpacing="0.8">FUERA DER</text>
+      <text x="180" y="16" fill="rgba(255,255,255,0.28)" fontSize="8.5" fontWeight="800" textAnchor="middle" letterSpacing="0.8">
+        {t("mesa_control.goal_zones.high_out", "FUERA ARRIBA").toUpperCase()}
+      </text>
+      <text x="15" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(-90 15 120)" letterSpacing="0.8">
+        {t("mesa_control.goal_zones.wide_left", "FUERA IZQ").toUpperCase()}
+      </text>
+      <text x="345" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(90 345 120)" letterSpacing="0.8">
+        {t("mesa_control.goal_zones.wide_right", "FUERA DER").toUpperCase()}
+      </text>
 
       {/* Malla / Red de portería interior */}
       <rect x="44" y="38" width="272" height="182" fill={`url(#${netMeshId})`} />

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../common/LanguageSelector";
 import isotipo from "../../assets/isotipo.png";
 import "./Sidebar.css";
 
@@ -85,6 +87,7 @@ export default function Sidebar({
   theme = "light",
   toggleTheme,
 }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const isMatchesActive = view === "list" || view === "create";
 
@@ -101,7 +104,7 @@ export default function Sidebar({
           type="button"
           className="mobile-hamburger-btn"
           onClick={() => setIsOpen((prev) => !prev)}
-          aria-label="Abrir menú de navegación"
+          aria-label={t("sidebar.open_nav")}
         >
           <IconHamburger />
         </button>
@@ -133,7 +136,7 @@ export default function Sidebar({
             type="button"
             className="sidebar-close-btn"
             onClick={() => setIsOpen(false)}
-            aria-label="Cerrar menú"
+            aria-label={t("sidebar.close_menu")}
           >
             <IconClose />
           </button>
@@ -147,7 +150,7 @@ export default function Sidebar({
             <div className="sidebar-icon-box">
               <IconCalendar />
             </div>
-            <span className="sidebar-item-label">Mis Partidos</span>
+            <span className="sidebar-item-label">{t("sidebar.my_matches")}</span>
             <IconChevronRight />
           </button>
 
@@ -159,7 +162,7 @@ export default function Sidebar({
               <div className="sidebar-icon-box">
                 <IconTeams />
               </div>
-              <span className="sidebar-item-label">Equipos</span>
+              <span className="sidebar-item-label">{t("sidebar.teams")}</span>
               <IconChevronRight />
             </button>
           )}
@@ -171,21 +174,23 @@ export default function Sidebar({
             <div className="sidebar-icon-box">
               <IconSettings />
             </div>
-            <span className="sidebar-item-label">Ajustes de Parámetros</span>
+            <span className="sidebar-item-label">{t("sidebar.settings")}</span>
             <IconChevronRight />
           </button>
         </nav>
 
         <div className="sidebar-bottom">
+          <LanguageSelector direction="up" className="sidebar-lang-selector" />
+
           <button
             type="button"
             className="sidebar-theme-toggle"
             onClick={toggleTheme}
-            title={`Cambiar a modo ${theme === "dark" ? "claro" : "oscuro"}`}
+            title={theme === "dark" ? t("sidebar.switch_to_light") : t("sidebar.switch_to_dark")}
           >
             <div className="theme-toggle-left">
               {theme === "dark" ? <IconMoon /> : <IconSun />}
-              <span>{theme === "dark" ? "Modo Oscuro" : "Modo Claro"}</span>
+              <span>{theme === "dark" ? t("sidebar.dark_mode") : t("sidebar.light_mode")}</span>
             </div>
             <div className={`theme-toggle-switch ${theme === "dark" ? "dark-active" : ""}`}>
               <span className="theme-toggle-handle"></span>
@@ -197,17 +202,17 @@ export default function Sidebar({
               <div className="sidebar-user-avatar">
                 {user.role === "guest" ? "G" : (user.displayName?.[0] || user.email?.[0] || "U").toUpperCase()}
               </div>
-              <span className="status-dot-online" title="Conectado"></span>
+              <span className="status-dot-online" title={t("common.connected")}></span>
             </div>
 
             <div className="sidebar-user-info">
               <span className="sidebar-user-name">
                 {user.role === "guest"
-                  ? "Usuario Invitado"
+                  ? t("sidebar.guest_user")
                   : user.displayName || user.email?.split("@")[0]}
               </span>
               <span className="user-role-badge">
-                {user.role === "guest" ? `Demo (${guestMatches}/3 partidos)` : "Entrenador / Analista"}
+                {user.role === "guest" ? t("sidebar.guest_role", { count: guestMatches }) : t("sidebar.coach_role")}
               </span>
             </div>
           </div>
@@ -216,10 +221,10 @@ export default function Sidebar({
             type="button"
             className="sidebar-logout-btn"
             onClick={logout}
-            title="Cerrar sesión"
+            title={t("sidebar.logout")}
           >
             <IconLogout />
-            <span>Cerrar Sesión</span>
+            <span>{t("sidebar.logout")}</span>
           </button>
         </div>
       </aside>

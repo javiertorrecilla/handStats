@@ -1,10 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Head-to-Head Horizontal Comparison Bar Component
  * Con títulos de equipo en multilínea y espaciado amplio.
  */
 export function HorizontalBarChart({ items = [], homeTeam = "Local", awayTeam = "Visitante" }) {
+  const { t } = useTranslation();
   return (
     <div className="hs-comparison-container" style={{ display: "flex", flexDirection: "column", gap: "var(--space-16)" }}>
       {/* CABECERA CON NOMBRES DE EQUIPO EN MULTILÍNEA Y ESPACIADO ADECUADO */}
@@ -43,7 +45,7 @@ export function HorizontalBarChart({ items = [], homeTeam = "Local", awayTeam = 
             fontWeight: 800
           }}
         >
-          MÉTRICA
+          {t("dashboard.charts.metric_label", "MÉTRICA")}
         </div>
         <div
           style={{

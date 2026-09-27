@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import logoCuadrado from "../../assets/logoCuadrado.png";
+import LanguageSelector from "../common/LanguageSelector";
 
 import LoginForm from "./LoginForm";
 import RegisterUserForm from "./RegisterUserForm";
@@ -35,6 +37,7 @@ function AuthPage({
   toggleTheme,
   onBackToLanding,
 }) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState("login");
 
   return (
@@ -44,25 +47,28 @@ function AuthPage({
           type="button"
           className="auth-back-to-landing"
           onClick={onBackToLanding}
-          title="Volver a la página principal"
+          title={t("auth.back_to_landing")}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
-          <span>Volver</span>
+          <span>{t("auth.back_to_landing")}</span>
         </button>
       )}
 
-      <button
-        type="button"
-        className="auth-theme-toggle-top"
-        onClick={toggleTheme}
-        title={`Cambiar a modo ${theme === "dark" ? "claro" : "oscuro"}`}
-      >
-        {theme === "dark" ? <IconMoon /> : <IconSun />}
-        <span>{theme === "dark" ? "Modo Oscuro" : "Modo Claro"}</span>
-      </button>
+      <div className="auth-top-actions">
+        <LanguageSelector compact />
+        <button
+          type="button"
+          className="auth-theme-toggle-top"
+          onClick={toggleTheme}
+          title={theme === "dark" ? t("common.switch_to_light") : t("common.switch_to_dark")}
+        >
+          {theme === "dark" ? <IconMoon /> : <IconSun />}
+          <span>{theme === "dark" ? t("common.dark_mode") : t("common.light_mode")}</span>
+        </button>
+      </div>
 
       <div className="auth-card">
         <header className="auth-header">
@@ -78,7 +84,7 @@ function AuthPage({
             className={mode === "login" ? "active" : ""}
             onClick={() => setMode("login")}
           >
-            Iniciar sesión
+            {t("auth.login_tab")}
           </button>
 
           <button
@@ -89,7 +95,7 @@ function AuthPage({
             className={mode === "register" ? "active" : ""}
             onClick={() => setMode("register")}
           >
-            Registrarse
+            {t("auth.register_tab")}
           </button>
         </div>
 

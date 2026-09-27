@@ -40,9 +40,11 @@ import {
   Info as IconInfo,
   Target as IconTarget
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 import { useMatch } from "../../context/MatchContext";
 import userService from "../../services/userService";
 import MatchStatsModule from "../../stats/MatchStatsModule";
+import LanguageSelector from "../common/LanguageSelector";
 import { getEventCategory, formatCourtZoneName, formatGoalZoneName } from "../../stats/engine/types";
 import { calculateShotXG, calculateShotXSaves } from "../../stats/engine/xgModel";
 import isotipo from "../../assets/isotipo.png";
@@ -194,6 +196,7 @@ function IconFreeThrow({ size = 26 }) {
 }
 
 export default function MatchAnalysisPage({ user, onBack, initialMode = "live", theme, toggleTheme }) {
+  const { t, i18n } = useTranslation();
   const {
     currentMatch,
     activePossession,
@@ -202,6 +205,17 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     closePossession,
     undoLastEvent,
   } = useMatch();
+
+  // Helper para traducir periodo
+  const getPeriodLabel = (period) => {
+    switch (period) {
+      case "1ª PARTE": return t("mesa_control.period_1");
+      case "2ª PARTE": return t("mesa_control.period_2");
+      case "PRÓRROGA": return t("mesa_control.period_extra");
+      case "FINAL": return t("mesa_control.period_final");
+      default: return period;
+    }
+  };
 
   // Estado y Toggle de Tema (Claro / Oscuro)
   const [currentTheme, setCurrentTheme] = useState(() => {
@@ -1282,7 +1296,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     ) {
       // REGLA ESTRICTA PORTERO: En el campo de PORTERO solo puede colocarse un portero
       if (category === "gk" && !isGk(selectedPlayer)) {
-        alert("En la sección de PORTERO solo se puede colocar a un portero suplente. Selecciona un portero.");
+        alert(t("mesa_control.alert_gk_only_sub", "En la sección de PORTERO solo se puede colocar a un portero suplente. Selecciona un portero."));
         return;
       }
 
@@ -1337,28 +1351,46 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       let typeClass = "perdida"; // "gol" | "parada" | "perdida"
 
       if (category === "goles") {
-        typeLabel = e.shot_zone === "7 Metros" ? "GOL 7M" : "GOL";
+        typeLabel = e.shot_zone === "7 Metros" ? t("mesa_control.action_gol_7m", "GOL 7M") : t("mesa_control.action_gol", "GOL");
         typeClass = "gol";
       } else if (category === "paradas") {
-        typeLabel = e.shot_zone === "7 Metros" ? "PARADA 7M" : "PARADA";
+        typeLabel = e.shot_zone === "7 Metros" ? t("mesa_control.action_parada_7m", "PARADA 7M") : t("mesa_control.action_parada", "PARADA");
         typeClass = "parada";
       } else if (category === "fallo_lanzamiento") {
-        typeLabel = (e.result || "FALLO").toUpperCase();
+        const res = (e.result || "").toLowerCase();
+        if (res.includes("poste") || res.includes("post")) {
+          typeLabel = t("mesa_control.action_poste", "POSTE");
+        } else if (res.includes("fuera") || res.includes("miss") || res.includes("out")) {
+          typeLabel = t("mesa_control.action_fuera", "FUERA");
+        } else {
+          typeLabel = (e.result || t("mesa_control.filter_misses", "FALLO")).toUpperCase();
+        }
         typeClass = "perdida";
       } else if (category === "perdidas") {
-        typeLabel = `PÉRDIDA ${e.turnover_type ? `(${e.turnover_type.toUpperCase()})` : ""}`.trim();
+        const tt = (e.turnover_type || "").toLowerCase();
+        let sub = "";
+        if (tt.includes("pase") || tt.includes("pass")) sub = t("mesa_control.action_perdida_pase", "P. Pase");
+        else if (tt.includes("doble") || tt.includes("dribble")) sub = t("mesa_control.action_perdida_dobles", "P. Dobles");
+        else if (tt.includes("pasos") || tt.includes("steps")) sub = t("mesa_control.action_perdida_pasos", "P. Pasos");
+        else if (tt.includes("pasivo") || tt.includes("passive")) sub = t("mesa_control.action_perdida_pasivo", "P. Pasivo");
+        typeLabel = sub ? sub.toUpperCase() : t("dashboard.charts.metric_turnovers", "PÉRDIDA").toUpperCase();
         typeClass = "perdida";
       } else if (category === "tiempo_muerto") {
-        typeLabel = "T. MUERTO";
+        typeLabel = t("mesa_control.action_tiempo_muerto", "T. MUERTO");
         typeClass = "parada";
       } else if (category === "golpe_franco") {
-        typeLabel = "G. FRANCO";
+        typeLabel = t("mesa_control.action_golpe_franco", "G. FRANCO");
         typeClass = "parada";
       } else if (category === "sanciones") {
-        typeLabel = (e.sanction_type || "SANCIÓN").toUpperCase();
+        const st = (e.sanction_type || "").toLowerCase();
+        if (st.includes("2") || st.includes("dos") || st.includes("min")) typeLabel = t("mesa_control.action_2min", "2 MIN");
+        else if (st.includes("amar") || st.includes("yellow")) typeLabel = t("mesa_control.action_amarilla", "AMARILLA");
+        else if (st.includes("roj") || st.includes("red")) typeLabel = t("mesa_control.action_roja", "ROJA");
+        else if (st.includes("azul") || st.includes("blue")) typeLabel = t("mesa_control.action_azul", "AZUL");
+        else typeLabel = (e.sanction_type || t("mesa_control.filter_sanctions", "SANCIÓN")).toUpperCase();
         typeClass = "perdida";
       } else if (category === "periodo") {
-        typeLabel = (e.result || e.sanction_type || "FIN PERIODO").toUpperCase();
+        typeLabel = (e.result || e.sanction_type || t("mesa_control.period_final", "FIN PERIODO")).toUpperCase();
         typeClass = "parada";
       }
 
@@ -1368,8 +1400,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
       const fromZoneRaw = e.shot_zone || e.court_zone || e.shot_position || "";
       const toZoneRaw = e.goal_zone || e.target_zone || "";
-      const formattedFrom = formatCourtZoneName(fromZoneRaw);
-      const formattedTo = formatGoalZoneName(toZoneRaw);
+      const formattedFrom = formatCourtZoneName(fromZoneRaw, t);
+      const formattedTo = formatGoalZoneName(toZoneRaw, t);
       let trajectory = "";
 
       if (category === "goles" || category === "paradas" || category === "fallo_lanzamiento") {
@@ -1395,6 +1427,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         description: playerStr,
         teamName,
         isHome,
+        fromZoneRaw,
+        toZoneRaw,
         fromZone: formattedFrom,
         toZone: formattedTo,
         trajectory,
@@ -1410,7 +1444,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
     // 3. Devolver los eventos invertidos (más reciente primero en la línea de tiempo)
     return filtered.slice(-30).reverse();
-  }, [currentMatch?.events, historyFilter]);
+  }, [currentMatch?.events, historyFilter, i18n.language]);
 
   const handleQuickAction = async (actionKey) => {
     // 1. TIEMPO MUERTO: Se asocia de manera automática al equipo que tiene la posesión
@@ -1429,7 +1463,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
     // Comprobación previa: Seleccionar jugador de la alineación
     if (!selectedPlayer) {
-      alert("Por favor, selecciona primero a un jugador de la alineación/plantilla para registrar la acción.");
+      alert(t("mesa_control.alert_select_player_first", "Por favor, selecciona primero a un jugador de la alineación/plantilla para registrar la acción."));
       return;
     }
 
@@ -1437,7 +1471,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     if (selectedPlayer.isBench) {
       const isSanction = ["exclusion", "amarilla", "roja", "azul"].includes(actionKey);
       if (!isSanction) {
-        alert("Los suplentes solo pueden recibir Sanciones (2 min, Amarilla, Roja, Azul). Para meter a este jugador al campo, haz clic en un titular de la alineación.");
+        alert(t("mesa_control.alert_substitutes_sanctions_only", "Los suplentes solo pueden recibir Sanciones (2 min, Amarilla, Roja, Azul). Para meter a este jugador al campo, haz clic en un titular de la alineación."));
         return;
       }
     }
@@ -1467,7 +1501,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     if (actionKey === "golpe_franco") {
       const isDefendingPlayer = selectedPlayer && selectedPlayer.team !== activePossession?.team;
       if (!isDefendingPlayer || selectedPlayer.isBench) {
-        alert("El Golpe Franco solo se puede atribuir a un jugador del equipo que DEFIENDE (sin posesión).");
+        alert(t("mesa_control.alert_free_throw_defending_only", "El Golpe Franco solo se puede atribuir a un jugador del equipo que DEFIENDE (sin posesión)."));
         return;
       }
 
@@ -1661,7 +1695,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       {/* HEADER PRINCIPAL / MARCADOR DEL PARTIDO */}
       <header className="mp-scoreboard-bar">
         <div className="mp-top-left-info">
-          <button className="mp-icon-btn" aria-label="Volver" title="Volver" onClick={onBack}>
+          <button className="mp-icon-btn" aria-label={t("common.back")} title={t("common.back")} onClick={onBack}>
             <IconArrowLeft size={18} />
           </button>
         </div>
@@ -1673,7 +1707,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
           <div
             className={`mp-team-banner home ${activePossession.team === "LOCAL" ? "has-possession" : ""}`}
             onClick={() => setActivePossession && setActivePossession(prev => ({ ...prev, team: "LOCAL" }))}
-            title="Haz clic para asignar la posesión a Mi Equipo"
+            title={t("mesa_control.possession_indicator")}
           >
             <div className="mp-team-logo-wrap">
               {currentMatch.home_logo ? (
@@ -1686,7 +1720,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
               <span className="mp-team-name">{currentMatch.home_team || "MI EQUIPO"}</span>
               <div className={`mp-possession-indicator home ${activePossession.team === "LOCAL" ? "active" : ""}`}>
                 <IconSoccerBall className="mp-pos-icon" size={12} />
-                <span className="mp-pos-text">POSESIÓN</span>
+                <span className="mp-pos-text">{t("mesa_control.possession_indicator")}</span>
               </div>
             </div>
           </div>
@@ -1698,7 +1732,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
             </div>
 
             <div className="mp-scoreboard-center-content">
-              <span className="mp-center-period">{currentPeriod}</span>
+              <span className="mp-center-period">{getPeriodLabel(currentPeriod)}</span>
 
               <div className="mp-time-display-wrap">
                 <div className="mp-time-adjust-group left">
@@ -1706,7 +1740,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     type="button"
                     className="mp-time-adjust-btn"
                     onClick={() => adjustTime(-5)}
-                    title="Restar 5 segundos al marcador"
+                    title="-5s"
                   >
                     -5s
                   </button>
@@ -1714,7 +1748,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     type="button"
                     className="mp-time-adjust-btn"
                     onClick={() => adjustTime(-1)}
-                    title="Restar 1 segundo al marcador"
+                    title="-1s"
                   >
                     -1s
                   </button>
@@ -1727,7 +1761,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     type="button"
                     className="mp-time-adjust-btn"
                     onClick={() => adjustTime(1)}
-                    title="Sumar 1 segundo al marcador"
+                    title="+1s"
                   >
                     +1s
                   </button>
@@ -1735,7 +1769,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     type="button"
                     className="mp-time-adjust-btn"
                     onClick={() => adjustTime(5)}
-                    title="Sumar 5 segundos al marcador"
+                    title="+5s"
                   >
                     +5s
                   </button>
@@ -1746,18 +1780,18 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 <button
                   className={`mp-timer-toggle-btn ${isRunning ? "running" : "paused"}`}
                   onClick={() => setIsRunning(!isRunning)}
-                  title={isRunning ? "Pausar cronómetro" : "Iniciar cronómetro"}
-                  aria-label={isRunning ? "Pausar" : "Iniciar"}
+                  title={isRunning ? t("mesa_control.timer_pause", "Pausar") : t("mesa_control.timer_start", "Iniciar")}
+                  aria-label={isRunning ? t("mesa_control.timer_pause", "Pausar") : t("mesa_control.timer_start", "Iniciar")}
                 >
                   {isRunning ? <IconPause size={16} /> : <IconPlay size={16} />}
                 </button>
                 <button
                   className="mp-period-end-btn"
                   onClick={handleEndPeriod}
-                  title="Finalizar periodo actual"
+                  title={currentPeriod === "1ª PARTE" ? t("mesa_control.end_half_1") : currentPeriod === "2ª PARTE" ? t("mesa_control.end_match") : t("mesa_control.period_final")}
                 >
                   <IconFlag size={12} />
-                  <span>FIN DE PERIODO</span>
+                  <span>{currentPeriod === "1ª PARTE" ? t("mesa_control.end_half_1") : currentPeriod === "2ª PARTE" ? t("mesa_control.end_match") : t("mesa_control.period_final")}</span>
                 </button>
               </div>
             </div>
@@ -1771,12 +1805,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
           <div
             className={`mp-team-banner away ${activePossession.team === "VISITANTE" ? "has-possession" : ""}`}
             onClick={() => setActivePossession && setActivePossession(prev => ({ ...prev, team: "VISITANTE" }))}
-            title="Haz clic para asignar la posesión al Equipo Rival"
+            title={t("mesa_control.possession_indicator")}
           >
             <div className="mp-team-info-wrap align-right">
               <span className="mp-team-name">{currentMatch.away_team || "RIVAL TEAM"}</span>
               <div className={`mp-possession-indicator away ${activePossession.team === "VISITANTE" ? "active" : ""}`}>
-                <span className="mp-pos-text">POSESIÓN</span>
+                <span className="mp-pos-text">{t("mesa_control.possession_indicator")}</span>
                 <IconSoccerBall className="mp-pos-icon" size={12} />
               </div>
             </div>
@@ -1793,19 +1827,20 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
         {/* ACCIONES SUPERIORES DERECHA */}
         <div className="mp-top-right-actions">
+          <LanguageSelector compact />
           <button
             className="mp-icon-btn theme-toggle-btn"
             onClick={handleToggleTheme}
-            aria-label="Cambiar modo claro/oscuro"
-            title={currentTheme === "dark" ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
+            aria-label={currentTheme === "dark" ? t("common.switch_to_light") : t("common.switch_to_dark")}
+            title={currentTheme === "dark" ? t("common.switch_to_light") : t("common.switch_to_dark")}
           >
             {currentTheme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
           </button>
           <button
             className={`mp-view-toggle-icon-btn ${mainViewMode}`}
             onClick={() => setMainViewMode(prev => prev === "live" ? "stats" : "live")}
-            aria-label={mainViewMode === "live" ? "Estadísticas" : "Mesa de Control"}
-            title={mainViewMode === "live" ? "Ir a Estadísticas del Partido" : "Volver a la Mesa de Control"}
+            aria-label={mainViewMode === "live" ? t("sidebar.statistics") : t("sidebar.control_desk")}
+            title={mainViewMode === "live" ? t("sidebar.statistics") : t("sidebar.control_desk")}
           >
             {mainViewMode === "live" ? <IconBarChart size={22} /> : <IconBriefcase size={22} />}
           </button>
@@ -1828,7 +1863,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
             {/* SECCIÓN PORTERO */}
             <div className="mp-roster-section gk-section">
               <h4 className="mp-section-title">
-                <span>PORTERO</span>
+                <span>{t("common.goalkeeper").toUpperCase()}</span>
                 <span className="mp-pos-badge gk">
                   <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
                   POR
@@ -1842,18 +1877,18 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       key={pIdx}
                       className={`mp-player-row gk-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
                       onClick={() => handleRosterPlayerClick(player, "LOCAL", "gk")}
-                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
                     >
                       <div className="mp-player-number green">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
                       <span className="mp-pos-pill gk">POR</span>
                       {excl ? (
-                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
                           {excl.formattedCountdown}
                         </span>
                       ) : (
-                        <span className="mp-status-dot" title="En Campo" />
+                        <span className="mp-status-dot" title={t("mesa_control.on_court")} />
                       )}
                     </div>
                   );
@@ -1863,7 +1898,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
             {/* SECCIÓN ALINEACIÓN */}
             <div className="mp-roster-section">
-              <h4 className="mp-section-title">ALINEACIÓN</h4>
+              <h4 className="mp-section-title">{t("mesa_control.on_court").toUpperCase()}</h4>
               <div className="mp-player-list">
                 {homeFieldStarters.map((player, pIdx) => {
                   const excl = activeExclusions[`LOCAL_${player.number}`];
@@ -1872,17 +1907,17 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       key={pIdx}
                       className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
                       onClick={() => handleRosterPlayerClick(player, "LOCAL", "starter")}
-                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
                     >
                       <div className="mp-player-number green">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
                       {excl ? (
-                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
                           {excl.formattedCountdown}
                         </span>
                       ) : (
-                        <span className="mp-status-dot" title="En Campo" />
+                        <span className="mp-status-dot" title={t("mesa_control.on_court")} />
                       )}
                     </div>
                   );
@@ -1892,7 +1927,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
             {/* SECCIÓN SUPLENTES */}
             <div className="mp-roster-section bench-section">
-              <h4 className="mp-section-title">SUPLENTES</h4>
+              <h4 className="mp-section-title">{t("mesa_control.bench").toUpperCase()}</h4>
               <div className="mp-player-list">
                 {homeBenchPlayers.map((player, pIdx) => {
                   const excl = activeExclusions[`LOCAL_${player.number}`];
@@ -1901,7 +1936,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       key={pIdx}
                       className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
                       onClick={() => handleRosterPlayerClick(player, "LOCAL", "bench")}
-                      title={excl ? `Jugador suplente excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador suplente excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
                     >
                       <div className="mp-player-number green">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
@@ -1909,7 +1944,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                         <span className="mp-pos-pill bench-gk">POR</span>
                       )}
                       {excl && (
-                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
                           {excl.formattedCountdown}
                         </span>
@@ -1928,29 +1963,33 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
               {/* BARRA SUPERIOR DE GUÍA DE INTERACCIÓN */}
               <div className="mp-selection-bar">
                 <div className={`mp-step-item ${selectedPlayer ? "active" : ""}`}>
-                  <span className="mp-step-label">1. JUGADOR</span>
-                  <span className="mp-step-val">{selectedPlayer ? `#${selectedPlayer.number} ${selectedPlayer.name}` : "Selecciona..."}</span>
+                  <span className="mp-step-label">{t("mesa_control.step1_player")}</span>
+                  <span className="mp-step-val">{selectedPlayer ? `#${selectedPlayer.number} ${selectedPlayer.name}` : t("mesa_control.select_player_prompt")}</span>
                 </div>
                 <div className="mp-step-divider"><IconArrowRight size={12} /></div>
                 <div className={`mp-step-item ${activeActionFlow ? "active" : ""}`}>
-                  <span className="mp-step-label">2. ACCIÓN</span>
-                  <span className="mp-step-val">{activeActionFlow ? (activeActionFlow.actionKey || "").toUpperCase().replace("_", " ") : "Elige Acción..."}</span>
+                  <span className="mp-step-label">{t("mesa_control.step2_action")}</span>
+                  <span className="mp-step-val">{activeActionFlow ? (activeActionFlow.actionKey || "").toUpperCase().replace("_", " ") : t("mesa_control.choose_action_prompt")}</span>
                 </div>
                 <div className="mp-step-divider"><IconArrowRight size={12} /></div>
                 <div className={`mp-step-item ${activeActionFlow?.step === "AWAITING_COURT_CLICK" ? "pulsing" : activeActionFlow?.shotZone ? "active" : ""}`}>
-                  <span className="mp-step-label">3. PISTA</span>
+                  <span className="mp-step-label">{t("mesa_control.step3_court")}</span>
                   <span className="mp-step-val">
-                    {activeActionFlow?.shotZone || (activeActionFlow?.step === "AWAITING_COURT_CLICK" ? (
-                      <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> HAZ CLIC EN PISTA</>
+                    {activeActionFlow?.shotZone ? (
+                      formatCourtZoneName(activeActionFlow.shotZone, t)
+                    ) : (activeActionFlow?.step === "AWAITING_COURT_CLICK" ? (
+                      <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> {t("mesa_control.click_court_prompt")}</>
                     ) : "...")}
                   </span>
                 </div>
                 <div className="mp-step-divider"><IconArrowRight size={12} /></div>
                 <div className={`mp-step-item ${activeActionFlow?.step === "AWAITING_GOAL_CLICK" ? "pulsing" : activeActionFlow?.goalZone ? "active" : ""}`}>
-                  <span className="mp-step-label">4. PORTERÍA</span>
+                  <span className="mp-step-label">{t("mesa_control.step4_goal")}</span>
                   <span className="mp-step-val">
-                    {activeActionFlow?.goalZone || (activeActionFlow?.step === "AWAITING_GOAL_CLICK" ? (
-                      <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> HAZ CLIC EN PORTERÍA</>
+                    {activeActionFlow?.goalZone ? (
+                      formatGoalZoneName(activeActionFlow.goalZone, t)
+                    ) : (activeActionFlow?.step === "AWAITING_GOAL_CLICK" ? (
+                      <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> {t("mesa_control.click_goal_prompt")}</>
                     ) : "...")}
                   </span>
                 </div>
@@ -1960,9 +1999,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     type="button"
                     className="mp-cancel-flow-btn"
                     onClick={handleCancelAction}
-                    title="Cancelar la acción en curso y reiniciar selección"
+                    title={t("mesa_control.cancel_action")}
                   >
-                    <IconX size={12} style={{ marginRight: 2 }} /> Cancelar Acción
+                    <IconX size={12} style={{ marginRight: 2 }} /> {t("mesa_control.cancel_action")}
                   </button>
                 )}
               </div>
@@ -1972,22 +2011,22 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 {/* 1. MEDIA PISTA DE BALONMANO DETALLADA (CLICK EN CUALQUIER PUNTO) */}
                 <div className="mp-half-court-wrapper">
                   <div className="mp-card-subtitle" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>MEDIA PISTA DE BALONMANO</span>
+                    <span>{t("mesa_control.court_half", "MEDIA PISTA")}</span>
                     <button
                       type="button"
                       className={`mp-toggle-zones-btn ${showCourtZones ? "active" : ""}`}
                       onClick={() => setShowCourtZones(!showCourtZones)}
-                      title={showCourtZones ? "Ocultar delimitación de zonas" : "Mostrar delimitación de zonas"}
+                      title={showCourtZones ? t("heatmaps.hide_zones") : t("heatmaps.show_zones")}
                     >
                       {showCourtZones ? (
-                        <><IconEyeOff size={13} style={{ marginRight: 4 }} /> Ocultar Zonas</>
+                        <><IconEyeOff size={13} style={{ marginRight: 4 }} /> {t("heatmaps.hide_zones")}</>
                       ) : (
-                        <><IconEye size={13} style={{ marginRight: 4 }} /> Mostrar Zonas</>
+                        <><IconEye size={13} style={{ marginRight: 4 }} /> {t("heatmaps.show_zones")}</>
                       )}
                     </button>
                   </div>
 
-                  <div className="mp-half-court interactive" onClick={handleCourtClick} title="Haz clic en cualquier punto de la media pista">
+                  <div className="mp-half-court interactive" onClick={handleCourtClick} title={t("mesa_control.click_court_prompt", "Haz clic en cualquier punto de la media pista")}>
                     {/* SVG DE MEDIA PISTA DE BALONMANO (GEOMETRÍA OFICIAL CON PORTERÍA ARRIBA) */}
                     <svg viewBox="0 0 400 300" className="mp-hc-svg" preserveAspectRatio="none">
                       <defs>
@@ -2029,8 +2068,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             stroke="#f97316"
                             strokeWidth="2.5"
                           />
-                          <text x="24" y="32" fill="#f97316" fontSize="10" fontWeight="bold" textAnchor="middle">EXTREMO IZQ</text>
-                          <text x="24" y="45" fill="#fca5a5" fontSize="8" textAnchor="middle">xG Extremo</text>
+                          <text x="24" y="32" fill="#f97316" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.left_wing", "EXTREMO IZQ")}</text>
+                          <text x="24" y="45" fill="#fca5a5" fontSize="8" textAnchor="middle">{t("mesa_control.xg_wing", "xG Extremo")}</text>
 
                           {/* B. EXTREMO DERECHO (X: 90-100%, Y: 0-21%) */}
                           <path
@@ -2039,8 +2078,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             stroke="#f97316"
                             strokeWidth="2.5"
                           />
-                          <text x="376" y="32" fill="#f97316" fontSize="10" fontWeight="bold" textAnchor="middle">EXTREMO DER</text>
-                          <text x="376" y="45" fill="#fca5a5" fontSize="8" textAnchor="middle">xG Extremo</text>
+                          <text x="376" y="32" fill="#f97316" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.right_wing", "EXTREMO DER")}</text>
+                          <text x="376" y="45" fill="#fca5a5" fontSize="8" textAnchor="middle">{t("mesa_control.xg_wing", "xG Extremo")}</text>
 
                           {/* C. ÁREA AZUL (MEDIA LUNA DELIMITADA EXACTA A LA LÍNEA DE 9M) */}
                           <path
@@ -2049,8 +2088,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             stroke="#2563eb"
                             strokeWidth="3"
                           />
-                          <text x="200" y="172" fill="#93c5fd" fontSize="11" fontWeight="bold" textAnchor="middle">PIVOTE 6M / PENETRACIÓN / 1ª OLEADA</text>
-                          <text x="200" y="186" fill="#bfdbfe" fontSize="9" textAnchor="middle">(Pulsa para abrir el selector táctico)</text>
+                          <text x="200" y="172" fill="#93c5fd" fontSize="11" fontWeight="bold" textAnchor="middle">{t("mesa_control.pivot_area_title", "PIVOTE 6M / PENETRACIÓN / 1ª OLEADA")}</text>
+                          <text x="200" y="186" fill="#bfdbfe" fontSize="9" textAnchor="middle">{t("mesa_control.pivot_area_hint", "(Pulsa para abrir el selector táctico)")}</text>
 
                           {/* D. 9M LATERAL IZQUIERDO (SECTOR ROSA / MAGENTA ABAJO IZQ: X 0-31%) */}
                           <path
@@ -2059,8 +2098,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             stroke="#ec4899"
                             strokeWidth="2.5"
                           />
-                          <text x="66" y="240" fill="#ec4899" fontSize="11" fontWeight="bold" textAnchor="middle">9M LATERAL IZQ</text>
-                          <text x="66" y="254" fill="#fbcfe8" fontSize="9" textAnchor="middle">xG Exterior</text>
+                          <text x="66" y="240" fill="#ec4899" fontSize="11" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.left_back_9m", "9M LATERAL IZQ")}</text>
+                          <text x="66" y="254" fill="#fbcfe8" fontSize="9" textAnchor="middle">{t("mesa_control.xg_exterior", "xG Exterior")}</text>
 
                           {/* E. 9M CENTRAL (ESPECIFICACIÓN EXACTA: BORDEANDO AL 100% EL ARCO DE 9M SIN HUECOS) */}
                           <path
@@ -2069,8 +2108,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             stroke="#22c55e"
                             strokeWidth="2.5"
                           />
-                          <text x="200" y="240" fill="#22c55e" fontSize="11" fontWeight="bold" textAnchor="middle">9M CENTRAL</text>
-                          <text x="200" y="254" fill="#86efac" fontSize="9" textAnchor="middle">xG Exterior</text>
+                          <text x="200" y="240" fill="#22c55e" fontSize="11" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.center_back_9m", "9M CENTRAL")}</text>
+                          <text x="200" y="254" fill="#86efac" fontSize="9" textAnchor="middle">{t("mesa_control.xg_exterior", "xG Exterior")}</text>
 
                           {/* F. 9M LATERAL DERECHO (SECTOR BLANCO ABAJO DER: X 69-100%) */}
                           <path
@@ -2079,8 +2118,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             stroke="#ffffff"
                             strokeWidth="2.5"
                           />
-                          <text x="334" y="240" fill="#ffffff" fontSize="11" fontWeight="bold" textAnchor="middle">9M LATERAL DER</text>
-                          <text x="334" y="254" fill="#e2e8f0" fontSize="9" textAnchor="middle">xG Exterior</text>
+                          <text x="334" y="240" fill="#ffffff" fontSize="11" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.right_back_9m", "9M LATERAL DER")}</text>
+                          <text x="334" y="254" fill="#e2e8f0" fontSize="9" textAnchor="middle">{t("mesa_control.xg_exterior", "xG Exterior")}</text>
                         </g>
                       )}
 
@@ -2133,10 +2172,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 {/* 2. PORTERÍA DE BALONMANO DETALLADA (CLICK EN CUALQUIER PUNTO DE LA RED) */}
                 <div className="mp-goal-diagram-wrapper">
                   <div className="mp-card-subtitle">
-                    <span>PORTERÍA EN DETALLE (HAZ CLIC EN EL LUGAR DEL LANZAMIENTO)</span>
+                    <span>{t("mesa_control.goal_click_hint", "PORTERÍA EN DETALLE (HAZ CLIC EN EL LUGAR DEL LANZAMIENTO)")}</span>
                   </div>
 
-                    <div className="mp-goal-frame interactive" onClick={handleGoalClick} title="Haz clic en cualquier punto de la portería o zonas exteriores">
+                    <div className="mp-goal-frame interactive" onClick={handleGoalClick} title={t("mesa_control.click_goal_prompt", "Haz clic en cualquier punto de la portería o zonas exteriores")}>
                     {/* SVG DE PORTERÍA DE BALONMANO DETALLADA CON MARGEN EXTERIOR */}
                     <svg viewBox="0 0 360 220" className="mp-goal-svg" preserveAspectRatio="none">
                       <defs>
@@ -2160,9 +2199,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       <rect x="330" y="24" width="30" height="196" fill="rgba(255,255,255,0.03)" />
 
                       {/* Textos sutiles indicadores de zonas exteriores */}
-                      <text x="180" y="16" fill="rgba(255,255,255,0.28)" fontSize="8.5" fontWeight="800" textAnchor="middle" letterSpacing="0.8">FUERA ARRIBA</text>
-                      <text x="15" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(-90 15 120)" letterSpacing="0.8">FUERA IZQ</text>
-                      <text x="345" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(90 345 120)" letterSpacing="0.8">FUERA DER</text>
+                      <text x="180" y="16" fill="rgba(255,255,255,0.28)" fontSize="8.5" fontWeight="800" textAnchor="middle" letterSpacing="0.8">{t("mesa_control.goal_zones.high_out", "FUERA ARRIBA")}</text>
+                      <text x="15" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(-90 15 120)" letterSpacing="0.8">{t("mesa_control.goal_zones.wide_left", "FUERA IZQ")}</text>
+                      <text x="345" y="120" fill="rgba(255,255,255,0.28)" fontSize="7.5" fontWeight="800" textAnchor="middle" transform="rotate(90 345 120)" letterSpacing="0.8">{t("mesa_control.goal_zones.wide_right", "FUERA DER")}</text>
 
                       {/* Malla / Red de portería */}
                       <rect x="44" y="38" width="272" height="182" fill="url(#netMesh)" />
@@ -2202,36 +2241,36 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
               {/* REJILLA DE 16 ACCIONES (4X4) */}
               <div className="mp-actions-card">
                 <div className="mp-actions-header">
-                  <h4>ACCIONES</h4>
+                  <h4>{t("mesa_control.actions_header")}</h4>
                 </div>
 
                 <div className="mp-actions-4x4-grid">
                   {/* FILA 1: LANZAMIENTOS Y PORTERÍA */}
                   <button className={`mp-action-tile gol ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("gol")}>
                     <div className="mp-tile-icon"><IconGoalNet size={26} /></div>
-                    <span>GOL</span>
+                    <span>{t("mesa_control.action_gol")}</span>
                   </button>
                   <button className={`mp-action-tile gol-7m ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("gol_7m")}>
                     <div className="mp-tile-icon"><IconGoal7m size={26} /></div>
-                    <span>GOL 7M</span>
+                    <span>{t("mesa_control.action_gol_7m")}</span>
                   </button>
                   <button className={`mp-action-tile parada ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("parada")}>
                     <div className="mp-tile-icon"><IconSaveGlove size={26} /></div>
-                    <span>PARADA</span>
+                    <span>{t("mesa_control.action_parada")}</span>
                   </button>
                   <button className={`mp-action-tile parada-7m ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("parada_7m")}>
                     <div className="mp-tile-icon"><IconSave7m size={26} /></div>
-                    <span>PARADA 7M</span>
+                    <span>{t("mesa_control.action_parada_7m")}</span>
                   </button>
 
                   {/* FILA 2: POSTE, FUERA, GOLPE FRANCO Y TIEMPO MUERTO */}
                   <button className={`mp-action-tile poste ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("poste")}>
                     <div className="mp-tile-icon"><IconPost size={26} /></div>
-                    <span>POSTE</span>
+                    <span>{t("mesa_control.action_poste")}</span>
                   </button>
                   <button className={`mp-action-tile fuera ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("fuera")}>
                     <div className="mp-tile-icon"><IconFuera size={26} /></div>
-                    <span>FUERA</span>
+                    <span>{t("mesa_control.action_fuera")}</span>
                   </button>
                   <button
                     type="button"
@@ -2247,47 +2286,47 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     }
                   >
                     <div className="mp-tile-icon"><IconFreeThrow size={26} /></div>
-                    <span>G. FRANCO</span>
+                    <span>{t("mesa_control.action_golpe_franco")}</span>
                   </button>
                   <button className={`mp-action-tile tiempo-muerto ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("tiempo_muerto")}>
                     <div className="mp-tile-icon"><IconTimeout size={26} /></div>
-                    <span>T. MUERTO</span>
+                    <span>{t("mesa_control.action_tiempo_muerto")}</span>
                   </button>
 
                   {/* FILA 3: PÉRDIDAS */}
                   <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pase")}>
                     <div className="mp-tile-icon"><IconBadPass size={26} /></div>
-                    <span>P. PASE</span>
+                    <span>{t("mesa_control.action_perdida_pase")}</span>
                   </button>
                   <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_dobles")}>
                     <div className="mp-tile-icon"><IconDoubleDribble size={26} /></div>
-                    <span>P. DOBLES</span>
+                    <span>{t("mesa_control.action_perdida_dobles")}</span>
                   </button>
                   <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pasos")}>
                     <div className="mp-tile-icon"><IconFootsteps size={26} /></div>
-                    <span>P. PASOS</span>
+                    <span>{t("mesa_control.action_perdida_pasos")}</span>
                   </button>
                   <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pasivo")}>
                     <div className="mp-tile-icon"><IconPassivePlay size={26} /></div>
-                    <span>P. PASIVO</span>
+                    <span>{t("mesa_control.action_perdida_pasivo")}</span>
                   </button>
 
                   {/* FILA 4: SANCIONES */}
                   <button className="mp-action-tile sancion-2min" onClick={() => handleQuickAction("exclusion")}>
                     <div className="mp-tile-icon"><IconTimer2m size={26} /></div>
-                    <span>2 MIN</span>
+                    <span>{t("mesa_control.action_2min")}</span>
                   </button>
                   <button className="mp-action-tile sancion-amarilla" onClick={() => handleQuickAction("amarilla")}>
                     <div className="mp-tile-icon"><IconCardYellow size={26} /></div>
-                    <span>AMARILLA</span>
+                    <span>{t("mesa_control.action_amarilla")}</span>
                   </button>
                   <button className="mp-action-tile sancion-roja" onClick={() => handleQuickAction("roja")}>
                     <div className="mp-tile-icon"><IconCardRed size={26} /></div>
-                    <span>ROJA</span>
+                    <span>{t("mesa_control.action_roja")}</span>
                   </button>
                   <button className="mp-action-tile sancion-azul" onClick={() => handleQuickAction("azul")}>
                     <div className="mp-tile-icon"><IconCardBlue size={26} /></div>
-                    <span>AZUL</span>
+                    <span>{t("mesa_control.action_azul")}</span>
                   </button>
                 </div>
               </div>
@@ -2296,14 +2335,14 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
               <div className="mp-timeline-card">
                 <div className="mp-timeline-header">
                   <div className="mp-timeline-title-wrap">
-                    <h4>HISTORIAL DE ACCIONES</h4>
+                    <h4>{t("mesa_control.timeline_header")}</h4>
                     <button
                       className="mp-undo-btn"
                       onClick={() => handleUndo()}
-                      title="Deshacer última acción registrada"
+                      title={t("mesa_control.undo_title")}
                     >
                       <IconUndo size={14} />
-                      <span>DESHACER</span>
+                      <span>{t("mesa_control.undo")}</span>
                     </button>
                   </div>
                   <select
@@ -2311,14 +2350,14 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     value={historyFilter}
                     onChange={(e) => setHistoryFilter(e.target.value)}
                   >
-                    <option value="TODOS">TODOS</option>
-                    <option value="goles">GOLES</option>
-                    <option value="paradas">PARADAS</option>
-                    <option value="fallo_lanzamiento">FALLO LANZAMIENTO</option>
-                    <option value="perdidas">PÉRDIDAS</option>
-                    <option value="tiempo_muerto">TIEMPO MUERTO</option>
-                    <option value="golpe_franco">GOLPE FRANCO</option>
-                    <option value="sanciones">SANCIONES</option>
+                    <option value="TODOS">{t("mesa_control.filter_all")}</option>
+                    <option value="goles">{t("mesa_control.filter_goals")}</option>
+                    <option value="paradas">{t("mesa_control.filter_saves")}</option>
+                    <option value="fallo_lanzamiento">{t("mesa_control.filter_misses")}</option>
+                    <option value="perdidas">{t("mesa_control.filter_turnovers")}</option>
+                    <option value="tiempo_muerto">{t("mesa_control.filter_timeout")}</option>
+                    <option value="golpe_franco">{t("mesa_control.filter_free_throw")}</option>
+                    <option value="sanciones">{t("mesa_control.filter_sanctions")}</option>
                   </select>
                 </div>
 
@@ -2338,11 +2377,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             </span>
                           </div>
                           <span className="mp-item-desc">{evt.description}</span>
-                          {evt.fromZone && evt.toZone ? (
+                          {(evt.fromZoneRaw || evt.fromZone) && (evt.toZoneRaw || evt.toZone) ? (
                             <div className="mp-item-trajectory">
-                              <span>{evt.fromZone}</span>
+                              <span>{formatCourtZoneName(evt.fromZoneRaw || evt.fromZone, t)}</span>
                               <IconArrowRight size={9} style={{ opacity: 0.6 }} />
-                              <span>{evt.toZone}</span>
+                              <span>{formatGoalZoneName(evt.toZoneRaw || evt.toZone, t)}</span>
+                            </div>
+                          ) : evt.fromZoneRaw || evt.fromZone ? (
+                            <div className="mp-item-trajectory">
+                              <span>{formatCourtZoneName(evt.fromZoneRaw || evt.fromZone, t)}</span>
+                            </div>
+                          ) : evt.toZoneRaw || evt.toZone ? (
+                            <div className="mp-item-trajectory">
+                              <span>{formatGoalZoneName(evt.toZoneRaw || evt.toZone, t)}</span>
                             </div>
                           ) : evt.trajectory ? (
                             <div className="mp-item-trajectory">
@@ -2354,7 +2401,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       </div>
                     ))
                   ) : (
-                    <div className="mp-timeline-empty">Sin acciones registradas aún en el partido</div>
+                    <div className="mp-timeline-empty">{t("mesa_control.no_events")}</div>
                   )}
                 </div>
               </div>
@@ -2366,7 +2413,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
             {/* SECCIÓN PORTERO */}
             <div className="mp-roster-section gk-section">
               <h4 className="mp-section-title">
-                <span>PORTERO</span>
+                <span>{t("common.goalkeeper").toUpperCase()}</span>
                 <span className="mp-pos-badge gk">
                   <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
                   POR
@@ -2380,18 +2427,18 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       key={pIdx}
                       className={`mp-player-row gk-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
                       onClick={() => handleRosterPlayerClick(player, "VISITANTE", "gk")}
-                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
                     >
                       <div className="mp-player-number blue">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
                       <span className="mp-pos-pill gk">POR</span>
                       {excl ? (
-                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
                           {excl.formattedCountdown}
                         </span>
                       ) : (
-                        <span className="mp-status-dot" title="En Campo" />
+                        <span className="mp-status-dot" title={t("mesa_control.on_court")} />
                       )}
                     </div>
                   );
@@ -2401,7 +2448,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
             {/* SECCIÓN ALINEACIÓN */}
             <div className="mp-roster-section">
-              <h4 className="mp-section-title">ALINEACIÓN</h4>
+              <h4 className="mp-section-title">{t("mesa_control.on_court").toUpperCase()}</h4>
               <div className="mp-player-list">
                 {awayFieldStarters.map((player, pIdx) => {
                   const excl = activeExclusions[`VISITANTE_${player.number}`];
@@ -2410,17 +2457,17 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       key={pIdx}
                       className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
                       onClick={() => handleRosterPlayerClick(player, "VISITANTE", "starter")}
-                      title={excl ? `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
                     >
                       <div className="mp-player-number blue">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
                       {excl ? (
-                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
                           {excl.formattedCountdown}
                         </span>
                       ) : (
-                        <span className="mp-status-dot" title="En Campo" />
+                        <span className="mp-status-dot" title={t("mesa_control.on_court")} />
                       )}
                     </div>
                   );
@@ -2430,7 +2477,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
             {/* SECCIÓN SUPLENTES */}
             <div className="mp-roster-section bench-section">
-              <h4 className="mp-section-title">SUPLENTES</h4>
+              <h4 className="mp-section-title">{t("mesa_control.bench").toUpperCase()}</h4>
               <div className="mp-player-list">
                 {awayBenchPlayers.map((player, pIdx) => {
                   const excl = activeExclusions[`VISITANTE_${player.number}`];
@@ -2439,7 +2486,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       key={pIdx}
                       className={`mp-player-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
                       onClick={() => handleRosterPlayerClick(player, "VISITANTE", "bench")}
-                      title={excl ? `Jugador suplente excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` : undefined}
+                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador suplente excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
                     >
                       <div className="mp-player-number blue">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
@@ -2447,7 +2494,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                         <span className="mp-pos-pill bench-gk">POR</span>
                       )}
                       {excl && (
-                        <span className="mp-exclusion-countdown" title={`Exclusión 2 min: ${excl.formattedCountdown}`}>
+                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
                           {excl.formattedCountdown}
                         </span>
@@ -2468,8 +2515,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
             <div className="mp-pos-modal-icon">
               <IconBall size={28} color="#2DBE60" />
             </div>
-            <h3>POSESIÓN INICIAL DEL PARTIDO</h3>
-            <p>¿Qué equipo ha ganado el saque inicial y empieza atacando en la 1ª Parte?</p>
+            <h3>{t("mesa_control.initial_possession_title")}</h3>
+            <p>{t("mesa_control.initial_possession_desc")}</p>
 
             <div className="mp-pos-modal-actions">
               <button
@@ -2478,7 +2525,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 onClick={() => handleSelectInitialPossession("LOCAL")}
               >
                 <span className="mp-btn-team-name">{currentMatch.home_team || "MI EQUIPO (LOCAL)"}</span>
-                <span className="mp-btn-sub">Saque de centro en 1ª Parte</span>
+                <span className="mp-btn-sub">{t("mesa_control.period_1")}</span>
               </button>
 
               <button
@@ -2487,12 +2534,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 onClick={() => handleSelectInitialPossession("VISITANTE")}
               >
                 <span className="mp-btn-team-name">{currentMatch.away_team || "RIVAL TEAM (VISITANTE)"}</span>
-                <span className="mp-btn-sub">Saque de centro en 1ª Parte</span>
+                <span className="mp-btn-sub">{t("mesa_control.period_1")}</span>
               </button>
             </div>
 
             <div className="mp-pos-modal-footnote">
-              <IconInfo size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> Al cambiar de periodo (2ª Parte), la posesión cambiará automáticamente al equipo contrario.
+              <IconInfo size={13} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> {t("mesa_control.initial_possession_footnote", "Al cambiar de periodo (2ª Parte), la posesión cambiará automáticamente al equipo contrario.")}
             </div>
           </div>
         </div>
@@ -2506,8 +2553,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 <IconGoalNet size={30} color="#38bdf8" />
               </div>
               <div className="mp-pivot-modal-titles">
-                <h3>TIPO DE ACCIÓN EN ZONA DE PIVOTE</h3>
-                <p>Elige la variante táctica de tiro en los 6 metros para calibrar el xG exacto</p>
+                <h3>{t("mesa_control.pivot_modal_title")}</h3>
+                <p>{t("mesa_control.pivot_modal_desc")}</p>
               </div>
             </div>
 
@@ -2522,10 +2569,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 </div>
                 <div className="mp-pivot-card-content">
                   <div className="mp-pivot-card-header-row">
-                    <span className="mp-pivot-card-title">Pivote 6M</span>
-                    <span className="mp-pivot-tag tag-pivot">POSICIONAL</span>
+                    <span className="mp-pivot-card-title">{t("mesa_control.pivot_opt_pivot")}</span>
+                    <span className="mp-pivot-tag tag-pivot">{t("mesa_control.pivot_tag_positional", "POSICIONAL")}</span>
                   </div>
-                  <span className="mp-pivot-card-desc">Lanzamiento directo desde la línea de 6 metros en ataque posicional</span>
+                  <span className="mp-pivot-card-desc">{t("mesa_control.pivot_desc_positional", "Lanzamiento directo desde la línea de 6 metros en ataque posicional")}</span>
                 </div>
                 <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
               </button>
@@ -2540,10 +2587,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 </div>
                 <div className="mp-pivot-card-content">
                   <div className="mp-pivot-card-header-row">
-                    <span className="mp-pivot-card-title">Penetración</span>
-                    <span className="mp-pivot-tag tag-penetration">DESMARQUE / FINTA</span>
+                    <span className="mp-pivot-card-title">{t("mesa_control.pivot_opt_penetration")}</span>
+                    <span className="mp-pivot-tag tag-penetration">{t("mesa_control.pivot_tag_penetration", "DESMARQUE / FINTA")}</span>
                   </div>
-                  <span className="mp-pivot-card-desc">Finta de cuerpo o desmarque con penetración a 6 metros</span>
+                  <span className="mp-pivot-card-desc">{t("mesa_control.pivot_desc_penetration", "Finta de cuerpo o desmarque con penetración a 6 metros")}</span>
                 </div>
                 <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
               </button>
@@ -2558,10 +2605,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 </div>
                 <div className="mp-pivot-card-content">
                   <div className="mp-pivot-card-header-row">
-                    <span className="mp-pivot-card-title">1ª Oleada / Contraataque</span>
-                    <span className="mp-pivot-tag tag-counterattack">TRANSICIÓN RÁPIDA</span>
+                    <span className="mp-pivot-card-title">{t("mesa_control.pivot_opt_counter")}</span>
+                    <span className="mp-pivot-tag tag-counterattack">{t("mesa_control.pivot_tag_counter", "TRANSICIÓN RÁPIDA")}</span>
                   </div>
-                  <span className="mp-pivot-card-desc">Lanzamiento en contraataque directo o primera oleada</span>
+                  <span className="mp-pivot-card-desc">{t("mesa_control.pivot_desc_counter", "Lanzamiento en contraataque directo o primera oleada")}</span>
                 </div>
                 <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
               </button>
@@ -2575,7 +2622,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 setPendingPivotFlow(null);
               }}
             >
-              <IconX size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> Cancelar Selección
+              <IconX size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> {t("common.cancel")}
             </button>
           </div>
         </div>
@@ -2589,9 +2636,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 <IconSaveGlove size={30} color="#38bdf8" />
               </div>
               <div className="mp-pivot-modal-titles">
-                <h3>¿HUBO REBOTE TRAS EL TIRO?</h3>
+                <h3>{t("mesa_control.rebound_modal_title", "¿HUBO REBOTE TRAS EL TIRO?")}</h3>
                 <p>
-                  Acción de {activeActionFlow?.actionKey === "poste" ? "POSTE" : "PARADA"}. Indica quién recuperó la posesión tras el impacto:
+                  {t("mesa_control.rebound_modal_desc", { action: activeActionFlow?.actionKey === "poste" ? t("mesa_control.action_poste", "POSTE") : t("mesa_control.action_parada", "PARADA"), defaultValue: `Acción de ${activeActionFlow?.actionKey === "poste" ? "POSTE" : "PARADA"}. Indica quién recuperó la posesión tras el impacto:` })}
                 </p>
               </div>
             </div>
@@ -2607,10 +2654,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 </div>
                 <div className="mp-pivot-card-content">
                   <div className="mp-pivot-card-header-row">
-                    <span className="mp-pivot-card-title">Sin Rebote / Balón Defensa</span>
-                    <span className="mp-pivot-tag tag-pivot">CAMBIO POSESIÓN</span>
+                    <span className="mp-pivot-card-title">{t("mesa_control.rebound_defense_title", "Sin Rebote / Balón Defensa")}</span>
+                    <span className="mp-pivot-tag tag-pivot">{t("mesa_control.rebound_defense_tag", "CAMBIO POSESIÓN")}</span>
                   </div>
-                  <span className="mp-pivot-card-desc">El equipo defensor recupera el balón o saque de portería</span>
+                  <span className="mp-pivot-card-desc">{t("mesa_control.rebound_defense_desc", "El equipo defensor recupera el balón o saque de portería")}</span>
                 </div>
                 <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
               </button>
@@ -2625,10 +2672,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 </div>
                 <div className="mp-pivot-card-content">
                   <div className="mp-pivot-card-header-row">
-                    <span className="mp-pivot-card-title">Rebote para el Ataque</span>
-                    <span className="mp-pivot-tag tag-penetration">MANTIENE POSESIÓN</span>
+                    <span className="mp-pivot-card-title">{t("mesa_control.rebound_attack_title", "Rebote para el Ataque")}</span>
+                    <span className="mp-pivot-tag tag-penetration">{t("mesa_control.rebound_attack_tag", "MANTIENE POSESIÓN")}</span>
                   </div>
-                  <span className="mp-pivot-card-desc">El equipo atacante captura el rechace y mantiene la posesión</span>
+                  <span className="mp-pivot-card-desc">{t("mesa_control.rebound_attack_desc", "El equipo atacante captura el rechace y mantiene la posesión")}</span>
                 </div>
                 <div className="mp-pivot-card-arrow"><IconArrowRight size={14} /></div>
               </button>
@@ -2639,7 +2686,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
               className="mp-cancel-pivot-btn"
               onClick={handleCancelAction}
             >
-              <IconX size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> Cancelar Acción
+              <IconX size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> {t("mesa_control.cancel_action")}
             </button>
           </div>
         </div>

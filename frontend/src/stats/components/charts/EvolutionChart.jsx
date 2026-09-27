@@ -1,12 +1,15 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Pure SVG Score Evolution Chart con escalonado tipo Step-Chart,
  * cuadrícula vertical cada 5 minutos y etiquetas de tiempo.
  */
 export function EvolutionChart({ data = [], height = 220, homeTeam = "Local", awayTeam = "Visitante" }) {
+  const { t } = useTranslation();
+
   if (!data || data.length === 0) {
-    return <div className="hs-chart-placeholder">Esperando eventos para generar línea de evolución...</div>;
+    return <div className="hs-chart-placeholder">{t("dashboard.charts.evolution_waiting")}</div>;
   }
 
   const width = 600;
@@ -84,21 +87,27 @@ export function EvolutionChart({ data = [], height = 220, homeTeam = "Local", aw
 
   return (
     <div className="hs-chart-container">
-      <div className="hs-chart-header" style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-        <span style={{ color: "var(--color-primary)", fontWeight: 700 }}>■ {homeTeam}</span>
-        <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>Evolución del Marcador (Goles)</span>
-        <span style={{ color: "var(--color-info)", fontWeight: 700 }}>■ {awayTeam}</span>
+      <div className="hs-chart-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+        <span style={{ color: "var(--color-primary)", fontWeight: 800, fontFamily: "var(--font-display)", fontSize: "0.8rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+          ■ {homeTeam}
+        </span>
+        <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "var(--font-mono)", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+          {t("dashboard.charts.evolution_subtitle", "Evolución del Marcador (Goles)")}
+        </span>
+        <span style={{ color: "var(--color-info)", fontWeight: 800, fontFamily: "var(--font-display)", fontSize: "0.8rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+          ■ {awayTeam}
+        </span>
       </div>
 
       <svg viewBox={`0 0 ${width} ${height}`} className="hs-svg-chart">
         <defs>
           <linearGradient id="homeGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0.01" />
           </linearGradient>
           <linearGradient id="awayGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-info)" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="var(--color-info)" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="var(--color-info)" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="var(--color-info)" stopOpacity="0.01" />
           </linearGradient>
         </defs>
 
@@ -120,7 +129,8 @@ export function EvolutionChart({ data = [], height = 220, homeTeam = "Local", aw
               y={height - paddingBottom + 16}
               textAnchor="middle"
               fill="var(--text-muted)"
-              fontSize="9"
+              fontSize="10"
+              fontFamily="var(--font-data)"
               fontWeight="600"
             >
               {interval.min}'
@@ -145,7 +155,8 @@ export function EvolutionChart({ data = [], height = 220, homeTeam = "Local", aw
               y={tick.y + 3}
               textAnchor="end"
               fill="var(--text-muted)"
-              fontSize="9"
+              fontSize="10"
+              fontFamily="var(--font-data)"
             >
               {tick.score}
             </text>

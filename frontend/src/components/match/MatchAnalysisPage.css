@@ -143,43 +143,39 @@
 .mp-view-toggle-icon-btn {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 /* Modo Live activo -> Mostrar opción Estadísticas en verde pro */
 .mp-view-toggle-icon-btn.live {
-  background: linear-gradient(135deg, rgba(18, 132, 58, 0.25) 0%, rgba(45, 190, 96, 0.15) 100%);
-  border: 1px solid rgba(45, 190, 96, 0.5);
-  color: #2DBE60;
+  background: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
 }
 
 .mp-view-toggle-icon-btn.live:hover {
-  background: linear-gradient(135deg, #12843A 0%, #2DBE60 100%);
-  border-color: #2DBE60;
-  color: #ffffff;
-  transform: scale(1.08);
-  box-shadow: 0 4px 16px rgba(45, 190, 96, 0.45);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-contrast);
 }
 
 /* Modo Stats activo -> Mostrar opción Mesa de Control en azul pro */
 .mp-view-toggle-icon-btn.stats {
-  background: linear-gradient(135deg, rgba(29, 78, 216, 0.25) 0%, rgba(37, 99, 235, 0.15) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.5);
-  color: #60a5fa;
+  background: var(--color-info-subtle);
+  border: 1px solid var(--color-info);
+  color: var(--color-info);
 }
 
 .mp-view-toggle-icon-btn.stats:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #60a5fa;
-  color: #ffffff;
-  transform: scale(1.08);
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45);
+  background: var(--color-info);
+  border-color: var(--color-info);
+  color: var(--text-contrast);
 }
 
 /* MARCADOR CENTRAL (ESTRUCTURA: EQUIPO - MARCADOR AGRUPADO - EQUIPO) */
@@ -198,9 +194,9 @@
   align-items: center;
   gap: 10px;
   padding: 6px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   flex: 1 1 0;
   min-width: 180px;
   max-width: 360px;
@@ -211,25 +207,25 @@
 }
 
 .mp-team-banner.home {
-  background: linear-gradient(135deg, #072b14 0%, #0f4d27 100%);
-  border: 1px solid rgba(45, 190, 96, 0.3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   justify-content: flex-start;
 }
 
 .mp-team-banner.home.has-possession {
-  border-color: #2DBE60;
-  box-shadow: 0 0 16px rgba(45, 190, 96, 0.45);
+  border-color: var(--color-primary);
+  box-shadow: inset 3px 0 0 var(--color-primary);
 }
 
 .mp-team-banner.away {
-  background: linear-gradient(135deg, #0e274c 0%, #1a3c6d 100%);
-  border: 1px solid rgba(37, 99, 235, 0.3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   justify-content: flex-end;
 }
 
 .mp-team-banner.away.has-possession {
-  border-color: #3b82f6;
-  box-shadow: 0 0 16px rgba(59, 130, 246, 0.45);
+  border-color: var(--color-info);
+  box-shadow: inset -3px 0 0 var(--color-info);
 }
 
 .mp-team-logo-wrap {
@@ -240,7 +236,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--text-contrast);
   flex-shrink: 0;
 }
 
@@ -271,7 +267,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: #ffffff;
+  color: var(--text-contrast);
   line-height: 1.15;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -313,7 +309,7 @@
 
 .mp-pos-icon {
   flex-shrink: 0;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-possession-indicator.active .mp-pos-icon {
@@ -332,7 +328,7 @@
   font-weight: 900;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 /* MARCADOR AGRUPADO CENTRAL (GOLES LOCAL + CRONO/CONTROLES + GOLES VISITANTE) */
@@ -454,16 +450,16 @@
 }
 
 [data-theme="light"] .mp-time-adjust-btn:hover {
-  background: rgba(45, 190, 96, 0.1);
-  color: #16a34a;
-  border-color: #16a34a;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .mp-center-time {
   font-family: var(--font-data, 'Exo 2', monospace);
   font-size: 26px;
   font-weight: 900;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   letter-spacing: 1px;
   line-height: 1;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
@@ -499,7 +495,7 @@
 .mp-period-end-btn:hover {
   background: #334155;
   border-color: #475569;
-  color: #ffffff;
+  color: var(--text-contrast);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
@@ -536,7 +532,7 @@
   height: 18px;
   border-radius: 50%;
   background: var(--color-info, #2563eb);
-  color: #ffffff;
+  color: var(--text-contrast);
   font-family: var(--font-data, 'Exo 2', monospace);
   font-size: 10px;
   font-weight: 900;
@@ -590,7 +586,7 @@
   font-weight: 800;
   text-transform: uppercase;
   margin: 0;
-  color: #ffffff;
+  color: var(--text-contrast);
   letter-spacing: 0.4px;
 }
 
@@ -757,7 +753,7 @@
   width: 100%;
   height: 100%;
   background: #1a3c6d;
-  color: #ffffff;
+  color: var(--text-contrast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -959,7 +955,7 @@
 
 .mp-zone-toggle-btn:hover {
   border-color: #60a5fa;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-half-court-wrapper,
@@ -999,11 +995,11 @@
 
 .mp-half-court.interactive:hover,
 .mp-goal-frame.interactive:hover {
-  border-color: #2DBE60;
-  box-shadow: 0 0 14px rgba(45, 190, 96, 0.45);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
-/* MARCADOR PINPOINT FLOTANTE EN CUALQUIER COORDENADA */
+/* MARCADOR PINPOINT FLOTANTE EN CUALQUIER COORDENADA (TACTICAL RETICLE) */
 .mp-pinpoint-marker {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1016,24 +1012,35 @@
 
 .mp-pinpoint-pulse {
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(45, 190, 96, 0.4);
-  border: 1.5px solid #2DBE60;
+  background: var(--color-primary-subtle);
+  border: 1.5px solid var(--color-primary);
   animation: pinpoint-ripple 1.5s infinite ease-out;
 }
 
 .mp-pinpoint-pulse.red {
-  background: rgba(220, 38, 38, 0.4);
-  border-color: #ef4444;
+  background: var(--color-secondary-subtle);
+  border-color: var(--color-secondary);
 }
 
 .mp-pinpoint-dot {
-  font-size: 12px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+  font-size: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
   position: relative;
   z-index: 2;
+}
+
+.mp-pinpoint-dot.red {
+  background: var(--color-secondary);
+  border-color: #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
 }
 
 @keyframes pinpoint-ripple {
@@ -1102,7 +1109,7 @@
 .mp-goal-zone-btn.active {
   background: rgba(45, 190, 96, 0.3);
   border: 2px solid #2DBE60;
-  color: #ffffff;
+  color: var(--text-contrast);
   font-weight: 800;
   box-shadow: 0 0 12px rgba(45, 190, 96, 0.6);
 }
@@ -1337,7 +1344,7 @@
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--text-contrast);
   letter-spacing: 0.3px;
   line-height: 1.1;
   white-space: normal;
@@ -1483,7 +1490,7 @@
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-item-team-name {
@@ -1536,7 +1543,7 @@
   font-family: var(--font-data, 'Exo 2', monospace);
   font-size: 11px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 /* ==========================================================
@@ -1574,13 +1581,13 @@
 }
 
 .mp-nav-btn:hover {
-  color: #ffffff;
+  color: var(--text-contrast);
   background: rgba(45, 190, 96, 0.08);
 }
 
 .mp-nav-btn.active {
   background: linear-gradient(135deg, var(--brand-primary, #12843A) 0%, var(--brand-accent, #2DBE60) 100%);
-  color: #ffffff;
+  color: var(--text-contrast);
   box-shadow: 0 4px 14px rgba(45, 190, 96, 0.35);
 }
 
@@ -2024,7 +2031,7 @@
 
 [data-theme="light"] .mp-nav-btn.active {
   background: linear-gradient(135deg, #12843A 0%, #2DBE60 100%);
-  color: #ffffff;
+  color: var(--text-contrast);
   box-shadow: 0 4px 14px rgba(18, 132, 58, 0.35);
 }
 
@@ -2072,7 +2079,7 @@
   font-family: var(--font-display, 'Raleway', sans-serif);
   font-size: 15px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--text-contrast);
   margin: 0;
   letter-spacing: 0.5px;
 }
@@ -2134,7 +2141,7 @@
   font-family: var(--font-display, 'Raleway', sans-serif);
   font-size: 14px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-btn-sub {
@@ -2395,7 +2402,7 @@
 .dark .mp-pivot-modal-titles h3,
 [data-theme="dark"] .mp-pivot-card-title,
 .dark .mp-pivot-card-title {
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 [data-theme="dark"] .mp-pivot-modal-titles p,
@@ -2484,7 +2491,7 @@
 .mp-cancel-flow-btn:hover {
   background: #dc2626;
   border-color: #ef4444;
-  color: #ffffff;
+  color: var(--text-contrast);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
@@ -2507,7 +2514,7 @@
 .mp-toggle-zones-btn:hover {
   background: var(--brand-primary, #12843a);
   border-color: #2dbe60;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-toggle-zones-btn.active {
@@ -2638,7 +2645,7 @@
 
 .mp-flow-cancel-btn:hover {
   background: #ef4444;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-step-item.pulsing {
@@ -2711,7 +2718,7 @@
 
 .mp-rebound-btn.defense:hover {
   background: #0284c7;
-  color: #ffffff;
+  color: var(--text-contrast);
 }
 
 .mp-rebound-btn.attack {
@@ -2722,5 +2729,5 @@
 
 .mp-rebound-btn.attack:hover {
   background: #12843A;
-  color: #ffffff;
+  color: var(--text-contrast);
 }

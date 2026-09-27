@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../common/LanguageSelector";
 import {
   getSettings,
   saveSettings,
@@ -45,6 +47,7 @@ const IconZap = () => (
 );
 
 export default function SettingsPage({ matchesList = [] }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("xg"); // "xg" | "xsaves" | "rating"
   const [form, setForm] = useState(DEFAULT_SETTINGS);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -81,7 +84,7 @@ export default function SettingsPage({ matchesList = [] }) {
   };
 
   const handleReset = () => {
-    if (!confirm("¿Deseas restablecer todos los parámetros a sus valores predeterminados?")) return;
+    if (!confirm(t("settings.reset_confirm"))) return;
     const defaults = resetSettings();
     setForm(defaults);
     setSavedSuccess(true);
@@ -89,23 +92,29 @@ export default function SettingsPage({ matchesList = [] }) {
   };
 
   const tabs = [
-    { id: "xg", icon: <IconTarget size={16} />, label: "xGoals" },
-    { id: "xsaves", icon: <IconGlove size={16} />, label: "xSaves" }
+    { id: "xg", icon: <IconTarget size={16} />, label: t("settings.tab_xg") },
+    { id: "xsaves", icon: <IconGlove size={16} />, label: t("settings.tab_xsaves") }
   ];
 
   const categoriesList = [
-    { key: "7m", label: "Penalti 7m", paramKey: "xg7m", defaultVal: 0.75 },
-    { key: "counter", label: "Contraataque / 1ª Oleada", paramKey: "xgCounter", defaultVal: 0.80 },
-    { key: "pivot", label: "Pivote (6m)", paramKey: "xgPivot", defaultVal: 0.72 },
-    { key: "penetration", label: "Penetración (6m)", paramKey: "xgPenetration", defaultVal: 0.64 },
-    { key: "wing", label: "Extremo (6m)", paramKey: "xgWing", defaultVal: 0.56 },
-    { key: "9m", label: "Primera Línea / 9m", paramKey: "xg9m", defaultVal: 0.34 },
+    { key: "7m", label: t("settings.label_7m"), paramKey: "xg7m", defaultVal: 0.75 },
+    { key: "counter", label: t("settings.label_counter"), paramKey: "xgCounter", defaultVal: 0.80 },
+    { key: "pivot", label: t("settings.label_pivot"), paramKey: "xgPivot", defaultVal: 0.72 },
+    { key: "penetration", label: t("settings.label_penetration"), paramKey: "xgPenetration", defaultVal: 0.64 },
+    { key: "wing", label: t("settings.label_wing"), paramKey: "xgWing", defaultVal: 0.56 },
+    { key: "9m", label: t("settings.label_9m"), paramKey: "xg9m", defaultVal: 0.34 },
   ];
 
   const goalZoneLabels = {
-    TL: "Sup. Izq", TC: "Sup. Cen", TR: "Sup. Der",
-    ML: "Med. Izq", C: "Centro", MR: "Med. Der",
-    BL: "Inf. Izq", BC: "Inf. Cen", BR: "Inf. Der"
+    TL: t("mesa_control.goal_zones.top_left", "Sup. Izq"),
+    TC: t("mesa_control.goal_zones.top_center", "Sup. Cen"),
+    TR: t("mesa_control.goal_zones.top_right", "Sup. Der"),
+    ML: t("mesa_control.goal_zones.mid_left", "Med. Izq"),
+    C: t("mesa_control.goal_zones.center", "Centro"),
+    MR: t("mesa_control.goal_zones.mid_right", "Med. Der"),
+    BL: t("mesa_control.goal_zones.bottom_left", "Inf. Izq"),
+    BC: t("mesa_control.goal_zones.bottom_center", "Inf. Cen"),
+    BR: t("mesa_control.goal_zones.bottom_right", "Inf. Der")
   };
 
   const isAutoActive = form.autoEmpiricalMode && empiricalData.isEligible;
@@ -117,21 +126,22 @@ export default function SettingsPage({ matchesList = [] }) {
         <div>
           <h2>
             <IconSliders size={22} />
-            <span>Ajustes de Parámetros Tácticos</span>
+            <span>{t("settings.title")}</span>
           </h2>
           <p className="settings-subtitle">
-            Calibración de algoritmos analíticos, modelos xG/xSaves empíricos y cálculo de valoraciones.
+            {t("settings.subtitle")}
           </p>
         </div>
 
         <div className="settings-header-actions">
+          <LanguageSelector compact />
           <button type="button" className="btn btn-secondary" onClick={handleReset}>
             <IconRefresh />
-            <span>Restablecer</span>
+            <span>{t("settings.reset")}</span>
           </button>
           <button type="button" className="btn btn-primary" onClick={handleSave}>
             <IconSave />
-            <span>Guardar Cambios</span>
+            <span>{t("settings.save_changes")}</span>
           </button>
         </div>
       </div>
@@ -139,7 +149,7 @@ export default function SettingsPage({ matchesList = [] }) {
       {/* MENSAJE DE NOTIFICACIÓN DE ÉXITO */}
       {savedSuccess && (
         <div className="settings-alert-success">
-          ✓ Configuración actualizada correctamente. Los nuevos parámetros se han aplicado a los motores analíticos de HandStats.
+          {t("settings.success_alert")}
         </div>
       )}
 
@@ -168,9 +178,9 @@ export default function SettingsPage({ matchesList = [] }) {
                 <IconTarget size={20} />
               </div>
               <div>
-                <h4 className="hs-card-title" style={{ margin: 0 }}>MODELO DE EXPECTED GOALS (xGOALS)</h4>
+                <h4 className="hs-card-title" style={{ margin: 0 }}>{t("settings.xg_title")}</h4>
                 <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", fontWeight: 500 }}>
-                  Calibración empírica y probabilidades calculadas por posición y cuadrante 3x3
+                  {t("settings.xg_subtitle")}
                 </span>
               </div>
             </div>
@@ -181,12 +191,19 @@ export default function SettingsPage({ matchesList = [] }) {
                 <div>
                   <span className="empirical-badge">
                     <IconZap />
-                    {isAutoActive ? "CALIBRACIÓN EMPÍRICA AUTOMÁTICA ACTIVA" : "MODO DE CALIBRACIÓN POR TIROS REALES"}
+                    {isAutoActive ? t("settings.empirical_active") : t("settings.empirical_mode_label")}
                   </span>
                   <p className="empirical-status-subtext">
                     {empiricalData.isEligible
-                      ? `Basada en ${empiricalData.totalShots} lanzamientos reales de tus partidos. Próxima actualización automática (+25% volumen) a los ${empiricalData.nextCheckpoint} tiros (Faltan ${empiricalData.shotsUntilNextRecalc} tiros).`
-                      : `Acumula 500 lanzamientos en HandStats para activar el recalibrado automático con tus datos reales. Proceso actual: ${empiricalData.totalShots} / 500 tiros (Faltan ${500 - empiricalData.totalShots} tiros).`}
+                      ? t("settings.empirical_active_desc", {
+                          total: empiricalData.totalShots,
+                          next: empiricalData.nextCheckpoint,
+                          remaining: empiricalData.shotsUntilNextRecalc
+                        })
+                      : t("settings.empirical_pending_desc", {
+                          total: empiricalData.totalShots,
+                          remaining: 500 - empiricalData.totalShots
+                        })}
                   </p>
                 </div>
 
@@ -196,14 +213,14 @@ export default function SettingsPage({ matchesList = [] }) {
                     className={`btn btn-sm ${form.autoEmpiricalMode ? "btn-primary" : "btn-ghost"}`}
                     onClick={() => handleToggleAutoMode(true)}
                   >
-                    Automático (Empírico)
+                    {t("settings.btn_auto")}
                   </button>
                   <button
                     type="button"
                     className={`btn btn-sm ${!form.autoEmpiricalMode ? "btn-primary" : "btn-ghost"}`}
                     onClick={() => handleToggleAutoMode(false)}
                   >
-                    Manual
+                    {t("settings.btn_manual")}
                   </button>
                 </div>
               </div>
@@ -211,8 +228,8 @@ export default function SettingsPage({ matchesList = [] }) {
               {/* BARRA DE PROGRESO HACIA LOS 500 O SIGUIENTE HITO DE +25% */}
               <div className="empirical-progress-container">
                 <div className="empirical-progress-label">
-                  <span>Progreso de tiros registrados en partidos</span>
-                  <strong>{empiricalData.totalShots} tiros</strong>
+                  <span>{t("settings.progress_label")}</span>
+                  <strong>{t("settings.progress_val", { count: empiricalData.totalShots })}</strong>
                 </div>
                 <div className="empirical-progress-bar">
                   <div
@@ -229,29 +246,29 @@ export default function SettingsPage({ matchesList = [] }) {
             <div className="formula-callout-box">
               <div className="formula-header-banner">
                 <div className="formula-title-badge">
-                  <IconInfo /> MODELO Y SISTEMA DE CALIBRACIÓN AUTOMÁTICA
+                  <IconInfo /> {t("settings.formula_title")}
                 </div>
-                <span className="formula-subtitle-tag">Hitos Incrementales +25%</span>
+                <span className="formula-subtitle-tag">{t("settings.formula_subtitle")}</span>
               </div>
 
               {/* FILA DE TARJETAS DE FÓRMULAS */}
               <div className="formula-cards-row">
                 <div className="formula-card">
-                  <span className="formula-card-title">1. Probabilidad Base xG</span>
+                  <span className="formula-card-title">{t("settings.formula1_title")}</span>
                   <div className="formula-card-code">
-                    Goles en Posición / Tiros Totales
+                    {t("settings.formula1_code")}
                   </div>
                 </div>
                 <div className="formula-card">
-                  <span className="formula-card-title">2. Modificador Zona 3x3</span>
+                  <span className="formula-card-title">{t("settings.formula2_title")}</span>
                   <div className="formula-card-code">
-                    Efectividad Zona - Efec. Global
+                    {t("settings.formula2_code")}
                   </div>
                 </div>
                 <div className="formula-card">
-                  <span className="formula-card-title">3. Hitos Recalibración (+25%)</span>
+                  <span className="formula-card-title">{t("settings.formula3_title")}</span>
                   <div className="formula-card-code">
-                    500 → 625 → 782 → 977 → 1221...
+                    {t("settings.formula3_code")}
                   </div>
                 </div>
               </div>
@@ -259,7 +276,7 @@ export default function SettingsPage({ matchesList = [] }) {
               {/* BLOQUE EXPLICATIVO INFERIOR */}
               <div className="formula-explanation-block">
                 <p>
-                  <strong>¿Cómo funciona la autocalibración proporcional por volumen?</strong> Al alcanzar <strong>500 lanzamientos</strong>, HandStats activa un modelo empírico basado en tus propios datos. A partir de ese momento, el modelo se <strong>recalibra automáticamente</strong> cada vez que el número total de lanzamientos aumenta un <strong>25%</strong> respecto a la última actualización (500, 625, 782, 977, 1221 tiros...). En cada recalibración se utilizan todos los <strong>datos acumulados</strong>, permitiendo que las probabilidades de gol se <strong>ajusten progresivamente y ganen precisión y estabilidad</strong> conforme aumenta la muestra disponible.
+                  {t("settings.formula_explanation")}
                 </p>
               </div>
             </div>
@@ -269,7 +286,7 @@ export default function SettingsPage({ matchesList = [] }) {
               {/* COLUMNA IZQUIERDA: MARCO DE PORTERÍA 3X3 */}
               <div className="empirical-breakdown-card" style={{ marginTop: 0 }}>
                 <h5 style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", marginBottom: "var(--space-12)", textAlign: "center" }}>
-                  MODIFICADORES POR ZONA (MARCO 3X3)
+                  {t("settings.zone_modifiers_title")}
                 </h5>
 
                 <div className="empirical-goal-grid-3x3" style={{ maxWidth: "540px", margin: "0 auto" }}>
@@ -295,10 +312,10 @@ export default function SettingsPage({ matchesList = [] }) {
                           {goalZoneLabels[zKey]}
                         </span>
                         <span style={{ fontSize: "14px", fontWeight: 900, fontFamily: "var(--font-mono)", margin: "3px 0", color: "var(--color-primary)" }}>
-                          {zData.goals}/{zData.shots} Goles
+                          {zData.goals}/{zData.shots} {t("common.goals")}
                         </span>
                         <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-primary)" }}>
-                          Eficacia: {ratePct}%
+                          {t("common.efficiency")}: {ratePct}%
                         </span>
                         <span style={{ fontSize: "11px", fontWeight: 800, color: isPositive ? "var(--color-primary)" : isNegative ? "var(--color-danger)" : "var(--text-muted)", marginTop: "3px" }}>
                           {modVal > 0 ? `+${modVal} xG` : `${modVal} xG`}
@@ -312,19 +329,19 @@ export default function SettingsPage({ matchesList = [] }) {
               {/* COLUMNA DERECHA: TABLA DESGLOSADA DE EFECTIVIDAD SIN SCROLL */}
               <div className="empirical-breakdown-card empirical-table-card-expanded" style={{ marginTop: 0 }}>
                 <h5 style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", marginBottom: "var(--space-12)" }}>
-                  HISTORIAL Y EFECTIVIDAD EMPÍRICA POR TIPO DE TIRO
+                  {t("settings.empirical_history_title")}
                 </h5>
 
                 <div className="empirical-full-height-table-container">
                   <table className="empirical-full-height-table">
                     <thead>
                       <tr>
-                        <th>Tipo Lanzamiento</th>
-                        <th>Tiros</th>
-                        <th>Goles</th>
-                        <th>xG Base</th>
-                        <th>xSaves</th>
-                        <th>Estado</th>
+                        <th>{t("settings.col_shot_type")}</th>
+                        <th>{t("settings.col_shots")}</th>
+                        <th>{t("settings.col_goals")}</th>
+                        <th>{t("settings.col_xg_base")}</th>
+                        <th>{t("settings.col_xsaves")}</th>
+                        <th>{t("settings.col_status")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -342,7 +359,7 @@ export default function SettingsPage({ matchesList = [] }) {
                             <td><span style={{ color: "var(--color-primary)", fontWeight: 700 }}>{data.shots >= 5 ? `${Math.round(empiricalSaveVal * 100)}%` : "—"}</span></td>
                             <td>
                               <span className={`empirical-tag-status ${isAutoActive && data.shots >= 5 ? "auto" : "manual"}`}>
-                                {isAutoActive && data.shots >= 5 ? `Empírico` : `Manual`}
+                                {isAutoActive && data.shots >= 5 ? t("settings.status_empirical") : t("settings.status_manual")}
                               </span>
                             </td>
                           </tr>
@@ -356,12 +373,12 @@ export default function SettingsPage({ matchesList = [] }) {
 
             {/* CONFIGURACIÓN MANUAL DE PESOS */}
             <h5 style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", marginTop: "var(--space-16)", marginBottom: "var(--space-8)" }}>
-              AJUSTE MANUAL DE VALORES BASE xG
+              {t("settings.manual_adjust_title")}
             </h5>
 
             <div className="settings-inputs-grid">
               <div className="form-group">
-                <label>Lanzamiento de 7m (Penalti)</label>
+                <label>{t("settings.label_7m")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -377,7 +394,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Contraataque / 1ª Oleada</label>
+                <label>{t("settings.label_counter")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -393,7 +410,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Tiro de Pivote (6m)</label>
+                <label>{t("settings.label_pivot")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -409,7 +426,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Tiro de Penetración (6m)</label>
+                <label>{t("settings.label_penetration")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -425,7 +442,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Tiro de Extremo (6m)</label>
+                <label>{t("settings.label_wing")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -441,7 +458,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Primera Línea / Distancia (9m)</label>
+                <label>{t("settings.label_9m")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -457,7 +474,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Bonus Superioridad Numérica (+)</label>
+                <label>{t("settings.label_superiority")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -473,7 +490,7 @@ export default function SettingsPage({ matchesList = [] }) {
               </div>
 
               <div className="form-group">
-                <label>Penalización Inferioridad (-)</label>
+                <label>{t("settings.label_inferiority")}</label>
                 <div className="input-group-unit">
                   <input
                     type="number"
@@ -499,9 +516,9 @@ export default function SettingsPage({ matchesList = [] }) {
                 <IconGlove size={20} />
               </div>
               <div>
-                <h4 className="hs-card-title" style={{ margin: 0 }}>EXPECTED SAVES (xSAVES) & MODIFICADOR DE PORTERÍA</h4>
+                <h4 className="hs-card-title" style={{ margin: 0 }}>{t("settings.xsaves_title")}</h4>
                 <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", fontWeight: 500 }}>
-                  Modificador empírico por cuadrante (3x3) y paradas esperadas del portero
+                  {t("settings.xsaves_subtitle")}
                 </span>
               </div>
             </div>
@@ -510,29 +527,29 @@ export default function SettingsPage({ matchesList = [] }) {
             <div className="formula-callout-box">
               <div className="formula-header-banner">
                 <div className="formula-title-badge">
-                  <IconInfo /> MODELO DE PORTERÍA Y MODIFICADOR DE CUADRANTES (3X3)
+                  <IconInfo /> {t("settings.xsaves_formula_title")}
                 </div>
-                <span className="formula-subtitle-tag">xSaves = (1 - xG) + Modificadores</span>
+                <span className="formula-subtitle-tag">{t("settings.xsaves_formula_subtitle")}</span>
               </div>
 
               {/* FILA DE TARJETAS DE FÓRMULAS */}
               <div className="formula-cards-row">
                 <div className="formula-card">
-                  <span className="formula-card-title">1. xSaves por Zona (z)</span>
+                  <span className="formula-card-title">{t("settings.xsaves_f1_title")}</span>
                   <div className="formula-card-code">
-                    (1 - xG) + ModificadorZona(z)
+                    {t("settings.xsaves_f1_code")}
                   </div>
                 </div>
                 <div className="formula-card">
-                  <span className="formula-card-title">2. Modificador Portería (z)</span>
+                  <span className="formula-card-title">{t("settings.xsaves_f2_title")}</span>
                   <div className="formula-card-code">
-                    TasaParadas(z) - TasaGlobal
+                    {t("settings.xsaves_f2_code")}
                   </div>
                 </div>
                 <div className="formula-card">
-                  <span className="formula-card-title">3. Evaluación Cuadrantes</span>
+                  <span className="formula-card-title">{t("settings.xsaves_f3_title")}</span>
                   <div className="formula-card-code">
-                    Desviación vs Eficiencia Global
+                    {t("settings.xsaves_f3_code")}
                   </div>
                 </div>
               </div>
@@ -540,7 +557,7 @@ export default function SettingsPage({ matchesList = [] }) {
               {/* BLOQUE EXPLICATIVO INFERIOR */}
               <div className="formula-explanation-block">
                 <p>
-                  Las paradas esperadas del portero se calculan como <strong>(1 - xG) + ModificadorZonaXSaves</strong>. El <strong>Modificador de Portería por Zona 3x3</strong> evalúa el rendimiento empírico del portero en cada cuadrante de la portería (diferenciando por ejemplo entre <strong>Arriba al Centro TC</strong> y <strong>Abajo al Centro BC</strong>) restando su porcentaje de paradas reales en ese cuadrante respecto a su efectividad global.
+                  {t("settings.xsaves_explanation")}
                 </p>
               </div>
             </div>
@@ -549,7 +566,7 @@ export default function SettingsPage({ matchesList = [] }) {
             <div style={{ marginTop: "var(--space-12)" }}>
               <div className="empirical-breakdown-card" style={{ marginTop: 0 }}>
                 <h5 style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", marginBottom: "var(--space-12)", textAlign: "center" }}>
-                  MODIFICADORES DE PORTERÍA POR CUADRANTE (MARCO 3X3)
+                  {t("settings.zone_modifiers_title")}
                 </h5>
 
                 <div className="empirical-goal-grid-3x3" style={{ maxWidth: "540px", margin: "0 auto" }}>
@@ -577,7 +594,7 @@ export default function SettingsPage({ matchesList = [] }) {
                           {goalZoneLabels[zKey]}
                         </span>
                         <span style={{ fontSize: "14px", fontWeight: 900, fontFamily: "var(--font-mono)", margin: "3px 0", color: "var(--color-primary)" }}>
-                          {saves}/{zData.shots} Paradas
+                          {saves}/{zData.shots} {t("players_table.col_saves")}
                         </span>
                         <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-primary)" }}>
                           xSaves: {xSavePct}%
@@ -598,11 +615,11 @@ export default function SettingsPage({ matchesList = [] }) {
         <div className="settings-footer-actions">
           <button type="button" className="btn btn-secondary" onClick={handleReset}>
             <IconRefresh />
-            <span>Restablecer Todo</span>
+            <span>{t("settings.reset_all")}</span>
           </button>
           <button type="submit" className="btn btn-primary">
             <IconSave />
-            <span>Guardar Ajustes</span>
+            <span>{t("settings.save_settings")}</span>
           </button>
         </div>
       </form>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { KPICard } from "../common/KPICard";
 import { GoalHeatmapGrid } from "../charts/TacticalHeatmapGrid";
 
 export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, teamFilter = "home" }) {
+  const { t } = useTranslation();
   const [selectedGkNumber, setSelectedGkNumber] = useState("all");
 
   useEffect(() => {
@@ -35,14 +37,14 @@ export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps
       {/* SELECTOR DE PORTERO INDIVIDUAL */}
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--space-8)", background: "var(--bg-surface)", padding: "var(--space-12) var(--space-16)", borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>
         <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", marginRight: "var(--space-4)" }}>
-          SELECCIONAR PORTERO:
+          {t("goalkeeper.select_gk", "SELECCIONAR PORTERO:")}
         </span>
         <button
           type="button"
           className={`btn btn-sm ${selectedGkNumber === "all" ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setSelectedGkNumber("all")}
         >
-          Todos los Porteros ({teamName})
+          {t("goalkeeper.all_gks", { team: teamName, defaultValue: `Todos los Porteros (${teamName})` })}
         </button>
         {goalkeepers.map((gk) => (
           <button
@@ -59,43 +61,43 @@ export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps
       {/* TARJETAS DE INDICADORES DE PORTERÍA */}
       <div className="hs-kpi-grid">
         <KPICard
-          title={`PARADAS TOTALES — ${activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase()}`}
+          title={t("goalkeeper.total_saves", { name: activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase(), defaultValue: `PARADAS TOTALES — ${activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase()}` })}
           value={gkSaves}
-          subtitle={`% Paradas: ${gkSavePct}% (${activeGk ? `${gkSaves}/${activeGk.goalkeeperShotsFaced}` : "Global partido"})`}
+          subtitle={t("goalkeeper.saves_sub", { pct: gkSavePct, detail: activeGk ? `${gkSaves}/${activeGk.goalkeeperShotsFaced}` : t("goalkeeper.saves_global", "Global partido"), defaultValue: `% Paradas: ${gkSavePct}% (${activeGk ? `${gkSaves}/${activeGk.goalkeeperShotsFaced}` : "Global partido"})` })}
         />
         <KPICard
-          title="EXPECTED SAVES (xSaves)"
+          title={t("goalkeeper.xsaves_title", "EXPECTED SAVES (xSaves)")}
           value={gkExpectedSaves}
-          subtitle="Paradas esperadas por dificultad de tiros"
+          subtitle={t("goalkeeper.xsaves_sub", "Paradas esperadas por dificultad de tiros")}
         />
         <KPICard
-          title="DIFERENCIA SAVES vs xSaves"
+          title={t("goalkeeper.diff_title", "DIFERENCIA SAVES vs xSaves")}
           value={diffSaves >= 0 ? `+${diffSaves}` : `${diffSaves}`}
-          delta={diffSaves >= 0 ? "Rendimiento Sobresaliente" : "Por debajo de xSaves"}
+          delta={diffSaves >= 0 ? t("goalkeeper.outstanding", "Rendimiento Sobresaliente") : t("goalkeeper.below_xsaves", "Por debajo de xSaves")}
           trend={diffSaves >= 0 ? "up" : "down"}
-          subtitle="Aportación neta del portero"
+          subtitle={t("goalkeeper.diff_sub", "Aportación neta del portero")}
         />
         <KPICard
-          title="GOLES ENCAJADOS"
+          title={t("goalkeeper.goals_conceded", "GOLES ENCAJADOS")}
           value={goalsConceded}
-          subtitle={`En el encuentro actual`}
+          subtitle={t("goalkeeper.goals_conceded_sub", "En el encuentro actual")}
         />
       </div>
 
       {/* TABLA DE RENDIMIENTO INDIVIDUAL DE PORTEROS */}
       <div className="hs-card">
-        <h4 className="hs-card-title">RENDIMIENTO INDIVIDUAL DE PORTEROS — {teamName}</h4>
+        <h4 className="hs-card-title">{t("goalkeeper.table_title", { team: teamName, defaultValue: `RENDIMIENTO INDIVIDUAL DE PORTEROS — ${teamName}` })}</h4>
         <div className="hs-table-container">
           <table className="hs-data-table">
             <thead>
               <tr>
-                <th>Dorsal & Nombre</th>
-                <th>Tiros Recibidos</th>
-                <th>Paradas</th>
-                <th>% Efectividad</th>
-                <th>Expected Saves (xSaves)</th>
-                <th>Goles Encajados</th>
-                <th>Rating</th>
+                <th>{t("goalkeeper.col_dorsal_name", "Dorsal & Nombre")}</th>
+                <th>{t("goalkeeper.col_shots_faced", "Tiros Recibidos")}</th>
+                <th>{t("goalkeeper.col_saves", "Paradas")}</th>
+                <th>{t("goalkeeper.col_eff", "% Efectividad")}</th>
+                <th>{t("goalkeeper.col_xsaves", "Expected Saves (xSaves)")}</th>
+                <th>{t("goalkeeper.col_goals_conceded", "Goles Encajados")}</th>
+                <th>{t("goalkeeper.col_rating", "Rating")}</th>
               </tr>
             </thead>
             <tbody>
@@ -129,7 +131,7 @@ export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps
               ) : (
                 <tr>
                   <td colSpan="7" style={{ textAlign: "center", color: "var(--text-muted)" }}>
-                    No hay estadísticas de portero registradas para este equipo.
+                    {t("goalkeeper.no_gk_stats", "No hay estadísticas de portero registradas para este equipo.")}
                   </td>
                 </tr>
               )}
@@ -145,7 +147,7 @@ export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps
           isOpponent={opponentShotsFilter}
           match={match}
           selectedGkNumber={selectedGkNumber}
-          title={`MAPA DE CALOR DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA — ${activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase()}`}
+          title={t("goalkeeper.heatmap_title", { name: activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase(), defaultValue: `MAPA DE CALOR DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA — ${activeGk ? `#${activeGk.number} ${activeGk.name.toUpperCase()}` : teamName.toUpperCase()}` })}
         />
       </div>
     </div>

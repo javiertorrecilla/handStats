@@ -1,10 +1,15 @@
+import { useTranslation } from "react-i18next";
+
 export default function MatchCard({
   match,
   loadMatch,
   onDelete,
 }) {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "es";
+
   const dateStr = match.date
-    ? new Date(match.date).toLocaleDateString("es-ES", {
+    ? new Date(match.date).toLocaleDateString(currentLang, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -41,7 +46,7 @@ export default function MatchCard({
               loadMatch(match._id, "live");
             }}
           >
-            Mesa de Control
+            {t("matches.control_desk")}
           </button>
 
           <button
@@ -51,7 +56,7 @@ export default function MatchCard({
               loadMatch(match._id, "stats");
             }}
           >
-            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg> Estadísticas
+            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14, display: "inline-block", verticalAlign: "middle" }}><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg> {t("matches.statistics")}
           </button>
 
           {onDelete && (
@@ -62,7 +67,7 @@ export default function MatchCard({
                 onDelete(match._id);
               }}
             >
-              Eliminar
+              {t("common.delete")}
             </button>
           )}
         </div>

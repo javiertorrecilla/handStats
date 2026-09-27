@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useAuth } from "../../../context/AuthContext";
@@ -150,19 +151,19 @@ function classifyShotZone(shot) {
 /**
  * Calcula el desglose de lanzamientos, goles, eficacia y volumen por zona para ambos equipos
  */
-function getTeamShotZonesData(match) {
+function getTeamShotZonesData(match, t = (k, def) => def) {
   const events = match?.events || [];
 
   const homeShots = events.filter((ev) => ev.event_type === "shot" && !ev.is_opponent_action);
   const awayShots = events.filter((ev) => ev.event_type === "shot" && ev.is_opponent_action);
 
   const zonesConfig = [
-    { key: "wing", label: "Extremo", shortLabel: "Extremo", desc: "Lanzamientos desde los extremos de pista" },
-    { key: "backcourt", label: "Primera Línea (9m)", shortLabel: "9 Metros", desc: "Lanzamiento exterior y a distancia" },
-    { key: "pivot", label: "Pivote", shortLabel: "Pivote", desc: "Lanzamientos desde 6m centro de pivote" },
-    { key: "penetration", label: "Penetración", shortLabel: "Penetración", desc: "Acciones de penetración y uno contra uno" },
-    { key: "fastbreak", label: "Contraataque", shortLabel: "Contraataque", desc: "Transiciones y 1ª oleada rápida" },
-    { key: "7m", label: "7 Metros", shortLabel: "7 Metros", desc: "Lanzamientos de penalti" }
+    { key: "wing", label: t("report.zone_wing", "Extremo"), shortLabel: t("report.zone_wing", "Extremo"), desc: "Lanzamientos desde los extremos de pista" },
+    { key: "backcourt", label: t("report.zone_backcourt", "Primera Línea (9m)"), shortLabel: "9 Metros", desc: "Lanzamiento exterior y a distancia" },
+    { key: "pivot", label: t("report.zone_pivot", "Pivote"), shortLabel: t("report.zone_pivot", "Pivote"), desc: "Lanzamientos desde 6m centro de pivote" },
+    { key: "penetration", label: t("report.zone_penetration", "Penetración"), shortLabel: t("report.zone_penetration", "Penetración"), desc: "Acciones de penetración y uno contra uno" },
+    { key: "fastbreak", label: t("report.zone_fastbreak", "Contraataque"), shortLabel: t("report.zone_fastbreak", "Contraataque"), desc: "Transiciones y 1ª oleada rápida" },
+    { key: "7m", label: t("report.zone_7m", "7 Metros"), shortLabel: t("report.zone_7m", "7 Metros"), desc: "Lanzamientos de penalti" }
   ];
 
   const countForTeam = (shotsList) => {
@@ -224,7 +225,7 @@ function getTeamShotZonesData(match) {
  * Posicional y Contraataque / 1ª Oleada
  * Métricas: Tiros, Goles, % Gol, 7 Metros, Pérdidas, % de Ataque
  */
-function getGamePhaseStatsData(match) {
+function getGamePhaseStatsData(match, t = (k, def) => def) {
   const events = match?.events || [];
 
   const homeEvents = events.filter((ev) => !ev.is_opponent_action);
@@ -234,7 +235,7 @@ function getGamePhaseStatsData(match) {
     const data = {
       positional: {
         key: "positional",
-        label: "Ataque Posicional",
+        label: t("report.phase_positional", "Ataque Posicional"),
         shots: 0,
         goals: 0,
         sevenMeters: 0,
@@ -242,7 +243,7 @@ function getGamePhaseStatsData(match) {
       },
       fastbreak: {
         key: "fastbreak",
-        label: "Contraataque / 1ª Oleada",
+        label: t("report.phase_fastbreak", "Contraataque / 1ª Oleada"),
         shots: 0,
         goals: 0,
         sevenMeters: 0,
@@ -358,7 +359,7 @@ function classifyEventSituation(ev, allEvents = []) {
  * Igualdad, Superioridad e Inferioridad
  * Métricas: Tiros, Goles, % Gol, 7 Metros, Pérdidas, % de Ataque
  */
-function getNumericalSituationStatsData(match) {
+function getNumericalSituationStatsData(match, t = (k, def) => def) {
   const events = match?.events || [];
 
   const homeEvents = events.filter((ev) => !ev.is_opponent_action);
@@ -368,7 +369,7 @@ function getNumericalSituationStatsData(match) {
     const data = {
       equality: {
         key: "equality",
-        label: "Igualdad Numérica",
+        label: t("report.sit_equality", "Igualdad Numérica"),
         shots: 0,
         goals: 0,
         sevenMeters: 0,
@@ -376,7 +377,7 @@ function getNumericalSituationStatsData(match) {
       },
       superiority: {
         key: "superiority",
-        label: "Superioridad Numérica",
+        label: t("report.sit_superiority", "Superioridad Numérica"),
         shots: 0,
         goals: 0,
         sevenMeters: 0,
@@ -384,7 +385,7 @@ function getNumericalSituationStatsData(match) {
       },
       inferiority: {
         key: "inferiority",
-        label: "Inferioridad Numérica",
+        label: t("report.sit_inferiority", "Inferioridad Numérica"),
         shots: 0,
         goals: 0,
         sevenMeters: 0,
@@ -533,6 +534,7 @@ function TeamLogoBadge({ name, logoUrl, color = "#12843A", isHome = true, size =
  * Tabla comparativa general para el PDF con estilos inline explícitos (sin variables CSS)
  */
 function PDFComparisonChart({ items, homeTeam, awayTeam, homeLogo, awayLogo }) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
       {/* Cabecera de Equipos */}
@@ -555,7 +557,7 @@ function PDFComparisonChart({ items, homeTeam, awayTeam, homeLogo, awayLogo }) {
           </span>
         </div>
         <div style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 800 }}>
-          COMPARATIVA DE MÉTRICAS
+          {t("report.metrics_comparison", "COMPARATIVA DE MÉTRICAS")}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
           <span style={{ color: "#2563EB", textTransform: "uppercase", textAlign: "right", fontFamily: "'Raleway', 'Montserrat', sans-serif" }}>
@@ -606,6 +608,7 @@ function PDFComparisonChart({ items, homeTeam, awayTeam, homeLogo, awayLogo }) {
  * Componente comparativo de Lanzamientos por Zona para Análisis de Equipo (PDF y Web)
  */
 function TeamShotZonesComparison({ zoneStats, homeTeam, awayTeam, homeLogo, awayLogo }) {
+  const { t } = useTranslation();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
       {/* Cabecera de Equipos */}
@@ -628,7 +631,7 @@ function TeamShotZonesComparison({ zoneStats, homeTeam, awayTeam, homeLogo, away
           </span>
         </div>
         <div style={{ color: "#4B5563", textAlign: "center", textTransform: "uppercase", fontSize: "10px", letterSpacing: "0.5px" }}>
-          ZONAS DE LANZAMIENTO
+          {t("report.shot_zones_title", "ZONAS DE LANZAMIENTO")}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
           <span style={{ color: "#2563EB", textAlign: "right", fontFamily: "'Raleway', 'Montserrat', sans-serif" }}>
@@ -659,7 +662,7 @@ function TeamShotZonesComparison({ zoneStats, homeTeam, awayTeam, homeLogo, away
                   {item.homeEff}%
                 </span>
                 <span style={{ fontSize: "9.5px", color: "#6B7280", background: "rgba(18, 132, 58, 0.08)", padding: "1px 5px", borderRadius: "3px" }}>
-                  {item.homeVolPct}% total
+                  {item.homeVolPct}% {t("report.total_shots_label", "total")}
                 </span>
               </div>
 
@@ -671,7 +674,7 @@ function TeamShotZonesComparison({ zoneStats, homeTeam, awayTeam, homeLogo, away
               {/* Datos Visitante */}
               <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
                 <span style={{ fontSize: "9.5px", color: "#6B7280", background: "rgba(37, 99, 235, 0.08)", padding: "1px 5px", borderRadius: "3px" }}>
-                  {item.awayVolPct}% total
+                  {item.awayVolPct}% {t("report.total_shots_label", "total")}
                 </span>
                 <span style={{ fontWeight: 800, color: "#0C1B13", fontSize: "10.5px", minWidth: "32px", textAlign: "right" }}>
                   {item.awayEff}%
@@ -699,20 +702,21 @@ function TeamShotZonesComparison({ zoneStats, homeTeam, awayTeam, homeLogo, away
  * Muestra: Tiros, Goles, % Gol, 7 Metros, Pérdidas y % de Ataque para cada equipo
  */
 function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
+  const { t } = useTranslation();
   const phases = [
     {
       key: "positional",
-      title: "Ataque Posicional",
-      subtitle: "Juego organizado en estático",
-      tag: "POSICIONAL",
+      title: t("report.phase_positional", "Ataque Posicional"),
+      subtitle: t("report.phase_positional_sub", "Juego organizado en estático"),
+      tag: t("report.phase_pos_tag", "POSICIONAL"),
       home: phaseStats.home.positional,
       away: phaseStats.away.positional
     },
     {
       key: "fastbreak",
-      title: "Contraataque / 1ª Oleada",
-      subtitle: "Transiciones rápidas y 1ª oleada",
-      tag: "CONTRAATAQUE",
+      title: t("report.phase_fastbreak", "Contraataque / 1ª Oleada"),
+      subtitle: t("report.phase_fastbreak_sub", "Transiciones rápidas y 1ª oleada"),
+      tag: t("report.phase_fast_tag", "CONTRAATAQUE"),
       home: phaseStats.home.fastbreak,
       away: phaseStats.away.fastbreak
     }
@@ -760,7 +764,7 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "6px", textAlign: "center", fontSize: "10px" }}>
               {/* Métrica 1: Tiros */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Tiros</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.shots", "Tiros")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{p.home.shots}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -770,7 +774,7 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
 
               {/* Métrica 2: Goles */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Goles</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.goals", "Goles")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{p.home.goals}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -780,7 +784,7 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
 
               {/* Métrica 3: % Gol (Eficacia) */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>% Gol</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.shot_table_eff", "% Gol")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px" }}>{p.home.goalPct}%</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -790,7 +794,7 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
 
               {/* Métrica 4: 7 Metros */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>7 Metros</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("mesa_control.action_gol_7m", "7 Metros")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{p.home.sevenMeters}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -800,7 +804,7 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
 
               {/* Métrica 5: Pérdidas */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Pérdidas</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.turnovers", "Pérdidas")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{p.home.turnovers}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -810,7 +814,7 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
 
               {/* Métrica 6: % Ataque (Volumen) */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>% Ataque</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("report.pct_attack", "% Ataque")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px" }}>{p.home.attackPct}%</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -830,28 +834,29 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
  * Muestra: Tiros, Goles, % Gol, 7 Metros, Pérdidas y % de Ataque para cada equipo
  */
 function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTeam }) {
+  const { t } = useTranslation();
   const situations = [
     {
       key: "equality",
-      title: "Igualdad Numérica",
-      subtitle: "Acciones de ataque en igualdad (6 vs 6)",
-      tag: "IGUALDAD (6vs6)",
+      title: t("report.sit_equality", "Igualdad Numérica"),
+      subtitle: t("report.sit_equality_sub", "Acciones de ataque en igualdad (6 vs 6)"),
+      tag: t("report.sit_eq_tag", "IGUALDAD (6vs6)"),
       home: situationStats.home.equality,
       away: situationStats.away.equality
     },
     {
       key: "superiority",
-      title: "Superioridad Numérica",
-      subtitle: "Ataques con ventaja numérica (+1 o más)",
-      tag: "SUPERIORIDAD",
+      title: t("report.sit_superiority", "Superioridad Numérica"),
+      subtitle: t("report.sit_superiority_sub", "Ataques con ventaja numérica (+1 o más)"),
+      tag: t("report.sit_sup_tag", "SUPERIORIDAD"),
       home: situationStats.home.superiority,
       away: situationStats.away.superiority
     },
     {
       key: "inferiority",
-      title: "Inferioridad Numérica",
-      subtitle: "Ataques con desventaja numérica (-1 o más)",
-      tag: "INFERIORIDAD",
+      title: t("report.sit_inferiority", "Inferioridad Numérica"),
+      subtitle: t("report.sit_inferiority_sub", "Ataques con desventaja numérica (-1 o más)"),
+      tag: t("report.sit_inf_tag", "INFERIORIDAD"),
       home: situationStats.home.inferiority,
       away: situationStats.away.inferiority
     }
@@ -899,7 +904,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
             <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "6px", textAlign: "center", fontSize: "10px" }}>
               {/* Métrica 1: Tiros */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Tiros</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.shots", "Tiros")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{s.home.shots}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -909,7 +914,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
 
               {/* Métrica 2: Goles */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Goles</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.goals", "Goles")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{s.home.goals}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -919,7 +924,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
 
               {/* Métrica 3: % Gol (Eficacia) */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>% Gol</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.shot_table_eff", "% Gol")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px" }}>{s.home.goalPct}%</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -929,7 +934,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
 
               {/* Métrica 4: 7 Metros */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>7 Metros</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("mesa_control.action_gol_7m", "7 Metros")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{s.home.sevenMeters}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -939,7 +944,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
 
               {/* Métrica 5: Pérdidas */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>Pérdidas</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.turnovers", "Pérdidas")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{s.home.turnovers}</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -949,7 +954,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
 
               {/* Métrica 6: % Ataque (Volumen) */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>% Ataque</span>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("report.pct_attack", "% Ataque")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
                   <strong style={{ color: "#12843A", fontSize: "11px" }}>{s.home.attackPct}%</strong>
                   <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
@@ -972,6 +977,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
  * Datos exclusivos de lanzamientos (excluyendo pérdidas).
  */
 function TeamShotDistributionComparison({ match, overview, homeLogo, awayLogo }) {
+  const { t } = useTranslation();
   const events = match?.events || [];
 
   const homeEvents = events.filter((ev) => !ev.is_opponent_action && ev.event_type === "shot");
@@ -1030,11 +1036,11 @@ function TeamShotDistributionComparison({ match, overview, homeLogo, awayLogo })
             {teamName}
           </span>
           <span style={{ fontSize: "8.5px", fontWeight: 800, color: color, background: `${color}14`, padding: "1px 6px", borderRadius: "3px" }}>
-            {isAway ? "EQUIPO VISITANTE" : "EQUIPO LOCAL"}
+            {isAway ? t("report.team_away", "EQUIPO VISITANTE") : t("report.team_home", "EQUIPO LOCAL")}
           </span>
         </div>
         <span style={{ fontSize: "9.5px", fontWeight: 800, color: "#374151" }}>
-          {data.totalShots} Tiros • {data.totalGoals} Goles ({data.effPct}% Eficacia)
+          {data.totalShots} {t("report.shots", "Tiros")} • {data.totalGoals} {t("report.goals", "Goles")} ({data.effPct}% {t("report.efficiency", "Eficacia")})
         </span>
       </div>
 
@@ -1043,7 +1049,7 @@ function TeamShotDistributionComparison({ match, overview, homeLogo, awayLogo })
         {/* Mapa 1: Media Pista */}
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <div style={{ fontSize: "9.5px", fontWeight: 800, color: "#4B5563", textTransform: "uppercase", textAlign: "center" }}>
-            Tiros en Media Pista
+            {t("report.court_shots_title", "Tiros en Media Pista")}
           </div>
           <div
             style={{
@@ -1060,16 +1066,16 @@ function TeamShotDistributionComparison({ match, overview, homeLogo, awayLogo })
             <ContinuousHeatmapCanvas points={data.courtPoints} radius={36} blur={0.85} opacity={0.92} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "8.5px", color: "#6B7280", background: "#F9FAFB", padding: "4px 8px", borderRadius: "3px" }}>
-            <span>Lanzamientos: <strong>{data.totalShots}</strong></span>
-            <span>Goles: <strong style={{ color: "#12843A" }}>{data.totalGoals}</strong></span>
-            <span>Eficacia: <strong style={{ color: color }}>{data.effPct}%</strong></span>
+            <span>{t("report.shots", "Lanzamientos")}: <strong>{data.totalShots}</strong></span>
+            <span>{t("report.goals", "Goles")}: <strong style={{ color: "#12843A" }}>{data.totalGoals}</strong></span>
+            <span>{t("report.efficiency", "Eficacia")}: <strong style={{ color: color }}>{data.effPct}%</strong></span>
           </div>
         </div>
 
         {/* Mapa 2: Portería */}
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           <div style={{ fontSize: "9.5px", fontWeight: 800, color: "#4B5563", textTransform: "uppercase", textAlign: "center" }}>
-            Impacto en Portería
+            {t("report.goal_shots_title", "Impacto en Portería")}
           </div>
           <div
             style={{
@@ -1086,9 +1092,9 @@ function TeamShotDistributionComparison({ match, overview, homeLogo, awayLogo })
             <ContinuousHeatmapCanvas points={data.goalPoints} radius={32} blur={0.85} opacity={0.92} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "8.5px", color: "#6B7280", background: "#F9FAFB", padding: "4px 8px", borderRadius: "3px" }}>
-            <span>Goles: <strong style={{ color: "#12843A" }}>{data.totalGoals}</strong></span>
-            <span>Paradas: <strong style={{ color: "#F59E0B" }}>{data.totalSaves}</strong></span>
-            <span>Fuera/Poste: <strong style={{ color: "#EF4444" }}>{data.totalMisses}</strong></span>
+            <span>{t("report.goals", "Goles")}: <strong style={{ color: "#12843A" }}>{data.totalGoals}</strong></span>
+            <span>{t("report.saves", "Paradas")}: <strong style={{ color: "#F59E0B" }}>{data.totalSaves}</strong></span>
+            <span>{t("report.misses", "Fuera/Poste")}: <strong style={{ color: "#EF4444" }}>{data.totalMisses}</strong></span>
           </div>
         </div>
       </div>
@@ -1109,6 +1115,7 @@ function TeamShotDistributionComparison({ match, overview, homeLogo, awayLogo })
  * mostrando EXCLUSIVAMENTE pérdidas de balón (sin tiros) y sin marcadores.
  */
 function TeamTurnoversHeatmapComparison({ match, overview, homeLogo, awayLogo }) {
+  const { t } = useTranslation();
   const events = match?.events || [];
 
   const homeEvents = events.filter((ev) => !ev.is_opponent_action && ev.event_type === "turnover");
@@ -1167,11 +1174,11 @@ function TeamTurnoversHeatmapComparison({ match, overview, homeLogo, awayLogo })
               {teamName}
             </span>
             <span style={{ fontSize: "8.5px", fontWeight: 800, color: color, background: `${color}14`, padding: "1px 6px", borderRadius: "3px" }}>
-              {isAway ? "EQUIPO VISITANTE" : "EQUIPO LOCAL"}
+              {isAway ? t("report.team_away", "EQUIPO VISITANTE") : t("report.team_home", "EQUIPO LOCAL")}
             </span>
           </div>
           <span style={{ fontSize: "9.5px", fontWeight: 800, color: "#374151" }}>
-            {data.totalTurnovers} Pérdidas de Balón ({data.possLostPct}% ataques cedidos)
+            {data.totalTurnovers} {t("dashboard.charts.metric_turnovers", "Pérdidas de Balón")} ({data.possLostPct}% {t("report.attacks_conceded", "ataques cedidos")})
           </span>
         </div>
 
@@ -1180,7 +1187,7 @@ function TeamTurnoversHeatmapComparison({ match, overview, homeLogo, awayLogo })
           {/* Mapa de Media Pista de Pérdidas */}
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <div style={{ fontSize: "9.5px", fontWeight: 800, color: "#4B5563", textTransform: "uppercase", textAlign: "center" }}>
-              Zonas de Pérdida en Pista
+              {t("report.turnovers_court_title", "Zonas de Pérdida en Pista")}
             </div>
             <div
               style={{
@@ -1201,19 +1208,19 @@ function TeamTurnoversHeatmapComparison({ match, overview, homeLogo, awayLogo })
           {/* Tarjeta de Resumen y Desglose de Pérdidas */}
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <div style={{ background: "#F9FAFB", padding: "8px 10px", borderRadius: "6px", border: "1px solid #F3F4F6", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <span style={{ fontSize: "9px", fontWeight: 800, color: "#6B7280", textTransform: "uppercase" }}>Impacto en Posesión</span>
+              <span style={{ fontSize: "9px", fontWeight: 800, color: "#6B7280", textTransform: "uppercase" }}>{t("report.possession_impact", "Impacto en Posesión")}</span>
               <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
                 <span style={{ fontSize: "16px", fontWeight: 900, color: "#EF4444", fontFamily: "monospace" }}>{data.totalTurnovers}</span>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: "#374151" }}>balones cedidos</span>
+                <span style={{ fontSize: "10px", fontWeight: 700, color: "#374151" }}>{t("report.balls_lost", "balones cedidos")}</span>
               </div>
               <span style={{ fontSize: "8.5px", color: "#6B7280" }}>
-                Representa el <strong>{data.possLostPct}%</strong> de los ataques del equipo.
+                {t("report.poss_lost_desc", { pct: data.possLostPct, defaultValue: `Representa el ${data.possLostPct}% de los ataques del equipo.` })}
               </span>
             </div>
 
             {/* Tipos de Pérdida más Frecuentes */}
             <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-              <span style={{ fontSize: "8.5px", fontWeight: 800, color: "#4B5563", textTransform: "uppercase" }}>Tipología Frecuente:</span>
+              <span style={{ fontSize: "8.5px", fontWeight: 800, color: "#4B5563", textTransform: "uppercase" }}>{t("report.frequent_typology", "Tipología Frecuente:")}</span>
               {topTypes.length > 0 ? (
                 topTypes.map(([type, count], idx) => (
                   <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FFFFFF", border: "1px solid #E5E7EB", padding: "3px 6px", borderRadius: "4px", fontSize: "9px" }}>
@@ -1222,7 +1229,7 @@ function TeamTurnoversHeatmapComparison({ match, overview, homeLogo, awayLogo })
                   </div>
                 ))
               ) : (
-                <div style={{ fontSize: "8.5px", color: "#9CA3AF", fontStyle: "italic" }}>Sin pérdidas registradas</div>
+                <div style={{ fontSize: "8.5px", color: "#9CA3AF", fontStyle: "italic" }}>{t("report.no_turnovers", "Sin pérdidas registradas")}</div>
               )}
             </div>
           </div>
@@ -1245,6 +1252,7 @@ function TeamTurnoversHeatmapComparison({ match, overview, homeLogo, awayLogo })
  * y el Gráfico de Flujo de Momentum Dinámico del Partido.
  */
 function PDFScoreProgressionAndMomentum({ metrics, match, overview }) {
+  const { t } = useTranslation();
   const homeTeam = overview?.homeTeam || "Equipo Local";
   const awayTeam = overview?.awayTeam || "Equipo Visitante";
 
@@ -1359,7 +1367,7 @@ function PDFScoreProgressionAndMomentum({ metrics, match, overview }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F3F4F6", paddingBottom: "5px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "10.5px", fontWeight: 900, color: "#111827", textTransform: "uppercase", fontFamily: "'Raleway', 'Montserrat', sans-serif" }}>
-              Evolución del Marcador (Goles por Minuto)
+              {t("report.score_progression_title", "Evolución del Marcador (Goles por Minuto)")}
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "9px", fontWeight: 800 }}>
@@ -1458,12 +1466,12 @@ function PDFScoreProgressionAndMomentum({ metrics, match, overview }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F3F4F6", paddingBottom: "5px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "10.5px", fontWeight: 900, color: "#111827", textTransform: "uppercase", fontFamily: "'Raleway', 'Montserrat', sans-serif" }}>
-              Flujo de Momentum del Partido (Curva de Dominio)
+              {t("report.momentum_flow_title", "Flujo de Momentum del Partido (Curva de Dominio)")}
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "9px", fontWeight: 800 }}>
-            <span style={{ color: "#12843A" }}>▲ Dominio {homeTeam} (+{limitBound})</span>
-            <span style={{ color: "#2563EB" }}>▼ Dominio {awayTeam} (-{limitBound})</span>
+            <span style={{ color: "#12843A" }}>▲ {t("report.dominance", "Dominio")} {homeTeam} (+{limitBound})</span>
+            <span style={{ color: "#2563EB" }}>▼ {t("report.dominance", "Dominio")} {awayTeam} (-{limitBound})</span>
           </div>
         </div>
 
@@ -1535,6 +1543,7 @@ function PDFScoreProgressionAndMomentum({ metrics, match, overview }) {
  * Diseñado para ocupar su propia página completa con máxima claridad y legibilidad.
  */
 function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overview, logoUrl }) {
+  const { t } = useTranslation();
   const sorted = [...playersList].sort((a, b) => (parseInt(a.number, 10) || 0) - (parseInt(b.number, 10) || 0));
 
   const renderRatingBadge = (rating) => {
@@ -1608,11 +1617,11 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
             {teamName}
           </span>
           <span style={{ fontSize: "9px", fontWeight: 800, color: color, background: `${color}14`, border: `1px solid ${color}30`, padding: "2px 8px", borderRadius: "4px" }}>
-            {isAway ? "PLANTILLA VISITANTE" : "PLANTILLA LOCAL"}
+            {isAway ? t("report.roster_away", "PLANTILLA VISITANTE") : t("report.roster_home", "PLANTILLA LOCAL")}
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "14px", fontSize: "9.5px", fontWeight: 800, color: "#4B5563" }}>
-          <span>{sorted.length} Jugadores</span>
+          <span>{sorted.length} {t("report.players_count", "Jugadores")}</span>
         </div>
       </div>
 
@@ -1621,17 +1630,17 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
         <thead>
           <tr style={{ background: "#F9FAFB", borderBottom: "1.5px solid #E5E7EB", color: "#374151", fontSize: "8.5px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
             <th style={{ padding: "6px 8px", textAlign: "left" }}>#</th>
-            <th style={{ padding: "6px 8px", textAlign: "left" }}>Jugador</th>
-            <th style={{ padding: "6px 8px", textAlign: "left" }}>Rol</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>G / T</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>% Efic.</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>xG</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>Portería (P/T)</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>% Parada</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>xSaves</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>Pérdidas</th>
-            <th style={{ padding: "6px 8px", textAlign: "center" }}>2 Min</th>
-            <th style={{ padding: "6px 8px", textAlign: "right" }}>Rating</th>
+            <th style={{ padding: "6px 8px", textAlign: "left" }}>{t("players_table.col_name", "Jugador")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "left" }}>{t("players_table.col_role", "Rol")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("report.th_goals_shots", "G / T")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("report.th_eff", "% Efic.")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("players_table.col_xg", "xG")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("report.th_gk_saves_shots", "Portería (P/T)")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("report.th_save_pct", "% Parada")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("players_table.col_xsaves", "xSaves")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("players_table.col_turnovers", "Pérdidas")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("players_table.col_2min", "2 Min")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "right" }}>{t("players_table.col_rating", "Rating")}</th>
           </tr>
         </thead>
         <tbody>
@@ -1647,7 +1656,7 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
               <td style={{ padding: "5px 8px", fontWeight: 800, color: "#111827" }}>{p.name}</td>
               <td style={{ padding: "5px 8px", color: "#6B7280" }}>
                 <span style={{ fontSize: "8px", background: p.isGoalkeeper ? "rgba(245, 158, 11, 0.12)" : "rgba(107, 114, 128, 0.10)", color: p.isGoalkeeper ? "#D97706" : "#4B5563", padding: "1px 5px", borderRadius: "3px", fontWeight: 700 }}>
-                  {p.isGoalkeeper ? "Portero" : "Jugador"}
+                  {p.isGoalkeeper ? t("players_table.role_gk", "Portero") : t("players_table.role_player", "Jugador")}
                 </span>
               </td>
               <td style={{ padding: "5px 8px", textAlign: "center", fontWeight: 800, color: p.goals > 0 ? "#111827" : "#9CA3AF" }}>
@@ -1684,7 +1693,7 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
         <tfoot>
           <tr style={{ background: "#F3F4F6", borderTop: "2px solid #E5E7EB", fontWeight: 900, color: "#111827", fontSize: "9px" }}>
             <td colSpan={3} style={{ padding: "6px 8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              TOTALES EQUIPO
+              {t("report.team_totals", "TOTALES EQUIPO")}
             </td>
             <td style={{ padding: "6px 8px", textAlign: "center" }}>{totalGoals}/{totalShots}</td>
             <td style={{ padding: "6px 8px", textAlign: "center", color: color }}>{teamEff}%</td>
@@ -1707,11 +1716,13 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
  * Diseñado con estética integrada y alineada al Design System de HandStats.
  */
 export function ReportStatsView({ metrics, match }) {
+  const { t, i18n } = useTranslation();
   if (!metrics) return null;
 
   const { overview } = metrics;
-  const dateStr = match?.date ? new Date(match.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" }) : "Fecha oficial";
-  const formattedLongDate = match?.date ? new Date(match.date).toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "Fecha oficial";
+  const currentLocale = i18n.language || "es";
+  const dateStr = match?.date ? new Date(match.date).toLocaleDateString(currentLocale, { day: "2-digit", month: "short", year: "numeric" }) : t("common.official_date", "Fecha oficial");
+  const formattedLongDate = match?.date ? new Date(match.date).toLocaleDateString(currentLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : t("common.official_date", "Fecha oficial");
 
   const { user } = useAuth() || {};
 
@@ -1792,13 +1803,13 @@ export function ReportStatsView({ metrics, match }) {
   const isAwayWinner = overview.awayGoals > overview.homeGoals;
 
   // Cálculo de estadísticas por las 6 zonas de lanzamiento requeridas
-  const teamZoneStats = getTeamShotZonesData(match);
+  const teamZoneStats = getTeamShotZonesData(match, t);
 
   // Cálculo de estadísticas por Fases de Juego (Posicional y 1ª Oleada)
-  const gamePhaseStats = getGamePhaseStatsData(match);
+  const gamePhaseStats = getGamePhaseStatsData(match, t);
 
   // Cálculo de estadísticas por Situaciones Numéricas (Igualdad, Superioridad e Inferioridad)
-  const situationStats = getNumericalSituationStatsData(match);
+  const situationStats = getNumericalSituationStatsData(match, t);
 
   // Estado de descarga automática
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -1826,8 +1837,8 @@ export function ReportStatsView({ metrics, match }) {
   const PRESETS = [
     {
       id: "all",
-      label: "Informe Integral Completo",
-      tag: "10 MÓDULOS",
+      label: t("report.preset_all", "Informe Integral Completo"),
+      tag: t("report.tag_10_modules", "10 MÓDULOS"),
       tagColor: "#10b981",
       icon: <IconStar size={16} color="#10b981" />,
       config: {
@@ -1845,8 +1856,8 @@ export function ReportStatsView({ metrics, match }) {
     },
     {
       id: "executive",
-      label: "Resumen Ejecutivo",
-      tag: "5 MÓDULOS",
+      label: t("report.preset_executive", "Resumen Ejecutivo"),
+      tag: t("report.tag_5_modules", "5 MÓDULOS"),
       tagColor: "#3b82f6",
       icon: <IconFileText size={16} color="#3b82f6" />,
       config: {
@@ -1864,8 +1875,8 @@ export function ReportStatsView({ metrics, match }) {
     },
     {
       id: "tactical",
-      label: "Especial Táctica & Fases",
-      tag: "7 MÓDULOS",
+      label: t("report.preset_tactical", "Especial Táctica & Fases"),
+      tag: t("report.tag_7_modules", "7 MÓDULOS"),
       tagColor: "#8b5cf6",
       icon: <IconActivity size={16} color="#8b5cf6" />,
       config: {
@@ -1883,8 +1894,8 @@ export function ReportStatsView({ metrics, match }) {
     },
     {
       id: "players",
-      label: "Plantilla & Tiros",
-      tag: "6 MÓDULOS",
+      label: t("report.preset_players", "Plantilla & Tiros"),
+      tag: t("report.tag_6_modules", "6 MÓDULOS"),
       tagColor: "#ec4899",
       icon: <IconUsers size={16} color="#ec4899" />,
       config: {
@@ -1902,8 +1913,8 @@ export function ReportStatsView({ metrics, match }) {
     },
     {
       id: "mandatoryOnly",
-      label: "Solo Módulos Obligatorios",
-      tag: "3 MÓDULOS",
+      label: t("report.preset_mandatory", "Solo Módulos Obligatorios"),
+      tag: t("report.tag_3_modules", "3 MÓDULOS"),
       tagColor: "#6b7280",
       icon: <IconLock size={16} color="#6b7280" />,
       config: {
@@ -2144,70 +2155,70 @@ export function ReportStatsView({ metrics, match }) {
 
   // Datos para la comparativa general obligatoria
   const compItems = [
-    { label: "Goles Anotados", homeValue: overview.homeGoals, awayValue: overview.awayGoals },
-    { label: "Expected Goals (xG)", homeValue: overview.homeXG, awayValue: overview.awayXG },
-    { label: "Eficiencia Ofensiva (%)", homeValue: overview.homeOffEfficiency, awayValue: overview.awayOffEfficiency, homeFormatter: (v) => `${v}%`, awayFormatter: (v) => `${v}%` },
-    { label: "Eficiencia Defensiva (%)", homeValue: overview.homeDefEfficiency, awayValue: overview.awayDefEfficiency, homeFormatter: (v) => `${v}%`, awayFormatter: (v) => `${v}%` },
-    { label: "Posesiones Totales (Nº Ataques)", homeValue: overview.homePossCount, awayValue: overview.awayPossCount, homeFormatter: (v) => `${v} pos`, awayFormatter: (v) => `${v} pos` },
-    { label: "Promedio Tiempo por Posesión", homeValue: overview.homeAvgPossDuration, awayValue: overview.awayAvgPossDuration, homeFormatter: (v) => `${v}s`, awayFormatter: (v) => `${v}s` },
-    { label: "Paradas Portería (%)", homeValue: overview.homeGKSavePct, awayValue: overview.awayGKSavePct, homeFormatter: (v) => `${v}%`, awayFormatter: (v) => `${v}%` },
-    { label: "Expected Saves (xSaves)", homeValue: overview.homeGKExpectedSaves, awayValue: overview.awayGKExpectedSaves },
-    { label: "Pérdidas de Balón", homeValue: overview.homeTurnovers, awayValue: overview.awayTurnovers },
-    { label: "Rebotes Ofensivos", homeValue: overview.homeOffRebounds, awayValue: overview.awayOffRebounds },
-    { label: "Rebotes Defensivos", homeValue: overview.homeDefRebounds, awayValue: overview.awayDefRebounds },
-    { label: "Golpes Franco", homeValue: overview.homeFreeThrows, awayValue: overview.awayFreeThrows },
-    { label: "Exclusiones (2 Min)", homeValue: overview.home2Min, awayValue: overview.away2Min }
+    { label: t("dashboard.charts.metric_goals", "Goles Anotados"), homeValue: overview.homeGoals, awayValue: overview.awayGoals },
+    { label: t("dashboard.charts.metric_xg", "Expected Goals (xG)"), homeValue: overview.homeXG, awayValue: overview.awayXG },
+    { label: t("dashboard.charts.metric_off_eff", "Eficiencia Ofensiva (%)"), homeValue: overview.homeOffEfficiency, awayValue: overview.awayOffEfficiency, homeFormatter: (v) => `${v}%`, awayFormatter: (v) => `${v}%` },
+    { label: t("dashboard.charts.metric_def_eff", "Eficiencia Defensiva (%)"), homeValue: overview.homeDefEfficiency, awayValue: overview.awayDefEfficiency, homeFormatter: (v) => `${v}%`, awayFormatter: (v) => `${v}%` },
+    { label: t("dashboard.charts.metric_possessions", "Posesiones Totales (Nº Ataques)"), homeValue: overview.homePossCount, awayValue: overview.awayPossCount, homeFormatter: (v) => `${v} pos`, awayFormatter: (v) => `${v} pos` },
+    { label: t("dashboard.charts.metric_poss_time", "Promedio Tiempo por Posesión"), homeValue: overview.homeAvgPossDuration, awayValue: overview.awayAvgPossDuration, homeFormatter: (v) => `${v}s`, awayFormatter: (v) => `${v}s` },
+    { label: t("dashboard.charts.metric_saves_pct", "Paradas Portería (%)"), homeValue: overview.homeGKSavePct, awayValue: overview.awayGKSavePct, homeFormatter: (v) => `${v}%`, awayFormatter: (v) => `${v}%` },
+    { label: t("dashboard.charts.metric_xsaves", "Expected Saves (xSaves)"), homeValue: overview.homeGKExpectedSaves, awayValue: overview.awayGKExpectedSaves },
+    { label: t("dashboard.charts.metric_turnovers", "Pérdidas de Balón"), homeValue: overview.homeTurnovers, awayValue: overview.awayTurnovers },
+    { label: t("dashboard.charts.metric_off_rebounds", "Rebotes Ofensivos"), homeValue: overview.homeOffRebounds, awayValue: overview.awayOffRebounds },
+    { label: t("dashboard.charts.metric_def_rebounds", "Rebotes Defensivos"), homeValue: overview.homeDefRebounds, awayValue: overview.awayDefRebounds },
+    { label: t("dashboard.charts.metric_free_throws", "Golpes Franco"), homeValue: overview.homeFreeThrows, awayValue: overview.awayFreeThrows },
+    { label: t("dashboard.charts.metric_2min", "Exclusiones (2 Min)"), homeValue: overview.home2Min, awayValue: overview.away2Min }
   ];
 
   // Lista de definición de campos opcionales para el configurador
   const optionalSectionsConfig = [
     {
       key: "teamAnalysis",
-      tag: "ZONAS",
-      label: "Análisis del Equipo (Tiros por Zona)",
-      desc: "Comparativa de lanzamientos, goles, eficacia y volumen por zonas: Extremo, Primera Línea (9m), Pivote, Penetración, Contraataque y 7 Metros.",
+      tag: t("report.sec_zones_tag", "ZONAS"),
+      label: t("report.sec_team_label", "Análisis del Equipo (Tiros por Zona)"),
+      desc: t("report.sec_team_desc", "Comparativa de lanzamientos, goles, eficacia y volumen por zonas: Extremo, Primera Línea (9m), Pivote, Penetración, Contraataque y 7 Metros."),
       icon: <IconShield size={18} color="#10b981" />
     },
     {
       key: "gamePhaseAnalysis",
-      tag: "FASES",
-      label: "Análisis de Fases de Juego",
-      desc: "Tiros, goles, % gol, 7 metros, pérdidas y % de ataque en juego posicional y contraataque / 1ª oleada.",
+      tag: t("report.sec_phases_tag", "FASES"),
+      label: t("report.sec_phases_label", "Análisis de Fases de Juego"),
+      desc: t("report.sec_phases_desc", "Tiros, goles, % gol, 7 metros, pérdidas y % de ataque en juego posicional y contraataque / 1ª oleada."),
       icon: <IconActivity size={18} color="#3b82f6" />
     },
     {
       key: "numericalSituationAnalysis",
-      tag: "TÁCTICA",
-      label: "Análisis de Situaciones Numéricas",
-      desc: "Tiros, goles, % gol, 7 metros, pérdidas y % de ataque en igualdad, superioridad e inferioridad.",
+      tag: t("report.sec_tactics_tag", "TÁCTICA"),
+      label: t("report.sec_situations_label", "Análisis de Situaciones Numéricas"),
+      desc: t("report.sec_situations_desc", "Tiros, goles, % gol, 7 metros, pérdidas y % de ataque en igualdad, superioridad e inferioridad."),
       icon: <IconUsers size={18} color="#8b5cf6" />
     },
     {
       key: "shotDistribution",
-      tag: "MAPAS",
-      label: "Distribución de Lanzamientos (Mapas de Calor)",
-      desc: "Mapas de calor térmicos de lanzamientos en pista y en portería por equipo (sin marcadores y sin pérdidas).",
+      tag: t("report.sec_heatmaps_tag", "MAPAS"),
+      label: t("report.sec_shots_label", "Distribución de Lanzamientos (Mapas de Calor)"),
+      desc: t("report.sec_shots_desc", "Mapas de calor térmicos de lanzamientos en pista y en portería por equipo (sin marcadores y sin pérdidas)."),
       icon: <IconTarget size={18} color="#06b6d4" />
     },
     {
       key: "turnovers",
-      tag: "PÉRDIDAS",
-      label: "Pérdidas de Balón (Mapas de Calor)",
-      desc: "Mapas de calor térmicos de pérdidas de balón en pista por equipo (sin marcadores y sin tiros).",
+      tag: t("report.sec_turnovers_tag", "PÉRDIDAS"),
+      label: t("report.sec_turnovers_label", "Pérdidas de Balón (Mapas de Calor)"),
+      desc: t("report.sec_turnovers_desc", "Mapas de calor térmicos de pérdidas de balón en pista por equipo (sin marcadores y sin tiros)."),
       icon: <IconTurnover size={18} color="#ef4444" />
     },
     {
       key: "scoreProgression",
-      tag: "DINÁMICAS",
-      label: "Progresión del Marcador & Momentum",
-      desc: "Gráfico de evolución temporal del marcador (Step-Chart) y gráfico de flujo de momentum de dominio.",
+      tag: t("report.sec_dynamics_tag", "DINÁMICAS"),
+      label: t("report.sec_score_label", "Progresión del Marcador & Momentum"),
+      desc: t("report.sec_score_desc", "Gráfico de evolución temporal del marcador (Step-Chart) y gráfico de flujo de momentum de dominio."),
       icon: <IconTrendingUp size={18} color="#f59e0b" />
     },
     {
       key: "playerDetails",
-      tag: "INDIVIDUAL",
-      label: "Detalle de Jugadores & Ratings",
-      desc: "Tablas completas de estadísticas individuales de la plantilla, porteros y ratings técnicos.",
+      tag: t("report.sec_individual_tag", "INDIVIDUAL"),
+      label: t("report.sec_players_label", "Detalle de Jugadores & Ratings"),
+      desc: t("report.sec_players_desc", "Tablas completas de estadísticas individuales de la plantilla, porteros y ratings técnicos."),
       icon: <IconBarChart size={18} color="#ec4899" />
     }
   ];
@@ -2225,7 +2236,7 @@ export function ReportStatsView({ metrics, match }) {
           <div className="hs-report-header-top">
             <span className="hs-report-badge">
               <IconFileText size={12} color="var(--brand-primary)" />
-              GENERADOR DE INFORMES PDF
+              {t("report.title", "GENERADOR DE INFORMES PDF")}
             </span>
             <span className="hs-report-match-context">
               {overview.homeTeam} vs {overview.awayTeam} • {dateStr}
@@ -2233,25 +2244,25 @@ export function ReportStatsView({ metrics, match }) {
           </div>
 
           <h2 className="hs-report-title">
-            Configuración y Exportación de Informe Técnico
+            {t("report.title", "Configuración y Exportación de Informe Técnico")}
           </h2>
 
           <p className="hs-report-subtitle">
-            Selecciona una plantilla de análisis o configura de forma granular los bloques analíticos requeridos para generar el informe oficial del partido.
+            {t("report.subtitle", "Selecciona una plantilla de análisis o configura de forma granular los bloques analíticos requeridos para generar el informe oficial del partido.")}
           </p>
 
           <div className="hs-report-meta-tags">
             <span className="hs-report-meta-tag">
               <IconCheck size={11} color="var(--brand-primary)" strokeWidth={3} />
-              Formato Vectorial A4
+              {t("report.meta_a4", "Formato Vectorial A4")}
             </span>
             <span className="hs-report-meta-tag">
               <IconCheck size={11} color="var(--brand-primary)" strokeWidth={3} />
-              Resolución 300 DPI Ultra HD
+              {t("report.meta_dpi", "Resolución 300 DPI Ultra HD")}
             </span>
             <span className="hs-report-meta-tag">
               <IconCheck size={11} color="var(--brand-primary)" strokeWidth={3} />
-              Certificado Oficial HandStats
+              {t("report.meta_cert", "Certificado Oficial HandStats")}
             </span>
           </div>
         </div>
@@ -2264,7 +2275,7 @@ export function ReportStatsView({ metrics, match }) {
             onClick={handleSelectAll}
             style={{ fontWeight: 800 }}
           >
-            Seleccionar Todos (10)
+            {t("report.select_all", { count: 10, defaultValue: "Seleccionar Todos (10)" })}
           </button>
 
           <button
@@ -2288,12 +2299,12 @@ export function ReportStatsView({ metrics, match }) {
             {isGeneratingPdf ? (
               <>
                 <div style={{ width: "14px", height: "14px", border: "2px solid #ffffff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                <span>Generando PDF...</span>
+                <span>{t("report.generating_pdf", "Generando PDF...")}</span>
               </>
             ) : (
               <>
                 <IconDownload size={17} color="#ffffff" />
-                <span>Descargar PDF ({totalActive}/10)</span>
+                <span>{t("report.download_pdf", "Descargar PDF")} ({totalActive}/10)</span>
               </>
             )}
           </button>
@@ -2314,11 +2325,11 @@ export function ReportStatsView({ metrics, match }) {
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <IconLock size={16} color="var(--brand-primary)" />
                 <h4 style={{ margin: 0, fontSize: "0.86rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.5px", fontFamily: "var(--font-display)" }}>
-                  Módulos Básicos Obligatorios
+                  {t("report.mandatory_title", "Módulos Básicos Obligatorios")}
                 </h4>
               </div>
               <span style={{ fontSize: "10px", fontWeight: 900, color: "var(--brand-primary)", background: "var(--color-primary-subtle)", border: "1px solid var(--color-primary-border)", padding: "2px 8px", borderRadius: "var(--radius-full)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                Fijos en Documento
+                {t("report.fixed_in_doc", "Fijos en Documento")}
               </span>
             </div>
 
@@ -2340,10 +2351,10 @@ export function ReportStatsView({ metrics, match }) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                    Cabecera HandStats
+                    {t("report.mod_header_title", "Cabecera HandStats")}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: "1.3" }}>
-                    Datos corporativos web (<strong style={{ color: "var(--brand-primary)" }}>www.handstats.com</strong>) y metadatos.
+                    {t("report.mod_header_desc", "Datos corporativos web (www.handstats.com) y metadatos.")}
                   </div>
                 </div>
               </div>
@@ -2365,10 +2376,10 @@ export function ReportStatsView({ metrics, match }) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                    Resultado Oficial
+                    {t("report.mod_result_title", "Resultado Oficial")}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: "1.3" }}>
-                    Marcador final ({overview.homeGoals} - {overview.awayGoals}), equipos y dictamen del partido.
+                    {t("report.mod_result_desc", "Marcador final, equipos y dictamen del partido.")}
                   </div>
                 </div>
               </div>
@@ -2390,10 +2401,10 @@ export function ReportStatsView({ metrics, match }) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                    Comparativa General
+                    {t("report.mod_comp_title", "Comparativa General")}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: "1.3" }}>
-                    Goles, xG, eficiencias, posesiones, paradas y rebotes.
+                    {t("report.mod_comp_desc", "Goles, xG, eficiencias, posesiones, paradas y rebotes.")}
                   </div>
                 </div>
               </div>
@@ -2406,11 +2417,11 @@ export function ReportStatsView({ metrics, match }) {
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <IconCheckCircle size={16} color="var(--brand-primary)" />
                 <h4 style={{ margin: 0, fontSize: "0.86rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.5px", fontFamily: "var(--font-display)" }}>
-                  Módulos Tácticos & Analíticos Opcionales
+                  {t("report.optional_title", "Módulos Tácticos & Analíticos Opcionales")}
                 </h4>
               </div>
               <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700 }}>
-                Haz clic en cualquier tarjeta para activar o desactivar
+                {t("report.optional_hint", "Haz clic en cualquier tarjeta para activar o desactivar")}
               </span>
             </div>
 
@@ -2535,11 +2546,11 @@ export function ReportStatsView({ metrics, match }) {
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <IconZap size={16} color="var(--brand-primary)" />
                 <h4 style={{ margin: 0, fontSize: "0.85rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.5px", fontFamily: "var(--font-display)" }}>
-                  Plantillas de Informe
+                  {t("report.presets_title", "Plantillas de Informe")}
                 </h4>
               </div>
               <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)" }}>
-                Preconfiguraciones
+                {t("report.presets_subtitle", "Preconfiguraciones")}
               </span>
             </div>
 
@@ -2626,11 +2637,11 @@ export function ReportStatsView({ metrics, match }) {
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <IconFileCheck size={16} color="var(--brand-primary)" />
                 <h4 style={{ margin: 0, fontSize: "0.85rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.5px", fontFamily: "var(--font-display)" }}>
-                  Estado de Salida
+                  {t("report.output_status", "Estado de Salida")}
                 </h4>
               </div>
               <span style={{ fontSize: "10px", fontWeight: 900, color: "var(--brand-primary)", background: "var(--color-primary-subtle)", padding: "2px 8px", borderRadius: "10px" }}>
-                {totalActive} / 10 MÓDULOS
+                {totalActive} / 10 {t("report.modules_unit", "MÓDULOS")}
               </span>
             </div>
 
@@ -2662,10 +2673,10 @@ export function ReportStatsView({ metrics, match }) {
               {/* Detalle */}
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                 <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                  Cobertura Analítica
+                  {t("report.analytical_coverage", "Cobertura Analítica")}
                 </span>
                 <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                  {totalActive === 10 ? "Informe exhaustivo completo" : `${10 - totalActive} secciones omitidas`}
+                  {totalActive === 10 ? t("report.full_report", "Informe exhaustivo completo") : t("report.sections_omitted", { count: 10 - totalActive, defaultValue: `${10 - totalActive} secciones omitidas` })}
                 </span>
               </div>
             </div>
@@ -2673,19 +2684,19 @@ export function ReportStatsView({ metrics, match }) {
             {/* Especificaciones Técnicas */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.72rem" }}>
               <div style={{ background: "var(--bg-surface)", padding: "8px 10px", borderRadius: "var(--radius-xs)", border: "1px solid var(--border-color)" }}>
-                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>Formato</span>
+                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>{t("report.spec_format", "Formato")}</span>
                 <strong style={{ color: "var(--text-primary)" }}>PDF A4 Vectorial</strong>
               </div>
               <div style={{ background: "var(--bg-surface)", padding: "8px 10px", borderRadius: "var(--radius-xs)", border: "1px solid var(--border-color)" }}>
-                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>Resolución</span>
+                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>{t("report.spec_resolution", "Resolución")}</span>
                 <strong style={{ color: "var(--text-primary)" }}>300 DPI HD</strong>
               </div>
               <div style={{ background: "var(--bg-surface)", padding: "8px 10px", borderRadius: "var(--radius-xs)", border: "1px solid var(--border-color)" }}>
-                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>Páginas Est.</span>
-                <strong style={{ color: "var(--text-primary)" }}>{totalActive >= 8 ? "~3 Páginas" : "~2 Páginas"}</strong>
+                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>{t("report.spec_pages", "Páginas Est.")}</span>
+                <strong style={{ color: "var(--text-primary)" }}>{totalActive >= 8 ? t("report.pages_est_3", "~3 Páginas") : t("report.pages_est_2", "~2 Páginas")}</strong>
               </div>
               <div style={{ background: "var(--bg-surface)", padding: "8px 10px", borderRadius: "var(--radius-xs)", border: "1px solid var(--border-color)" }}>
-                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>Descarga</span>
+                <span style={{ color: "var(--text-muted)", display: "block", fontSize: "0.64rem", fontWeight: 700, textTransform: "uppercase" }}>{t("report.spec_engine", "Descarga")}</span>
                 <strong style={{ color: "var(--brand-primary)" }}>jsPDF Engine</strong>
               </div>
             </div>
@@ -2715,17 +2726,17 @@ export function ReportStatsView({ metrics, match }) {
                 {isGeneratingPdf ? (
                   <>
                     <div style={{ width: "16px", height: "16px", border: "2px solid #ffffff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                    <span>Generando y Descargando PDF...</span>
+                    <span>{t("report.generating_downloading", "Generando y Descargando PDF...")}</span>
                   </>
                 ) : (
                   <>
                     <IconDownload size={18} color="#ffffff" />
-                    <span>Descargar Informe PDF</span>
+                    <span>{t("report.download_report_btn", "Descargar Informe PDF")}</span>
                   </>
                 )}
               </div>
               <span style={{ fontSize: "10px", fontWeight: 600, opacity: 0.85 }}>
-                {isGeneratingPdf ? "Procesando documento oficial..." : "Descarga directa automática en formato PDF A4"}
+                {isGeneratingPdf ? t("report.processing_doc", "Procesando documento oficial...") : t("report.direct_download", "Descarga directa automática en formato PDF A4")}
               </span>
             </button>
           </div>
@@ -2745,7 +2756,7 @@ export function ReportStatsView({ metrics, match }) {
             }}
           >
             <IconShield size={16} color="var(--brand-primary)" />
-            <span>Documento oficial de análisis estructurado por <strong>HandStats</strong>.</span>
+            <span>{t("report.official_cert_msg", "Documento oficial de análisis estructurado por HandStats.")}</span>
           </div>
         </div>
       </div>
@@ -2797,7 +2808,7 @@ export function ReportStatsView({ metrics, match }) {
                     HANDSTATS
                   </span>
                   <span style={{ fontSize: "9.5px", fontWeight: 800, color: "#4B5563", letterSpacing: "0.6px", textTransform: "uppercase" }}>
-                    Plataforma Avanzada de Rendimiento y Análisis Técnico
+                    {t("report.app_tagline", "Plataforma Avanzada de Rendimiento y Análisis Técnico")}
                   </span>
                 </div>
               </div>
@@ -2814,7 +2825,7 @@ export function ReportStatsView({ metrics, match }) {
                     fontFamily: "'Raleway', 'Montserrat', sans-serif"
                   }}
                 >
-                  INFORME OFICIAL DE PARTIDO
+                  {t("report.official_match_report", "INFORME OFICIAL DE PARTIDO")}
                 </div>
                 <div style={{ fontSize: "11.5px", fontWeight: 800, color: "#12843A" }}>
                   {formattedLongDate}
@@ -2846,7 +2857,7 @@ export function ReportStatsView({ metrics, match }) {
                       {overview.homeTeam}
                     </span>
                     <span style={{ fontSize: "10.5px", fontWeight: 800, color: "#12843A", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      Equipo Local
+                      {t("report.team_home", "Equipo Local")}
                     </span>
                   </div>
                   <TeamLogoBadge name={overview.homeTeam} logoUrl={homeLogo} color="#12843A" isHome={true} />
@@ -2882,7 +2893,7 @@ export function ReportStatsView({ metrics, match }) {
                       {overview.awayTeam}
                     </span>
                     <span style={{ fontSize: "10.5px", fontWeight: 800, color: "#2563EB", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      Equipo Visitante
+                      {t("report.team_away", "Equipo Visitante")}
                     </span>
                   </div>
                 </div>
@@ -2895,9 +2906,9 @@ export function ReportStatsView({ metrics, match }) {
               ===================================================================== */}
           <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <PDFSectionHeader
-              title="Comparativa de Datos Generales"
-              subtitle="Balance global de métricas ofensivas, defensivas y posesiones"
-              tag="Obligatorio"
+              title={t("report.section_gen_comp_title", "Comparativa de Datos Generales")}
+              subtitle={t("report.section_gen_comp_sub", "Balance global de métricas ofensivas, defensivas y posesiones")}
+              tag={t("report.section_mandatory_tag", "Obligatorio")}
               tagColor="#12843A"
             />
             <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -2917,9 +2928,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.teamAnalysis && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title="Análisis del Equipo — Tiros por Zona"
-                subtitle="Volumen, goles y porcentaje de eficacia por sector de lanzamiento"
-                tag="Zonas de Tiro"
+                title={t("report.section_team_analysis_title", "Análisis del Equipo — Tiros por Zona")}
+                subtitle={t("report.section_team_analysis_sub", "Volumen, goles y porcentaje de eficacia por sector de lanzamiento")}
+                tag={t("report.section_team_analysis_tag", "Zonas de Tiro")}
                 tagColor="#10B981"
               />
               <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -2940,9 +2951,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.gamePhaseAnalysis && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title="Análisis de Fases de Juego"
-                subtitle="Ataque Posicional y Contraataque / 1ª Oleada (Tiros, Goles, 7m, Pérdidas y % Ataque)"
-                tag="Fases Tácticas"
+                title={t("report.section_phases_title", "Análisis de Fases de Juego")}
+                subtitle={t("report.section_phases_sub", "Ataque Posicional y Contraataque / 1ª Oleada (Tiros, Goles, 7m, Pérdidas y % Ataque)")}
+                tag={t("report.section_phases_tag", "Fases Tácticas")}
                 tagColor="#3B82F6"
               />
               <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -2961,9 +2972,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.numericalSituationAnalysis && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title="Análisis de Situaciones Numéricas"
-                subtitle="Rendimiento en Igualdad (6vs6), Superioridad (+1) e Inferioridad (-1)"
-                tag="Táctica Numérica"
+                title={t("report.section_situations_title", "Análisis de Situaciones Numéricas")}
+                subtitle={t("report.section_situations_sub", "Rendimiento en Igualdad (6vs6), Superioridad (+1) e Inferioridad (-1)")}
+                tag={t("report.section_situations_tag", "Táctica Numérica")}
                 tagColor="#8B5CF6"
               />
               <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -2982,9 +2993,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.shotDistribution && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title="Distribución de Lanzamientos — Mapas Térmicos"
-                subtitle="Densidad térmica de tiros en Media Pista y en Portería por equipo (Sin pérdidas)"
-                tag="Mapas de Calor"
+                title={t("report.section_heatmaps_title", "Distribución de Lanzamientos — Mapas Térmicos")}
+                subtitle={t("report.section_heatmaps_sub", "Densidad térmica de tiros en Media Pista y en Portería por equipo (Sin pérdidas)")}
+                tag={t("report.section_heatmaps_tag", "Mapas de Calor")}
                 tagColor="#06B6D4"
               />
               <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -3004,9 +3015,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.turnovers && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title="Pérdidas de Balón — Mapas Térmicos en Pista"
-                subtitle="Zonas de pérdida en pista y principales tipologías de error no forzado (Sin tiros)"
-                tag="Pérdidas de Balón"
+                title={t("report.section_turnovers_title", "Pérdidas de Balón — Mapas Térmicos en Pista")}
+                subtitle={t("report.section_turnovers_sub", "Zonas de pérdida en pista y principales tipologías de error no forzado (Sin tiros)")}
+                tag={t("report.section_turnovers_tag", "Pérdidas de Balón")}
                 tagColor="#EF4444"
               />
               <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -3026,9 +3037,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.scoreProgression && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title="Progresión del Marcador & Momentum"
-                subtitle="Evolución temporal del tanteador (Step-Chart cada 5') y Curva de Flujo de Dominio"
-                tag="Dinámica de Partido"
+                title={t("report.section_dynamics_title", "Progresión del Marcador & Momentum")}
+                subtitle={t("report.section_dynamics_sub", "Evolución temporal del tanteador (Step-Chart cada 5') y Curva de Flujo de Dominio")}
+                tag={t("report.section_dynamics_tag", "Dinámica de Partido")}
                 tagColor="#F59E0B"
               />
               <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", padding: "12px 14px", background: "#ffffff" }}>
@@ -3047,9 +3058,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.playerDetails && (
             <div className="hs-pdf-section" data-page-break-before="true" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title={`Detalle de Jugadores — ${overview.homeTeam}`}
-                subtitle="Estadísticas individuales de campo, rendimiento en portería y rating técnico"
-                tag="Plantilla Local"
+                title={t("report.section_players_title", { team: overview.homeTeam, defaultValue: `Detalle de Jugadores — ${overview.homeTeam}` })}
+                subtitle={t("report.section_players_sub", "Estadísticas individuales de campo, rendimiento en portería y rating técnico")}
+                tag={t("report.roster_home", "Plantilla Local")}
                 tagColor="#12843A"
               />
               <PDFSingleTeamPlayersTable
@@ -3069,9 +3080,9 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.playerDetails && (
             <div className="hs-pdf-section" data-page-break-before="true" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title={`Detalle de Jugadores — ${overview.awayTeam}`}
-                subtitle="Estadísticas individuales de campo, rendimiento en portería y rating técnico"
-                tag="Plantilla Visitante"
+                title={t("report.section_players_title", { team: overview.awayTeam, defaultValue: `Detalle de Jugadores — ${overview.awayTeam}` })}
+                subtitle={t("report.section_players_sub", "Estadísticas individuales de campo, rendimiento en portería y rating técnico")}
+                tag={t("report.roster_away", "Plantilla Visitante")}
                 tagColor="#2563EB"
               />
               <PDFSingleTeamPlayersTable
@@ -3087,8 +3098,8 @@ export function ReportStatsView({ metrics, match }) {
 
           {/* PIE DE PÁGINA */}
           <div style={{ marginTop: "12px", paddingTop: "8px", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", fontSize: "9.5px", color: "#9ca3af" }}>
-            <span>HandStats Analytics • www.handstats.com • Documento Confidencial</span>
-            <span>Generado el {new Date().toLocaleDateString("es-ES")}</span>
+            <span>HandStats Analytics • www.handstats.com • {t("report.confidential_doc", "Documento Confidencial")}</span>
+            <span>{t("report.generated_on", "Generado el")} {new Date().toLocaleDateString(i18n.language === "es" ? "es-ES" : i18n.language === "en" ? "en-US" : i18n.language === "de" ? "de-DE" : i18n.language === "fr" ? "fr-FR" : i18n.language === "da" ? "da-DK" : "pl-PL")}</span>
           </div>
         </div>
       </div>

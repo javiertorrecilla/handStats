@@ -6,6 +6,7 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { MatchProvider } from "./context/MatchContext";
 
+import "./i18n/i18n";
 import "./index.css";
 
 ReactDOM.createRoot(

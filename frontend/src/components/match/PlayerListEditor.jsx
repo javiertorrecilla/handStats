@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function PlayerListEditor({
   players,
   setPlayers,
   teamLabel,
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
 
@@ -16,7 +18,7 @@ export default function PlayerListEditor({
 
     const numberVal = parseInt(number, 10);
     if (players.some((p) => p.number === numberVal)) {
-      alert("Ya existe un jugador con ese dorsal.");
+      alert(t("create_match.dorsal_exists"));
       return;
     }
 
@@ -56,9 +58,9 @@ export default function PlayerListEditor({
     <div className="player-list-editor">
 
       <h4 style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>Jugadores — {teamLabel}</span>
+        <span>{t("create_match.players_label", { team: teamLabel })}</span>
         <span style={{ fontSize: "0.85rem", color: selectedCount > 16 ? "var(--accent-danger)" : "var(--text-muted)" }}>
-          Convocados: {selectedCount}/16
+          {t("create_match.called_up", { count: selectedCount })}
         </span>
       </h4>
 
@@ -66,9 +68,9 @@ export default function PlayerListEditor({
         <div className="player-table">
           <div className="player-table-header">
             <span className="col-select" style={{ width: 35, display: "inline-block" }}></span>
-            <span className="col-number">#</span>
-            <span className="col-name" style={{ width: "60%" }}>Nombre</span>
-            <span className="col-role" style={{ width: "20%", textAlign: "center" }}>Rol</span>
+            <span className="col-number">{t("create_match.col_number")}</span>
+            <span className="col-name" style={{ width: "60%" }}>{t("create_match.col_name")}</span>
+            <span className="col-role" style={{ width: "20%", textAlign: "center" }}>{t("create_match.col_role")}</span>
             <span className="col-action"></span>
           </div>
 
@@ -105,15 +107,15 @@ export default function PlayerListEditor({
                     userSelect: "none",
                   }}
                   onClick={() => handleToggleGoalkeeper(index)}
-                  title="Haz clic para cambiar rol"
+                  title={t("create_match.role_toggle_title")}
                 >
-                  {isGk ? "Portero" : "Jugador"}
+                  {isGk ? t("create_match.goalkeeper") : t("create_match.field_player")}
                 </span>
                 <button
                   type="button"
                   className="btn-remove"
                   onClick={() => handleRemove(index)}
-                  title="Eliminar jugador"
+                  title={t("create_match.remove_player_title")}
                 >
                   ✕
                 </button>
@@ -125,7 +127,7 @@ export default function PlayerListEditor({
 
       {players.length === 0 && (
         <p className="empty-players">
-          No hay jugadores añadidos. Añade manualmente o sube un PDF del acta.
+          {t("create_match.empty_players")}
         </p>
       )}
 
@@ -135,7 +137,7 @@ export default function PlayerListEditor({
           type="number"
           min="0"
           max="99"
-          placeholder="#"
+          placeholder={t("create_match.dorsal_placeholder")}
           value={number}
           onChange={(e) => setNumber(e.target.value)}
         />
@@ -143,13 +145,13 @@ export default function PlayerListEditor({
         <input
           className="input-field"
           type="text"
-          placeholder="Nombre del jugador"
+          placeholder={t("create_match.player_name_placeholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
 
         <button type="submit" className="btn btn-primary btn-sm">
-          Añadir
+          {t("create_match.add")}
         </button>
       </form>
     </div>

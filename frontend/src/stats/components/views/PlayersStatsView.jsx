@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MetricBadge } from "../common/MetricBadge";
 
 export function PlayersStatsView({ metrics, teamFilter = "home" }) {
+  const { t } = useTranslation();
+
   if (!metrics) return null;
 
   const { homePlayerStats, awayPlayerStats, overview } = metrics;
@@ -91,26 +94,26 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
   };
 
   const columns = [
-    { key: "number", label: "Dorsal" },
-    { key: "name", label: "Nombre" },
-    { key: "isGoalkeeper", label: "Rol" },
-    { key: "shotsCount", label: "Tiros Campo" },
-    { key: "goals", label: "Goles" },
-    { key: "xg", label: "xG Campo" },
-    { key: "goalkeeperShotsFaced", label: "Tiros Recibidos" },
-    { key: "goalkeeperSaves", label: "Paradas" },
-    { key: "goalkeeperXSaves", label: "xSaves" },
-    { key: "turnovers", label: "Pérdidas" },
-    { key: "twoMins", label: "2 Min" },
-    { key: "rating", label: "Rating" }
+    { key: "number", label: t("players_table.col_number", "Dorsal") },
+    { key: "name", label: t("players_table.col_name", "Nombre") },
+    { key: "isGoalkeeper", label: t("players_table.col_role", "Rol") },
+    { key: "shotsCount", label: t("players_table.col_shots", "Tiros Campo") },
+    { key: "goals", label: t("players_table.col_goals", "Goles") },
+    { key: "xg", label: t("players_table.col_xg", "xG Campo") },
+    { key: "goalkeeperShotsFaced", label: t("players_table.col_shots_faced", "Tiros Recibidos") },
+    { key: "goalkeeperSaves", label: t("players_table.col_saves", "Paradas") },
+    { key: "goalkeeperXSaves", label: t("players_table.col_xsaves", "xSaves") },
+    { key: "turnovers", label: t("players_table.col_turnovers", "Pérdidas") },
+    { key: "twoMins", label: t("players_table.col_2min", "2 Min") },
+    { key: "rating", label: t("players_table.col_rating", "Rating") }
   ];
 
   return (
     <div className="hs-view-container">
       <div className="hs-card">
-        <h4 className="hs-card-title">ESTADÍSTICAS INDIVIDUALES DE JUGADORES Y PORTEROS — {teamName}</h4>
+        <h4 className="hs-card-title">{t("players_table.title", { team: teamName, defaultValue: `ESTADÍSTICAS INDIVIDUALES DE JUGADORES Y PORTEROS — ${teamName}` })}</h4>
         <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", margin: "var(--space-4) 0 var(--space-12) 0" }}>
-          Haz clic en el título de cualquier columna para ordenarla de manera ascendente (▲) o descendente (▼).
+          {t("players_table.subtitle", "Haz clic en el título de cualquier columna para ordenarla de manera ascendente (▲) o descendente (▼).")}
         </p>
 
         <div className="hs-table-container">
@@ -122,7 +125,7 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
                     key={col.key}
                     onClick={() => handleSort(col.key)}
                     style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
-                    title={`Haz clic para ordenar por ${col.label}`}
+                    title={col.label}
                   >
                     {col.label} {renderSortIndicator(col.key)}
                   </th>
@@ -136,7 +139,7 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
                   <td><strong>{p.name}</strong></td>
                   <td>
                     <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                      {p.isGoalkeeper ? "Portero" : "Jugador"}
+                      {p.isGoalkeeper ? t("players_table.role_gk", "Portero") : t("players_table.role_player", "Jugador")}
                     </span>
                   </td>
 

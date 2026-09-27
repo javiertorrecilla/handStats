@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 
 function RegisterUserForm({ onRegisterSuccess }) {
+  const { t } = useTranslation();
   const { register } = useAuth();
 
   const [form, setForm] = useState({
@@ -29,11 +31,11 @@ function RegisterUserForm({ onRegisterSuccess }) {
       !form.password ||
       !form.confirmPassword
     ) {
-      return alert("Completa todos los campos.");
+      return alert(t("auth.fill_all_fields"));
     }
 
     if (form.password !== form.confirmPassword) {
-      return alert("Las contraseñas no coinciden.");
+      return alert(t("auth.passwords_dont_match"));
     }
 
     try {
@@ -52,16 +54,16 @@ function RegisterUserForm({ onRegisterSuccess }) {
 
   return (
     <form onSubmit={handleSubmit} className="auth-form">
-      <h2>Crear cuenta</h2>
+      <h2>{t("auth.register_title")}</h2>
 
       <div className="form-group">
-        <label htmlFor="register-name">Nombre completo</label>
+        <label htmlFor="register-name">{t("auth.full_name")}</label>
         <input
           id="register-name"
           className="input-field"
           type="text"
           name="name"
-          placeholder="Nombre Apellido"
+          placeholder={t("auth.full_name_placeholder")}
           value={form.name}
           onChange={handleChange}
           required
@@ -70,13 +72,13 @@ function RegisterUserForm({ onRegisterSuccess }) {
       </div>
 
       <div className="form-group">
-        <label htmlFor="register-email">Correo electrónico</label>
+        <label htmlFor="register-email">{t("auth.email")}</label>
         <input
           id="register-email"
           className="input-field"
           type="email"
           name="email"
-          placeholder="ejemplo@correo.com"
+          placeholder={t("auth.email_placeholder")}
           value={form.email}
           onChange={handleChange}
           required
@@ -85,13 +87,13 @@ function RegisterUserForm({ onRegisterSuccess }) {
       </div>
 
       <div className="form-group">
-        <label htmlFor="register-password">Contraseña</label>
+        <label htmlFor="register-password">{t("auth.password")}</label>
         <input
           id="register-password"
           className="input-field"
           type="password"
           name="password"
-          placeholder="Mínimo 6 caracteres"
+          placeholder={t("auth.password_hint")}
           value={form.password}
           onChange={handleChange}
           required
@@ -100,13 +102,13 @@ function RegisterUserForm({ onRegisterSuccess }) {
       </div>
 
       <div className="form-group">
-        <label htmlFor="register-confirmPassword">Repetir contraseña</label>
+        <label htmlFor="register-confirmPassword">{t("auth.confirm_password")}</label>
         <input
           id="register-confirmPassword"
           className="input-field"
           type="password"
           name="confirmPassword"
-          placeholder="Repite la contraseña"
+          placeholder={t("auth.confirm_password_placeholder")}
           value={form.confirmPassword}
           onChange={handleChange}
           required
@@ -119,7 +121,7 @@ function RegisterUserForm({ onRegisterSuccess }) {
         disabled={loading}
         type="submit"
       >
-        {loading ? "Creando cuenta..." : "Crear cuenta"}
+        {loading ? t("auth.registering") : t("auth.register_btn")}
       </button>
     </form>
   );

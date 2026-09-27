@@ -2,7 +2,7 @@ import React from "react";
 
 export function KPICard({ title, value, unit = "", delta, trend = "neutral", comparison = "", subtitle, icon }) {
   const getTrendColor = () => {
-    if (trend === "up") return "var(--color-primary)";
+    if (trend === "up") return "var(--color-accent, var(--color-primary))";
     if (trend === "down") return "var(--color-danger)";
     return "var(--text-muted)";
   };

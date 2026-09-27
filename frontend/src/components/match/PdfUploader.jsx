@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { pdfService } from "../../services/handstatsService";
 
 const IconUploadCloud = () => (
@@ -31,6 +32,7 @@ const IconSparkles = () => (
 );
 
 export default function PdfUploader({ onParsed }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -42,7 +44,7 @@ export default function PdfUploader({ onParsed }) {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setError("El archivo seleccionado no es un PDF válido. Por favor, selecciona el acta oficial en formato PDF.");
+      setError(t("pdf_uploader.invalid_file_error"));
       return;
     }
 
@@ -66,7 +68,7 @@ export default function PdfUploader({ onParsed }) {
       onParsed(result);
     } catch (err) {
       console.error(err);
-      setError("No se pudieron extraer automáticamente los datos del PDF. Intenta añadir los equipos y jugadores manualmente.");
+      setError(t("pdf_uploader.parse_error"));
     } finally {
       setLoading(false);
     }
@@ -121,8 +123,8 @@ export default function PdfUploader({ onParsed }) {
             <div className="pdf-status-loading">
               <div className="pdf-spinner" />
               <div className="pdf-loading-text">
-                <strong>Analizando acta de partido...</strong>
-                <span>Extrayendo equipos, dorsales y plantilla de convocados</span>
+                <strong>{t("pdf_uploader.analyzing_title")}</strong>
+                <span>{t("pdf_uploader.analyzing_subtitle")}</span>
               </div>
             </div>
           ) : parsedSummary ? (
@@ -133,10 +135,15 @@ export default function PdfUploader({ onParsed }) {
               <div className="pdf-success-info">
                 <div className="pdf-file-title">
                   <strong>{fileName}</strong>
-                  <span className="pdf-badge-success">Acta Leída</span>
+                  <span className="pdf-badge-success">{t("pdf_uploader.parsed_badge")}</span>
                 </div>
                 <p className="pdf-summary-text">
-                  {parsedSummary.homeTeam || "Local"} ({parsedSummary.homeCount} jug.) vs {parsedSummary.awayTeam || "Visitante"} ({parsedSummary.awayCount} jug.)
+                  {t("pdf_uploader.players_summary", {
+                    home: parsedSummary.homeTeam || t("common.home"),
+                    homeCount: parsedSummary.homeCount,
+                    away: parsedSummary.awayTeam || t("common.away"),
+                    awayCount: parsedSummary.awayCount
+                  })}
                 </p>
               </div>
               <button
@@ -147,7 +154,7 @@ export default function PdfUploader({ onParsed }) {
                   fileInputRef.current?.click();
                 }}
               >
-                Cambiar PDF
+                {t("pdf_uploader.change_pdf")}
               </button>
             </div>
           ) : (
@@ -157,15 +164,15 @@ export default function PdfUploader({ onParsed }) {
               </div>
               <div className="pdf-idle-text">
                 <div className="pdf-idle-headline">
-                  <strong>Arrastra el acta PDF del partido aquí</strong>
-                  <span className="pdf-browse-link">o examinar archivo</span>
+                  <strong>{t("pdf_uploader.drag_headline")}</strong>
+                  <span className="pdf-browse-link">{t("pdf_uploader.browse_link")}</span>
                 </div>
                 <p className="pdf-idle-sub">
-                  Detección automática de equipos y lista de convocados (Formatos Oficiales RFEBM)
+                  {t("pdf_uploader.drag_sub")}
                 </p>
               </div>
               <div className="pdf-ai-tag">
-                <IconSparkles /> Lectura Inteligente
+                <IconSparkles /> {t("pdf_uploader.smart_reading")}
               </div>
             </div>
           )}
