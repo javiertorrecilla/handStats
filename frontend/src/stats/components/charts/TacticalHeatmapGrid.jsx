@@ -8,6 +8,7 @@ import {
   generateContinuousCourtHeatmapData,
   generateContinuousGoalHeatmapData
 } from "../../engine/heatmapEngine";
+import { isEmptyNetEvent } from "../../engine/metricsEngine";
 import {
   IconBall,
   IconGlove,
@@ -25,12 +26,13 @@ export { isAwayEvent };
  * Helper para filtrar eventos por portero específico.
  */
 export function matchesGoalkeeper(e, selectedGkNumber) {
-  if (!selectedGkNumber || selectedGkNumber === "all") return true;
   if (!e) return false;
+  if (isEmptyNetEvent(e)) return false;
+  if (!selectedGkNumber || selectedGkNumber === "all") return true;
   if (e.goalkeeper_number !== undefined && e.goalkeeper_number !== null && e.goalkeeper_number !== 0) {
     return String(e.goalkeeper_number) === String(selectedGkNumber);
   }
-  return true;
+  return false;
 }
 
 /**
@@ -370,9 +372,16 @@ export function TacticalHeatmapGrid({
   // Si gkEvents está presente o isOpponent no está definido (por ejemplo, en TeamsPage acumulado), los eventos ya vienen 100% pre-filtrados para el equipo
   const isPreFiltered = Boolean(gkEvents) || isOpponent === null || isOpponent === undefined;
 
-  // Filtrar eventos de ataque en pista
+  // Filtrar eventos de juego en pista (excluyendo terminantemente sustituciones)
   const shots = useMemo(() => {
-    const rawEvents = events || [];
+    const rawEvents = (events || []).filter((e) => (
+      e.event_type !== "substitution" &&
+      e.event_type !== "cambio" &&
+      e.category !== "cambios" &&
+      e.category !== "cambio" &&
+      e.action_key !== "cambio" &&
+      e.action_key !== "substitution"
+    ));
     if (isPreFiltered) {
       return rawEvents;
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 // HandStats Match Analysis Page - Cleaned Icon Imports
 import {
   ArrowLeft as IconArrowLeft,
@@ -38,7 +38,8 @@ import {
   X as IconX,
   Swords as IconSwords,
   Info as IconInfo,
-  Target as IconTarget
+  Target as IconTarget,
+  ArrowLeftRight as IconSwap
 } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 import { useMatch } from "../../context/MatchContext";
@@ -46,7 +47,9 @@ import userService from "../../services/userService";
 import MatchStatsModule from "../../stats/MatchStatsModule";
 import LanguageSelector from "../common/LanguageSelector";
 import { getEventCategory, formatCourtZoneName, formatGoalZoneName } from "../../stats/engine/types";
+import { calculatePlayerPlayingSeconds, formatMinutesSeconds, isEmptyNetEvent } from "../../stats/engine/metricsEngine";
 import { calculateShotXG, calculateShotXSaves } from "../../stats/engine/xgModel";
+import { normalizeGoalZoneKey } from "../../services/settingsService";
 import isotipo from "../../assets/isotipo.png";
 import "./MatchAnalysisPage.css";
 
@@ -204,6 +207,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     sendMatchEvent,
     closePossession,
     undoLastEvent,
+    updatePlayers,
   } = useMatch();
 
   // Helper para traducir periodo
@@ -341,6 +345,34 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     return horiz;
   };
 
+  const getGoalZoneId = (coord, isPostAction = false, isOutAction = false) => {
+    if (!coord) return "TL";
+    const { x, y } = coord;
+
+    // Fuera: zonas exteriores
+    if (isOutAction || y < 11 || x < 8.5 || x > 91.5) {
+      if (y < 14) return "OA";
+      if (x < 15) return "OL";
+      return "OR";
+    }
+
+    // Postes y Larguero
+    if (isPostAction || (y >= 10 && y <= 18) || (x >= 8 && x <= 13) || (x >= 87 && x <= 92)) {
+      if (y >= 10 && y <= 18 && x >= 13 && x <= 87) return "TP";
+      if (x <= 13) return "LP";
+      if (x >= 87) return "RP";
+    }
+
+    // Zonas interiores de portería (cuadrícula 3x3)
+    if (y <= 45) {
+      return x < 38 ? "TL" : x > 62 ? "TR" : "TC";
+    }
+    if (y < 75) {
+      return x < 38 ? "ML" : x > 62 ? "MR" : "C";
+    }
+    return x < 38 ? "BL" : x > 62 ? "BR" : "BC";
+  };
+
   const handleCourtClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
@@ -389,13 +421,15 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     const isPost = activeActionFlow?.actionKey === "poste";
     const isOut = activeActionFlow?.actionKey === "fuera";
     const goalZone = getGoalZoneLabel({ x, y }, isPost, isOut);
+    const goalZoneId = getGoalZoneId({ x, y }, isPost, isOut);
 
     if (activeActionFlow && activeActionFlow.step === "AWAITING_GOAL_CLICK") {
       if (activeActionFlow.actionKey === "gol" || activeActionFlow.actionKey === "gol_7m" || activeActionFlow.actionKey === "fuera") {
         executeDirectAction({
           ...activeActionFlow,
           goalCoord: { x, y },
-          goalZone
+          goalZone,
+          goalZoneId
         });
         return;
       }
@@ -404,6 +438,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         ...prev,
         goalCoord: { x, y },
         goalZone,
+        goalZoneId,
         step: "AWAITING_REBOUND"
       }));
     }
@@ -470,6 +505,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
   const timerRef = useRef(null);
   const lastMatchIdRef = useRef(null);
   const lastPossessionsLengthRef = useRef(-1);
+  const timeRef = useRef(time);
+  useEffect(() => {
+    timeRef.current = time;
+  }, [time]);
   const isUndoingRef = useRef(null);
 
   // Estados para edición manual del tiempo
@@ -760,6 +799,20 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
           targetTime,
           eventTeam: lastEvent.team
         };
+
+        // Si el evento deshecho era un cambio (substitution), revertir la titularidad de los jugadores
+        if (lastEvent.event_type === "substitution" || lastEvent.action_key === "cambio") {
+          const team = lastEvent.team || (lastEvent.is_opponent_action ? "VISITANTE" : "LOCAL");
+          const setRoster = team === "LOCAL" ? setHomeRoster : setAwayRoster;
+          const playerInNum = lastEvent.player_in_number ?? lastEvent.player_in_id ?? lastEvent.player_number;
+          const playerOutNum = lastEvent.player_out_number ?? lastEvent.player_out_id;
+          if (playerInNum !== undefined && playerInNum !== null) {
+            setRoster(prevRoster => prevRoster.map(p => p.number === playerInNum ? { ...p, is_starter: false } : p));
+          }
+          if (playerOutNum !== undefined && playerOutNum !== null) {
+            setRoster(prevRoster => prevRoster.map(p => p.number === playerOutNum ? { ...p, is_starter: true } : p));
+          }
+        }
       }
     }
     await undoLastEvent();
@@ -850,6 +903,14 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       ...details,
     };
 
+    if (actionType === "shot") {
+      const canonicalZone = normalizeGoalZoneKey(details);
+      if (canonicalZone) {
+        eventData.target_zone = canonicalZone;
+        eventData.target_zone_id = canonicalZone;
+      }
+    }
+
     await sendMatchEvent(eventData, eventTime);
 
     // 2. Si la acción finaliza el ataque (Tiro o Pérdida), rotar posesión
@@ -920,22 +981,59 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     return { home, away };
   };
 
-  // Calcular automáticamente la situación numérica actual según exclusiones activas
+  // Exclusiones activas memoizadas para la situación en tiempo real
+  const activeSuspensions = useMemo(() => getActiveSuspensions(time) || { home: [], away: [] }, [currentMatch?.events, time]);
+  const homeExclusionsCount = activeSuspensions?.home?.length || 0;
+  const awayExclusionsCount = activeSuspensions?.away?.length || 0;
+
+  // Calcular automáticamente la situación numérica y táctica actual según exclusiones y portero jugador (7vs6 / 6vs6 sin portero)
   const getAutoNumericalSituation = (team = activePossession?.team || "LOCAL", atTime = time) => {
-    const activeSanc = getActiveSuspensions(atTime);
-    const homeCount = activeSanc.home.length;
-    const awayCount = activeSanc.away.length;
+    const activeSanc = atTime === time ? activeSuspensions : getActiveSuspensions(atTime);
+    const homeCount = activeSanc?.home?.length || 0;
+    const awayCount = activeSanc?.away?.length || 0;
 
     const isHome = team === "LOCAL";
-    if (isHome) {
-      if (homeCount > awayCount) return "Inferioridad";
-      if (homeCount < awayCount) return "Superioridad";
-      return "Igualdad";
-    } else {
-      if (awayCount > homeCount) return "Inferioridad";
-      if (awayCount < homeCount) return "Superioridad";
-      return "Igualdad";
+    const teamExcl = isHome ? homeCount : awayCount;
+    const oppExcl = isHome ? awayCount : homeCount;
+
+    // Verificar si el equipo en posesión tiene a un jugador de campo en el hueco de portería (portero jugador) o portería vacía
+    const assignedGkNum = isHome ? gkSlotAssignment?.LOCAL : gkSlotAssignment?.VISITANTE;
+    const isExplicitEmpty = isHome ? gkSlotAssignment?.LOCAL_EXPLICIT_EMPTY : gkSlotAssignment?.VISITANTE_EXPLICIT_EMPTY;
+    const roster = isHome ? homeRoster : awayRoster;
+
+    let hasFieldInGk = false;
+    let isEmptyNet = Boolean(isExplicitEmpty);
+
+    if (assignedGkNum !== null && assignedGkNum !== undefined) {
+      const assignedPlayer = (roster || []).find(p => p.number === assignedGkNum);
+      if (assignedPlayer && !isGk(assignedPlayer, roster || [])) {
+        hasFieldInGk = true;
+      }
+    } else if (!isExplicitEmpty) {
+      const starters = (roster || []).filter(p => p.is_starter);
+      const gkStarter = starters.find(p => isGk(p, roster || []));
+      if (!gkStarter) {
+        if (starters.length > 6) {
+          hasFieldInGk = true;
+        } else if (starters.length > 0) {
+          isEmptyNet = true;
+        }
+      }
     }
+
+    if (hasFieldInGk || isEmptyNet) {
+      if (teamExcl === 0) {
+        return "7vs6";
+      } else if (teamExcl === 1) {
+        return "6vs6 sin portero";
+      } else {
+        return "Inferioridad sin portero";
+      }
+    }
+
+    if (teamExcl > oppExcl) return "Inferioridad";
+    if (teamExcl < oppExcl) return "Superioridad";
+    return "Igualdad";
   };
 
   // Manejo de la selección de fase de juego en Lanzamientos
@@ -1165,6 +1263,127 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
   const [homeRoster, setHomeRoster] = useState([]);
   const [awayRoster, setAwayRoster] = useState([]);
 
+  // Helper para identificar si un jugador es portero
+  const isGk = (p, teamRoster = []) => {
+    if (!p) return false;
+    const posUpper = String(p.position || "").toUpperCase().trim();
+    if (
+      posUpper === "PORTERO" ||
+      posUpper === "POR" ||
+      posUpper.includes("PORTER") ||
+      posUpper.includes("GOALKEEPER") ||
+      p.is_goalkeeper === true ||
+      p.is_goalkeeper === "true" ||
+      p.isGoalkeeper === true
+    ) {
+      return true;
+    }
+    // Fallback: si en la plantilla nadie tiene la posición ni flag explícito de portero, usar dorsales clásicos de balonmano (1, 12, 16)
+    const list = (teamRoster && teamRoster.length > 0) ? teamRoster : (currentMatch?.home_players || []);
+    const anyExplicit = list.some(
+      x => {
+        if (!x) return false;
+        const xp = String(x.position || "").toUpperCase().trim();
+        return xp === "PORTERO" || xp === "POR" || xp.includes("PORTER") || xp.includes("GOALKEEPER") || x.is_goalkeeper === true || x.is_goalkeeper === "true" || x.isGoalkeeper === true;
+      }
+    );
+    if (!anyExplicit) {
+      return [1, 12, 16].includes(Number(p.number));
+    }
+    return false;
+  };
+
+  // Función para determinar el 7 inicial de balonmano: exactamente 1 portero + 6 de campo
+  const computeStartingSeven = (playersList) => {
+    if (!playersList || playersList.length === 0) return [];
+
+    const checkGk = (p) => isGk(p, playersList);
+    const gks = playersList.filter(checkGk);
+    const fieldPlayers = playersList.filter(p => !checkGk(p));
+
+    // 1. Determinar exactamente 1 portero titular:
+    // a) El portero que tenga initial_starter === true o is_starter === true
+    // b) O el primer portero de la plantilla
+    let starterGkNum = null;
+    const explicitGk = gks.find(p => p.initial_starter === true || p.is_starter === true);
+    if (explicitGk) {
+      starterGkNum = explicitGk.number;
+    } else if (gks.length > 0) {
+      // Si no hay portero explícito, comprobar si alguno recibió lanzamientos en los eventos
+      const events = currentMatch?.events || [];
+      const gkShotCounts = {};
+      gks.forEach(g => { gkShotCounts[g.number] = 0; });
+      events.forEach(e => {
+        const gn = Number(e.goalkeeper_number ?? e.goalkeeper_id);
+        if (gkShotCounts[gn] !== undefined) {
+          gkShotCounts[gn] += 1;
+        }
+      });
+      const gkWithMostShots = gks.slice().sort((a, b) => (gkShotCounts[b.number] || 0) - (gkShotCounts[a.number] || 0))[0];
+      if (gkWithMostShots && (gkShotCounts[gkWithMostShots.number] || 0) > 0) {
+        starterGkNum = gkWithMostShots.number;
+      } else {
+        starterGkNum = gks[0].number;
+      }
+    } else {
+      // Si gks está vacío: comprobar si algún jugador ha actuado como portero en los eventos
+      const events = currentMatch?.events || [];
+      const gkShotCounts = {};
+      playersList.forEach(g => { gkShotCounts[g.number] = 0; });
+      events.forEach(e => {
+        const gn = Number(e.goalkeeper_number ?? e.goalkeeper_id);
+        if (gkShotCounts[gn] !== undefined) {
+          gkShotCounts[gn] += 1;
+        }
+      });
+      const mostShotsPlayer = playersList.slice().find(p => (gkShotCounts[p.number] || 0) > 0);
+      if (mostShotsPlayer) {
+        starterGkNum = mostShotsPlayer.number;
+      }
+    }
+
+    // 2. Determinar exactamente 6 jugadores de campo titulares:
+    // a) Jugadores de campo con initial_starter === true o is_starter === true (hasta 6)
+    // b) Rellenar con los primeros jugadores de campo disponibles
+    const starterFieldNums = new Set();
+    const explicitFields = fieldPlayers.filter(p => p.initial_starter === true || p.is_starter === true);
+    for (const p of explicitFields) {
+      if (starterFieldNums.size < 6) {
+        starterFieldNums.add(p.number);
+      }
+    }
+    for (const p of fieldPlayers) {
+      if (starterFieldNums.size < 6 && !starterFieldNums.has(p.number)) {
+        starterFieldNums.add(p.number);
+      }
+    }
+
+    // 3. Conjunto final de los 7 titulares (1 portero + 6 de campo)
+    const starterSet = new Set();
+    if (starterGkNum !== null) starterSet.add(starterGkNum);
+    starterFieldNums.forEach(n => starterSet.add(n));
+
+    // Si aún faltan titulares por plantilla reducida (< 7 jugadores):
+    if (starterSet.size < 7) {
+      for (const p of playersList) {
+        if (starterSet.size >= 7) break;
+        starterSet.add(p.number);
+      }
+    }
+
+    return playersList.map(p => {
+      const isStarter = starterSet.has(p.number);
+      const isGoalkeeper = checkGk(p) || (starterGkNum !== null && p.number === starterGkNum);
+      return {
+        ...p,
+        is_goalkeeper: isGoalkeeper,
+        position: isGoalkeeper ? (p.position || "PORTERO") : (p.position || "JUGADOR"),
+        is_starter: isStarter,
+        initial_starter: isStarter
+      };
+    });
+  };
+
   useEffect(() => {
     const rawHome = (currentMatch.home_players && currentMatch.home_players.length > 0)
       ? currentMatch.home_players
@@ -1185,7 +1404,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         { number: 22, name: "G. Díaz", position: "LÍNEA" }
       ];
 
-    setHomeRoster(rawHome.map((p, idx) => ({ ...p, is_starter: p.is_starter ?? (idx < 7) })));
+    setHomeRoster(computeStartingSeven(rawHome));
 
     const rawAway = (currentMatch.away_players && currentMatch.away_players.length > 0)
       ? currentMatch.away_players
@@ -1206,26 +1425,196 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         { number: 18, name: "Á. Vega", position: "LÍNEA" }
       ];
 
-    setAwayRoster(rawAway.map((p, idx) => ({ ...p, is_starter: p.is_starter ?? (idx < 7) })));
+    setAwayRoster(computeStartingSeven(rawAway));
   }, [currentMatch.id, currentMatch.home_players, currentMatch.away_players]);
 
-  // Filtrado estricto por campo
-  // 1. PORTEROS: Solo jugadores con posición PORTERO/POR o is_goalkeeper
-  const isGk = (p) => p.position === "PORTERO" || p.position === "POR" || p.is_goalkeeper;
+  // CONFIGURACIÓN TÁCTICA ESPECIAL (Especialista Defensivo y 7 vs 6)
+  const [tacticalConfig, setTacticalConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`tactical_config_${currentMatch?.id}`);
+      if (saved) return JSON.parse(saved);
+    } catch (e) { }
+    return {
+      LOCAL: {
+        atqDefEnabled: false,
+        atqPlayerNumber: null,
+        defPlayerNumber: null,
+        sevenVSixEnabled: false,
+        sevenVSixFieldPlayerNumber: null,
+        sevenVSixGkNumber: null,
+      },
+      VISITANTE: {
+        atqDefEnabled: false,
+        atqPlayerNumber: null,
+        defPlayerNumber: null,
+        sevenVSixEnabled: false,
+        sevenVSixFieldPlayerNumber: null,
+        sevenVSixGkNumber: null,
+      }
+    };
+  });
 
-  const homeGoalkeepers = homeRoster.filter(p => isGk(p) && p.is_starter);
-  const homeActiveGk = homeGoalkeepers.length > 0
-    ? homeGoalkeepers.slice(0, 1)
-    : (homeRoster.filter(isGk).length > 0 ? homeRoster.filter(isGk).slice(0, 1) : homeRoster.slice(0, 1));
-  const homeFieldStarters = homeRoster.filter(p => p.is_starter && !homeActiveGk.some(gk => gk.number === p.number)).slice(0, 6);
-  const homeBenchPlayers = homeRoster.filter(p => !homeActiveGk.some(gk => gk.number === p.number) && !homeFieldStarters.some(s => s.number === p.number));
+  const [editingTacticalTeam, setEditingTacticalTeam] = useState(null);
+  const [gkSlotAssignment, setGkSlotAssignment] = useState({
+    LOCAL: null,
+    LOCAL_EXPLICIT_EMPTY: false,
+    VISITANTE: null,
+    VISITANTE_EXPLICIT_EMPTY: false
+  });
+  const [tacticalForm, setTacticalForm] = useState({
+    atqDefEnabled: false,
+    atqPlayerNumber: null,
+    defPlayerNumber: null,
+    sevenVSixEnabled: false,
+    sevenVSixFieldPlayerNumber: null,
+    sevenVSixGkNumber: null,
+  });
 
-  const awayGoalkeepers = awayRoster.filter(p => isGk(p) && p.is_starter);
-  const awayActiveGk = awayGoalkeepers.length > 0
-    ? awayGoalkeepers.slice(0, 1)
-    : (awayRoster.filter(isGk).length > 0 ? awayRoster.filter(isGk).slice(0, 1) : awayRoster.slice(0, 1));
-  const awayFieldStarters = awayRoster.filter(p => p.is_starter && !awayActiveGk.some(gk => gk.number === p.number)).slice(0, 6);
-  const awayBenchPlayers = awayRoster.filter(p => !awayActiveGk.some(gk => gk.number === p.number) && !awayFieldStarters.some(s => s.number === p.number));
+  const handleOpenTacticalModal = (team) => {
+    setEditingTacticalTeam(team);
+    const existing = tacticalConfig[team] || {
+      atqDefEnabled: false,
+      atqPlayerNumber: null,
+      defPlayerNumber: null,
+      sevenVSixEnabled: false,
+      sevenVSixFieldPlayerNumber: null,
+      sevenVSixGkNumber: null,
+    };
+    setTacticalForm({ ...existing });
+  };
+
+  // Alineación activa del EQUIPO LOCAL (soporta portero jugador manual y portería vacía)
+  const homeStarters = useMemo(() => homeRoster.filter(p => p.is_starter), [homeRoster]);
+  const homeGkStarter = useMemo(() => homeStarters.find(p => isGk(p, homeRoster)), [homeStarters, homeRoster]);
+
+  const { homeActiveGk, homeFieldStarters, homeBenchPlayers } = useMemo(() => {
+    let activeGk = [];
+    let fieldStarters = [];
+
+    const assignedNum = gkSlotAssignment.LOCAL;
+    const assignedPlayer = assignedNum !== null && assignedNum !== undefined
+      ? homeRoster.find(p => p.number === assignedNum)
+      : null;
+
+    if (assignedPlayer) {
+      activeGk = [assignedPlayer];
+      fieldStarters = homeStarters.filter(p => p.number !== assignedPlayer.number);
+    } else if (assignedNum === null && gkSlotAssignment.LOCAL_EXPLICIT_EMPTY) {
+      activeGk = [];
+      fieldStarters = homeStarters;
+    } else if (homeGkStarter) {
+      activeGk = [homeGkStarter];
+      fieldStarters = homeStarters.filter(p => p.number !== homeGkStarter.number);
+    } else if (homeStarters.length > 6) {
+      activeGk = [homeStarters[homeStarters.length - 1]];
+      fieldStarters = homeStarters.slice(0, homeStarters.length - 1);
+    } else {
+      activeGk = [];
+      fieldStarters = homeStarters;
+    }
+
+    const bench = homeRoster.filter(p => !p.is_starter && (!assignedPlayer || p.number !== assignedPlayer.number));
+    return { homeActiveGk: activeGk, homeFieldStarters: fieldStarters, homeBenchPlayers: bench };
+  }, [homeStarters, homeGkStarter, homeRoster, gkSlotAssignment]);
+
+  // Alineación activa del EQUIPO VISITANTE (soporta portero jugador manual y portería vacía)
+  const awayStarters = useMemo(() => awayRoster.filter(p => p.is_starter), [awayRoster]);
+  const awayGkStarter = useMemo(() => awayStarters.find(p => isGk(p, awayRoster)), [awayStarters, awayRoster]);
+
+  const { awayActiveGk, awayFieldStarters, awayBenchPlayers } = useMemo(() => {
+    let activeGk = [];
+    let fieldStarters = [];
+
+    const assignedNum = gkSlotAssignment.VISITANTE;
+    const assignedPlayer = assignedNum !== null && assignedNum !== undefined
+      ? awayRoster.find(p => p.number === assignedNum)
+      : null;
+
+    if (assignedPlayer) {
+      activeGk = [assignedPlayer];
+      fieldStarters = awayStarters.filter(p => p.number !== assignedPlayer.number);
+    } else if (assignedNum === null && gkSlotAssignment.VISITANTE_EXPLICIT_EMPTY) {
+      activeGk = [];
+      fieldStarters = awayStarters;
+    } else if (awayGkStarter) {
+      activeGk = [awayGkStarter];
+      fieldStarters = awayStarters.filter(p => p.number !== awayGkStarter.number);
+    } else if (awayStarters.length > 6) {
+      activeGk = [awayStarters[awayStarters.length - 1]];
+      fieldStarters = awayStarters.slice(0, awayStarters.length - 1);
+    } else {
+      activeGk = [];
+      fieldStarters = awayStarters;
+    }
+
+    const bench = awayRoster.filter(p => !p.is_starter && (!assignedPlayer || p.number !== assignedPlayer.number));
+    return { awayActiveGk: activeGk, awayFieldStarters: fieldStarters, awayBenchPlayers: bench };
+  }, [awayStarters, awayGkStarter, awayRoster, gkSlotAssignment]);
+
+  // Estado para modal de ajuste manual de minutos
+  const [editingMinutesTeam, setEditingMinutesTeam] = useState(null);
+  const [manualMinutesForm, setManualMinutesForm] = useState({});
+  const [isSavingMinutes, setIsSavingMinutes] = useState(false);
+
+  // Helper para abrir modal de ajuste manual de minutos
+  const handleOpenAdjustMinutes = (team) => {
+    const isAway = team === "VISITANTE";
+    const currentRoster = isAway ? awayRoster : homeRoster;
+    const initialForm = {};
+    currentRoster.forEach(p => {
+      if (p.minutes_played !== undefined && p.minutes_played !== null && !isNaN(p.minutes_played)) {
+        initialForm[p.number] = p.minutes_played;
+      } else {
+        const secs = calculatePlayerPlayingSeconds(p, currentMatch?.events || [], isAway, time, currentRoster);
+        initialForm[p.number] = Math.round((secs / 60) * 10) / 10;
+      }
+    });
+    setManualMinutesForm(initialForm);
+    setEditingMinutesTeam(team);
+  };
+
+  const handleSaveAdjustedMinutes = async () => {
+    if (!editingMinutesTeam) return;
+    setIsSavingMinutes(true);
+    try {
+      const isAway = editingMinutesTeam === "VISITANTE";
+      const targetRoster = isAway ? awayRoster : homeRoster;
+      const updatedRoster = targetRoster.map(p => {
+        const val = manualMinutesForm[p.number];
+        return {
+          ...p,
+          minutes_played: val !== "" && val !== undefined && val !== null ? Number(val) : null
+        };
+      });
+
+      if (isAway) {
+        setAwayRoster(updatedRoster);
+        await updatePlayers(currentMatch.home_players, updatedRoster);
+      } else {
+        setHomeRoster(updatedRoster);
+        await updatePlayers(updatedRoster, currentMatch.away_players);
+      }
+      setEditingMinutesTeam(null);
+    } catch (err) {
+      console.error("Error guardando minutos ajustados:", err);
+      alert(t("mesa_control.error_saving_minutes", "Error al guardar los minutos. Inténtalo de nuevo."));
+    } finally {
+      setIsSavingMinutes(false);
+    }
+  };
+
+  // Cálculo en tiempo real de minutos jugados para insignias de la alineación
+  const getPlayerMinutesBadge = (player, isOpponent) => {
+    const roster = isOpponent ? awayRoster : homeRoster;
+    const secs = calculatePlayerPlayingSeconds(
+      player,
+      currentMatch?.events || [],
+      isOpponent,
+      time,
+      roster
+    );
+    return formatMinutesSeconds(secs);
+  };
 
   // Cálculo en tiempo real de exclusiones activas (2 minutos = 120 segundos)
   const activeExclusions = useMemo(() => {
@@ -1279,6 +1668,463 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     }
   }, [activeExclusions, selectedPlayer]);
 
+  const lastTransitionStateRef = useRef({ LOCAL: null, VISITANTE: null });
+  const isApplyingTacticsRef = useRef(false);
+  const isSubmittingSubRef = useRef(false);
+  const lastActiveGkRef = useRef({ LOCAL: null, VISITANTE: null });
+
+  // Sincronizar el portero titular/activo real bajo palos para cada equipo
+  useEffect(() => {
+    if (homeActiveGk && homeActiveGk.length > 0 && isGk(homeActiveGk[0], homeRoster)) {
+      lastActiveGkRef.current.LOCAL = homeActiveGk[0].number;
+    }
+  }, [homeActiveGk, homeRoster]);
+
+  useEffect(() => {
+    if (awayActiveGk && awayActiveGk.length > 0 && isGk(awayActiveGk[0], awayRoster)) {
+      lastActiveGkRef.current.VISITANTE = awayActiveGk[0].number;
+    }
+  }, [awayActiveGk, awayRoster]);
+
+  // Aplicar transiciones tácticas automáticas según el equipo que pasa a tener la posesión
+  const applyTacticalTransitionForTeam = useCallback(async (teamName, isAttacking) => {
+    if (isApplyingTacticsRef.current) return;
+    const config = tacticalConfig[teamName];
+    if (!config) return;
+
+    // Si ya estamos en ese estado táctico para el equipo, evitar duplicar el cambio
+    if (lastTransitionStateRef.current[teamName] === isAttacking) {
+      return;
+    }
+
+    const isAway = teamName === "VISITANTE";
+    const currentRoster = isAway ? awayRoster : homeRoster;
+    const setRoster = isAway ? setAwayRoster : setHomeRoster;
+
+    let updatedRoster = [...currentRoster];
+    let changesMade = false;
+    const subEvents = [];
+
+    // Helper para realizar el intercambio entre dos números de dorsal
+    const executeSwap = (numIn, numOut, reason) => {
+      if (!numIn || !numOut || numIn === numOut) return;
+      const pIn = updatedRoster.find(p => p.number === numIn);
+      const pOut = updatedRoster.find(p => p.number === numOut);
+      if (!pIn || !pOut) return;
+
+      // REGLA INFALIBLE: pIn DEBE ser suplente (en banquillo) y pOut DEBE ser titular (en pista)
+      // Si pIn ya está en pista o pOut ya está en el banquillo, no procede ningún cambio
+      if (pIn.is_starter || !pOut.is_starter) return;
+
+      // Verificar si el jugador que va a entrar tiene una exclusión activa de 2 min
+      if (activeExclusions[`${teamName}_${pIn.number}`]) return;
+
+      updatedRoster = updatedRoster.map(p => {
+        if (p.number === pIn.number) return { ...p, is_starter: true };
+        if (p.number === pOut.number) return { ...p, is_starter: false };
+        return p;
+      });
+      changesMade = true;
+
+      subEvents.push({
+        playerIn: pIn,
+        playerOut: pOut,
+        reason
+      });
+    };
+
+    // 1. ESPECIALISTA DEFENSIVO (Ataque-Defensa)
+    if (
+      config.atqDefEnabled &&
+      config.atqPlayerNumber &&
+      config.defPlayerNumber &&
+      Number(config.atqPlayerNumber) !== Number(config.defPlayerNumber)
+    ) {
+      const atqNum = Number(config.atqPlayerNumber);
+      const defNum = Number(config.defPlayerNumber);
+      if (isAttacking) {
+        // En ataque: entra el especialista de ataque (atqNum), sale el defensor (defNum)
+        executeSwap(
+          atqNum,
+          defNum,
+          `Cambio táctico Ataque: Entra #${atqNum}, Sale #${defNum}`
+        );
+      } else {
+        // En defensa: entra el especialista defensivo (defNum), sale el atacante (atqNum)
+        executeSwap(
+          defNum,
+          atqNum,
+          `Cambio táctico Defensa: Entra #${defNum}, Sale #${atqNum}`
+        );
+      }
+    }
+
+    if (changesMade) {
+      isApplyingTacticsRef.current = true;
+      lastTransitionStateRef.current[teamName] = isAttacking;
+      setRoster(updatedRoster);
+
+      const currentSeconds = timeRef.current ?? time;
+      // Registrar eventos de sustitución para el cálculo exacto de minutos jugados
+      for (const sub of subEvents) {
+        await sendMatchEvent({
+          event_type: "substitution",
+          action_key: "cambio",
+          category: "cambios",
+          result: "Cambio",
+          player_id: sub.playerIn.number,
+          player_number: sub.playerIn.number,
+          player_name: sub.playerIn.name,
+          player_in_id: sub.playerIn.number,
+          player_in_number: sub.playerIn.number,
+          player_in_name: sub.playerIn.name,
+          player_out_id: sub.playerOut.number,
+          player_out_number: sub.playerOut.number,
+          player_out_name: sub.playerOut.name,
+          team: teamName,
+          is_opponent_action: isAway,
+          match_time_seconds: currentSeconds,
+          description: sub.reason
+        }, currentSeconds);
+      }
+      setTimeout(() => {
+        isApplyingTacticsRef.current = false;
+      }, 200);
+    } else {
+      lastTransitionStateRef.current[teamName] = isAttacking;
+    }
+  }, [tacticalConfig, awayRoster, homeRoster, activeExclusions, sendMatchEvent]);
+
+  // Listener para transiciones tácticas automáticas cuando cambia la posesión
+  const lastPossessionTeamRef = useRef(activePossession?.team);
+  useEffect(() => {
+    const currentTeam = activePossession?.team;
+    const prevTeam = lastPossessionTeamRef.current;
+
+    if (currentTeam && currentTeam !== prevTeam) {
+      lastPossessionTeamRef.current = currentTeam;
+      // El equipo con posesión pasa a atacar; el equipo sin posesión pasa a defender
+      applyTacticalTransitionForTeam("LOCAL", currentTeam === "LOCAL");
+      applyTacticalTransitionForTeam("VISITANTE", currentTeam === "VISITANTE");
+    }
+  }, [activePossession?.team, applyTacticalTransitionForTeam]);
+
+  // Manejador rápido para cambiar la táctica directamente desde la columna del equipo sin modales
+  const handleQuickTacticalChange = (teamName, field, value) => {
+    let nextAll = null;
+    setTacticalConfig(prev => {
+      const currentTeamCfg = prev[teamName] || {
+        atqDefEnabled: false,
+        atqPlayerNumber: null,
+        defPlayerNumber: null,
+        sevenVSixEnabled: false,
+        sevenVSixFieldPlayerNumber: null,
+        sevenVSixGkNumber: null,
+      };
+
+      const updatedTeamCfg = {
+        ...currentTeamCfg,
+        [field]: value
+      };
+
+      const isAway = teamName === "VISITANTE";
+      const roster = isAway ? awayRoster : homeRoster;
+      const gks = roster.filter(p => isGk(p, roster));
+
+      // Si se activa 7v6, registrar el portero si aún no estaba asignado
+      if (field === "sevenVSixEnabled" && value === true) {
+        if (!updatedTeamCfg.sevenVSixGkNumber && gks.length > 0) {
+          const lastNum = lastActiveGkRef.current[teamName];
+          const activeOrRememberedGk = (lastNum && gks.find(p => p.number === lastNum)) || gks.find(p => p.is_starter) || gks[0];
+          updatedTeamCfg.sevenVSixGkNumber = activeOrRememberedGk.number;
+        }
+      }
+
+      nextAll = {
+        ...prev,
+        [teamName]: updatedTeamCfg
+      };
+      return nextAll;
+    });
+
+    try {
+      if (nextAll) localStorage.setItem(`tactical_config_${currentMatch?.id}`, JSON.stringify(nextAll));
+    } catch (e) { }
+
+    const curTeam = activePossession?.team || "LOCAL";
+    applyTacticalTransitionForTeam(teamName, curTeam === teamName);
+  };
+
+  // Invertir atacante y defensor con 1 solo clic
+  const handleSwapAtqDefPlayers = (teamName) => {
+    let nextAll = null;
+    setTacticalConfig(prev => {
+      const cfg = prev[teamName];
+      if (!cfg || !cfg.atqPlayerNumber || !cfg.defPlayerNumber) return prev;
+      const updatedTeamCfg = {
+        ...cfg,
+        atqPlayerNumber: cfg.defPlayerNumber,
+        defPlayerNumber: cfg.atqPlayerNumber
+      };
+      nextAll = { ...prev, [teamName]: updatedTeamCfg };
+      return nextAll;
+    });
+
+    try {
+      if (nextAll) localStorage.setItem(`tactical_config_${currentMatch?.id}`, JSON.stringify(nextAll));
+    } catch (e) { }
+
+    const curTeam = activePossession?.team || "LOCAL";
+    applyTacticalTransitionForTeam(teamName, curTeam === teamName);
+  };
+
+  // Renderizado del Cambio Táctico Automático Ataque / Defensa por equipo
+  const renderQuickTacticsBar = (teamName) => {
+    const isAway = teamName === "VISITANTE";
+    const roster = isAway ? awayRoster : homeRoster;
+    const config = tacticalConfig[teamName] || {
+      atqDefEnabled: false,
+      atqPlayerNumber: null,
+      defPlayerNumber: null
+    };
+
+    const isAtqDefOn = Boolean(config.atqDefEnabled);
+    const isTeamAttacking = activePossession?.team === teamName;
+
+    return (
+      <div className={`mp-atqdef-box ${isAway ? "is-away" : "is-home"} ${isAtqDefOn ? "is-active" : ""}`}>
+        {/* Cabecera */}
+        <div className="mp-atqdef-header">
+          <div className="mp-atqdef-title-group">
+            <span className="mp-atqdef-title">{t("atq_def_title_short", "Ataque / Defensa")}</span>
+          </div>
+
+          <div className="mp-atqdef-actions">
+            <label className="mp-atqdef-switch" title={isAtqDefOn ? "Desactivar cambio ataque / defensa" : "Activar cambio ataque / defensa"}>
+              <input
+                type="checkbox"
+                checked={isAtqDefOn}
+                onChange={() => handleQuickTacticalChange(teamName, "atqDefEnabled", !isAtqDefOn)}
+              />
+              <span className="mp-atqdef-slider" />
+            </label>
+          </div>
+        </div>
+
+        {/* Panel de botones y selectores (siempre visible cuando está activado) */}
+        {isAtqDefOn && (
+          <div className="mp-atqdef-body">
+            {/* Jugador de Ataque */}
+            <div className={`mp-atqdef-player-row ${isTeamAttacking ? "active-court" : "on-bench"}`}>
+              <span className="mp-atqdef-tag atq">ATQ</span>
+              <select
+                className="mp-atqdef-select"
+                value={config.atqPlayerNumber ?? ""}
+                onChange={(e) => handleQuickTacticalChange(teamName, "atqPlayerNumber", e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">Seleccionar atacante...</option>
+                {roster.filter(p => !isGk(p, roster)).map(p => (
+                  <option key={p.number} value={p.number}>
+                    #{p.number} {p.name || `Jugador ${p.number}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Especialista Defensivo */}
+            <div className={`mp-atqdef-player-row ${!isTeamAttacking ? "active-court" : "on-bench"}`}>
+              <span className="mp-atqdef-tag def">DEF</span>
+              <select
+                className="mp-atqdef-select"
+                value={config.defPlayerNumber ?? ""}
+                onChange={(e) => handleQuickTacticalChange(teamName, "defPlayerNumber", e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">Seleccionar defensor...</option>
+                {roster.filter(p => !isGk(p, roster)).map(p => (
+                  <option key={p.number} value={p.number}>
+                    #{p.number} {p.name || `Jugador ${p.number}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Guardar configuración táctica
+  const handleSaveTacticalConfig = (newConfig) => {
+    setTacticalConfig(newConfig);
+    try {
+      localStorage.setItem(`tactical_config_${currentMatch?.id}`, JSON.stringify(newConfig));
+    } catch (e) { }
+    const teamEdited = editingTacticalTeam;
+    setEditingTacticalTeam(null);
+
+    // Aplicar inmediatamente la configuración al estado de posesión en juego
+    const curTeam = activePossession?.team || "LOCAL";
+    setTimeout(() => {
+      if (teamEdited) {
+        applyTacticalTransitionForTeam(teamEdited, curTeam === teamEdited);
+      }
+    }, 50);
+  };
+
+  // Vaciar portería manualmente (quitar al portero / jugador de portería)
+  const handleToggleEmptyNet = (team) => {
+    const isAway = team === "VISITANTE";
+    const activeGkList = isAway ? awayActiveGk : homeActiveGk;
+    const currentGk = activeGkList[0];
+    if (!currentGk) return;
+
+    const roster = isAway ? awayRoster : homeRoster;
+    if (isGk(currentGk, roster)) {
+      lastActiveGkRef.current[team] = currentGk.number;
+    }
+
+    const setRoster = isAway ? setAwayRoster : setHomeRoster;
+    setRoster(prev => prev.map(p => p.number === currentGk.number ? {
+      ...p,
+      is_starter: false,
+      ...(time === 0 ? { initial_starter: false } : {})
+    } : p));
+    setGkSlotAssignment(prev => ({
+      ...prev,
+      [team]: null,
+      [`${team}_EXPLICIT_EMPTY`]: true
+    }));
+
+    sendMatchEvent({
+      event_type: "substitution",
+      action_key: "cambio",
+      category: "cambios",
+      result: "Cambio",
+      player_out_id: currentGk.number,
+      player_out_number: currentGk.number,
+      player_out_name: currentGk.name,
+      team,
+      is_opponent_action: isAway,
+      match_time_seconds: time,
+      description: `Sale #${currentGk.number} (Portería Vacía)`
+    }, time);
+
+    setSelectedPlayer(null);
+  };
+
+  // Restaurar portero en portería (recordando al portero activo previo y retirando a jugadores de campo si estaban en portería)
+  const handleRestoreGoalkeeper = (team) => {
+    const isAway = team === "VISITANTE";
+    const roster = isAway ? awayRoster : homeRoster;
+    const activeGkList = isAway ? awayActiveGk : homeActiveGk;
+    const currentSlotPlayer = activeGkList[0];
+    const isFieldPlayerInGoal = currentSlotPlayer && !isGk(currentSlotPlayer, roster);
+
+    const lastActiveNum = lastActiveGkRef.current[team];
+    const rememberedGk = lastActiveNum ? roster.find(p => p.number === lastActiveNum) : null;
+    const benchGks = roster.filter(p => isGk(p, roster) && !p.is_starter);
+    const starterGk = roster.find(p => isGk(p, roster) && p.is_starter) || roster.find(p => isGk(p, roster));
+    const targetGk = (rememberedGk && !rememberedGk.is_starter)
+      ? rememberedGk
+      : (benchGks.length > 0 ? (rememberedGk || benchGks[0]) : starterGk);
+
+    if (!targetGk) return;
+
+    lastActiveGkRef.current[team] = targetGk.number;
+
+    const setRoster = isAway ? setAwayRoster : setHomeRoster;
+    setRoster(prev => prev.map(p => {
+      if (p.number === targetGk.number) return { ...p, is_starter: true, ...(time === 0 ? { initial_starter: true } : {}) };
+      if (isFieldPlayerInGoal && p.number === currentSlotPlayer.number) return { ...p, is_starter: false, ...(time === 0 ? { initial_starter: false } : {}) };
+      return p;
+    }));
+
+    setGkSlotAssignment(prev => ({
+      ...prev,
+      [team]: targetGk.number,
+      [`${team}_EXPLICIT_EMPTY`]: false
+    }));
+
+    sendMatchEvent({
+      event_type: "substitution",
+      action_key: "cambio",
+      category: "cambios",
+      result: "Cambio",
+      player_in_id: targetGk.number,
+      player_in_number: targetGk.number,
+      player_in_name: targetGk.name,
+      player_out_id: isFieldPlayerInGoal ? currentSlotPlayer.number : null,
+      player_out_number: isFieldPlayerInGoal ? currentSlotPlayer.number : null,
+      player_out_name: isFieldPlayerInGoal ? currentSlotPlayer.name : null,
+      team,
+      is_opponent_action: isAway,
+      match_time_seconds: time,
+      description: isFieldPlayerInGoal
+        ? `Entra portero #${targetGk.number} ⇄ Sale #${currentSlotPlayer.number}`
+        : `Entra portero #${targetGk.number}`
+    }, time);
+
+    setSelectedPlayer(null);
+  };
+
+  // Asignar jugador al hueco de portería vacía al hacer clic en él
+  const handleEmptyNetSlotClick = (team) => {
+    if (selectedPlayer && selectedPlayer.team === team) {
+      const isAway = team === "VISITANTE";
+      const roster = isAway ? awayRoster : homeRoster;
+      const setRoster = isAway ? setAwayRoster : setHomeRoster;
+      const activeGkList = isAway ? awayActiveGk : homeActiveGk;
+      const currentGk = activeGkList[0];
+
+      if (currentGk && isGk(currentGk, roster)) {
+        lastActiveGkRef.current[team] = currentGk.number;
+      }
+      if (isGk(selectedPlayer, roster)) {
+        lastActiveGkRef.current[team] = selectedPlayer.number;
+      }
+
+      const wasOnBench = !selectedPlayer.is_starter;
+      setRoster(prev => prev.map(p => {
+        if (p.number === selectedPlayer.number) return { ...p, is_starter: true, ...(time === 0 ? { initial_starter: true } : {}) };
+        if (currentGk && p.number === currentGk.number && currentGk.number !== selectedPlayer.number) {
+          return { ...p, is_starter: false, ...(time === 0 ? { initial_starter: false } : {}) };
+        }
+        return p;
+      }));
+
+      setGkSlotAssignment(prev => ({
+        ...prev,
+        [team]: selectedPlayer.number,
+        [`${team}_EXPLICIT_EMPTY`]: false
+      }));
+
+      sendMatchEvent({
+        event_type: "substitution",
+        action_key: "cambio",
+        category: "cambios",
+        result: "Cambio",
+        player_in_id: wasOnBench ? selectedPlayer.number : null,
+        player_in_number: wasOnBench ? selectedPlayer.number : null,
+        player_in_name: wasOnBench ? selectedPlayer.name : null,
+        player_out_id: currentGk && currentGk.number !== selectedPlayer.number ? currentGk.number : null,
+        player_out_number: currentGk && currentGk.number !== selectedPlayer.number ? currentGk.number : null,
+        player_out_name: currentGk && currentGk.number !== selectedPlayer.number ? currentGk.name : null,
+        team,
+        is_opponent_action: isAway,
+        match_time_seconds: time,
+        description: currentGk && currentGk.number !== selectedPlayer.number
+          ? `Entra #${selectedPlayer.number} a portería ⇄ Sale #${currentGk.number}`
+          : `Entra #${selectedPlayer.number} a portería`
+      }, time);
+
+      setSelectedPlayer(null);
+    } else {
+      // Si no hay jugador seleccionado, restaurar portero de oficio
+      handleRestoreGoalkeeper(team);
+    }
+  };
+
   // Manejador de clic en jugador de la alineación / plantilla
   const handleRosterPlayerClick = (player, team, category) => {
     // Si el jugador está excluido por 2 minutos, la casilla está bloqueada
@@ -1287,42 +2133,149 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       return;
     }
 
-    // Si un suplente del MISMO equipo está seleccionado y hacemos clic en un titular (o portero titular) -> CAMBIO DE JUGADOR
-    if (
-      selectedPlayer &&
-      selectedPlayer.team === team &&
-      selectedPlayer.category === "bench" &&
-      (category === "starter" || category === "gk")
-    ) {
-      // REGLA ESTRICTA PORTERO: En el campo de PORTERO solo puede colocarse un portero
-      if (category === "gk" && !isGk(selectedPlayer)) {
-        alert(t("mesa_control.alert_gk_only_sub", "En la sección de PORTERO solo se puede colocar a un portero suplente. Selecciona un portero."));
+    // Intercambio directo entre jugador de campo titular y hueco de portero (portero jugador)
+    const isStarterToGkSwap = selectedPlayer && selectedPlayer.team === team && (
+      (selectedPlayer.category === "starter" && category === "gk") ||
+      (selectedPlayer.category === "gk" && category === "starter")
+    );
+
+    if (isStarterToGkSwap) {
+      const newGkPlayer = selectedPlayer.category === "starter" ? selectedPlayer : player;
+      const oldGkPlayer = selectedPlayer.category === "starter" ? player : selectedPlayer;
+
+      const setRoster = team === "LOCAL" ? setHomeRoster : setAwayRoster;
+      const currentRoster = team === "LOCAL" ? homeRoster : awayRoster;
+
+      // Si el portero anterior era un portero real, mandarlo al banquillo para dejar hueco a portero jugador
+      if (oldGkPlayer && isGk(oldGkPlayer, currentRoster)) {
+        lastActiveGkRef.current[team] = oldGkPlayer.number;
+        setRoster(prev => prev.map(p => p.number === oldGkPlayer.number ? {
+          ...p,
+          is_starter: false,
+          ...(time === 0 ? { initial_starter: false } : {})
+        } : p));
+      }
+
+      setGkSlotAssignment(prev => ({
+        ...prev,
+        [team]: newGkPlayer.number,
+        [`${team}_EXPLICIT_EMPTY`]: false
+      }));
+
+      sendMatchEvent({
+        event_type: "substitution",
+        action_key: "cambio",
+        category: "cambios",
+        result: "Cambio",
+        player_in_id: newGkPlayer.number,
+        player_in_number: newGkPlayer.number,
+        player_in_name: newGkPlayer.name,
+        player_out_id: oldGkPlayer ? oldGkPlayer.number : null,
+        player_out_number: oldGkPlayer ? oldGkPlayer.number : null,
+        player_out_name: oldGkPlayer ? oldGkPlayer.name : null,
+        team: team,
+        is_opponent_action: team !== "LOCAL",
+        match_time_seconds: time,
+        description: `Portero Jugador: #${newGkPlayer.number} pasa a portería`
+      }, time);
+
+      setSelectedPlayer(null);
+      return;
+    }
+
+    // Comprobar si hay un cambio de jugador en curso (un suplente y un titular/gk seleccionados, o viceversa)
+    const isSubAttempt = selectedPlayer && selectedPlayer.team === team && (
+      (selectedPlayer.category === "bench" && (category === "starter" || category === "gk")) ||
+      ((selectedPlayer.category === "starter" || selectedPlayer.category === "gk") && category === "bench")
+    );
+
+    if (isSubAttempt) {
+      if (isSubmittingSubRef.current) return;
+      isSubmittingSubRef.current = true;
+      setTimeout(() => {
+        isSubmittingSubRef.current = false;
+      }, 350);
+
+      const playerIn = selectedPlayer.category === "bench" ? selectedPlayer : player;
+      const playerOut = selectedPlayer.category === "bench" ? player : selectedPlayer;
+      const targetCategory = selectedPlayer.category === "bench" ? category : selectedPlayer.category;
+
+      const isAway = team === "VISITANTE";
+      const curRoster = isAway ? awayRoster : homeRoster;
+      const freshIn = curRoster.find(p => p.number === playerIn.number);
+      const freshOut = curRoster.find(p => p.number === playerOut.number);
+
+      // Verificación estricta: playerIn debe estar en banquillo y playerOut en pista
+      if (!freshIn || !freshOut || freshIn.is_starter || !freshOut.is_starter) {
+        setSelectedPlayer(null);
         return;
       }
+
+      // Limpiar selección de inmediato para evitar clics múltiples
+      setSelectedPlayer(null);
 
       const setRoster = team === "LOCAL" ? setHomeRoster : setAwayRoster;
       setRoster(prevRoster => {
         return prevRoster.map(p => {
-          if (p.number === selectedPlayer.number) {
-            return { ...p, is_starter: true };
+          if (p.number === playerIn.number) {
+            return {
+              ...p,
+              is_starter: true,
+              initial_starter: (time === 0) ? true : (p.initial_starter !== undefined ? p.initial_starter : true)
+            };
           }
-          if (p.number === player.number) {
-            return { ...p, is_starter: false };
+          if (p.number === playerOut.number) {
+            return {
+              ...p,
+              is_starter: false,
+              initial_starter: (time === 0) ? false : (p.initial_starter !== undefined ? p.initial_starter : false)
+            };
           }
           return p;
         });
       });
 
-      // Limpiar selección tras realizar el cambio
-      setSelectedPlayer(null);
+      // Si el cambio involucró la portería, actualizar asignación del hueco de portería y portero activo
+      if (targetCategory === "gk" || isGk(playerIn, curRoster)) {
+        lastActiveGkRef.current[team] = playerIn.number;
+        setGkSlotAssignment(prev => ({
+          ...prev,
+          [team]: playerIn.number,
+          [`${team}_EXPLICIT_EMPTY`]: false
+        }));
+      }
+
+      // Registrar evento formal de cambio una sola vez
+      sendMatchEvent({
+        event_type: "substitution",
+        action_key: "cambio",
+        category: "cambios",
+        result: "Cambio",
+        player_id: playerIn.number,
+        player_number: playerIn.number,
+        player_name: playerIn.name,
+        player_in_id: playerIn.number,
+        player_in_number: playerIn.number,
+        player_in_name: playerIn.name,
+        player_out_id: playerOut.number,
+        player_out_number: playerOut.number,
+        player_out_name: playerOut.name,
+        team: team,
+        is_opponent_action: team !== "LOCAL",
+        match_time_seconds: time,
+        description: `${playerIn.name || `#${playerIn.number}`} ⇄ ${playerOut.name || `#${playerOut.number}`}`
+      }, time);
+
       return;
     }
 
     // Selección normal diferenciando equipo y categoría
+    // Si un jugador de campo está ocupando la posición de portería (ej: 7v6), actúa como de campo ("starter")
+    const isFieldInGkSlot = category === "gk" && !isGk(player, team === "LOCAL" ? homeRoster : awayRoster);
     setSelectedPlayer({
       ...player,
       team,
-      category,
+      category: isFieldInGkSlot ? "starter" : category,
       isBench: category === "bench"
     });
   };
@@ -1351,7 +2304,11 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       let typeClass = "perdida"; // "gol" | "parada" | "perdida"
 
       if (category === "goles") {
-        typeLabel = e.shot_zone === "7 Metros" ? t("mesa_control.action_gol_7m", "GOL 7M") : t("mesa_control.action_gol", "GOL");
+        if (isEmptyNetEvent(e)) {
+          typeLabel = t("action_gol_porteria_vacia", "GOL P. VACÍA");
+        } else {
+          typeLabel = e.shot_zone === "7 Metros" ? t("mesa_control.action_gol_7m", "GOL 7M") : t("mesa_control.action_gol", "GOL");
+        }
         typeClass = "gol";
       } else if (category === "paradas") {
         typeLabel = e.shot_zone === "7 Metros" ? t("mesa_control.action_parada_7m", "PARADA 7M") : t("mesa_control.action_parada", "PARADA");
@@ -1389,6 +2346,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         else if (st.includes("azul") || st.includes("blue")) typeLabel = t("mesa_control.action_azul", "AZUL");
         else typeLabel = (e.sanction_type || t("mesa_control.filter_sanctions", "SANCIÓN")).toUpperCase();
         typeClass = "perdida";
+      } else if (category === "cambios") {
+        typeLabel = t("mesa_control.action_cambio", "CAMBIO");
+        typeClass = "parada";
       } else if (category === "periodo") {
         typeLabel = (e.result || e.sanction_type || t("mesa_control.period_final", "FIN PERIODO")).toUpperCase();
         typeClass = "parada";
@@ -1396,7 +2356,10 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
       const playerNum = e.player_number || e.shooter_number || e.player_id || "";
       const playerName = e.player_name || e.shooter_name || "";
-      const playerStr = playerNum ? `#${playerNum} ${playerName}`.trim() : (playerName || e.team || "");
+      let playerStr = playerNum ? `#${playerNum} ${playerName}`.trim() : (playerName || e.team || "");
+      if (category === "cambios" && e.description) {
+        playerStr = e.description;
+      }
 
       const fromZoneRaw = e.shot_zone || e.court_zone || e.shot_position || "";
       const toZoneRaw = e.goal_zone || e.target_zone || "";
@@ -1416,10 +2379,13 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
       const isHome = e.team === "LOCAL" || e.is_opponent_action === false || e.is_opponent_action === "false";
       const teamName = isHome ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+      const isEmptyNet = Boolean(isEmptyNetEvent(e));
+      const isEmptyNetGoal = isEmptyNet && (category === "goles" || e.result === "Gol");
 
       return {
         category,
         rawType: e.event_type,
+        actionKey: e.action_key,
         rawResult: e.result,
         time: formatTime(e.match_time_seconds || 0),
         typeLabel,
@@ -1427,6 +2393,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         description: playerStr,
         teamName,
         isHome,
+        isEmptyNet,
+        isEmptyNetGoal,
         fromZoneRaw,
         toZoneRaw,
         fromZone: formattedFrom,
@@ -1436,13 +2404,24 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       };
     });
 
-    // 2. Aplicar filtro seleccionado de las 7 categorías oficiales
-    let filtered = eventsWithScore;
+    // 2. Filtrar sustituciones (los cambios se guardan como acciones pero NO deben mostrarse en el historial)
+    const visibleEvents = eventsWithScore.filter(
+      (e) =>
+        e.category !== "cambios" &&
+        e.category !== "cambio" &&
+        e.rawType !== "substitution" &&
+        e.rawType !== "cambio" &&
+        e.actionKey !== "cambio" &&
+        e.actionKey !== "substitution"
+    );
+
+    // 3. Aplicar filtro seleccionado de las categorías oficiales
+    let filtered = visibleEvents;
     if (historyFilter && !["TODOS", "todos", "TODO", "todo"].includes(historyFilter)) {
-      filtered = eventsWithScore.filter(e => e.category === historyFilter);
+      filtered = visibleEvents.filter((e) => e.category === historyFilter);
     }
 
-    // 3. Devolver los eventos invertidos (más reciente primero en la línea de tiempo)
+    // 4. Devolver los eventos invertidos (más reciente primero en la línea de tiempo)
     return filtered.slice(-30).reverse();
   }, [currentMatch?.events, historyFilter, i18n.language]);
 
@@ -1523,6 +2502,14 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     // 3. REGISTRO CON CLIC DIRECTO EN DIBUJOS DE PISTA Y PORTERÍA (SIN POPUPS)
     const actionInstantTime = time; // Captura el tiempo EXACTO en el momento que se pulsa el botón de acción
 
+    // Detección inicial de portería rival vacía (por 7v6, jugador de campo bajo palos o sin portero)
+    const isAttackerHome = selectedPlayer.team === "LOCAL";
+    const defendingActiveGkList = isAttackerHome ? awayActiveGk : homeActiveGk;
+    const defendingRoster = isAttackerHome ? awayRoster : homeRoster;
+    const rawDefendingGk = defendingActiveGkList[0];
+    const isRealGkUnderPosts = Boolean(rawDefendingGk && isGk(rawDefendingGk, defendingRoster));
+    const initialEmptyNet = !isRealGkUnderPosts;
+
     if (actionKey === "gol_7m" || actionKey === "parada_7m") {
       setActiveActionFlow({
         actionKey,
@@ -1531,7 +2518,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         team: selectedPlayer.team,
         step: "AWAITING_GOAL_CLICK",
         shotZone: "7 Metros",
-        isPenetration: false
+        isPenetration: false,
+        isEmptyNet: initialEmptyNet
       });
     } else {
       const turnoverNames = {
@@ -1540,15 +2528,20 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         perdida_pasos: "Pasos",
         perdida_pasivo: "Pasivo"
       };
+      const isTurnover = Boolean(turnoverNames[actionKey]);
+      const shouldSkipCourtForEmptyNet = initialEmptyNet && !isTurnover;
+
       setActiveActionFlow({
         actionKey,
         actionTime: actionInstantTime,
         turnoverType: turnoverNames[actionKey] || null,
         player: selectedPlayer,
         team: selectedPlayer.team,
-        step: "AWAITING_COURT_CLICK",
-        shotZone: null,
-        isPenetration: false
+        step: shouldSkipCourtForEmptyNet ? "AWAITING_GOAL_CLICK" : "AWAITING_COURT_CLICK",
+        shotZone: shouldSkipCourtForEmptyNet ? "Portería Vacía" : null,
+        courtCoord: shouldSkipCourtForEmptyNet ? { x: 50, y: 15 } : null,
+        isPenetration: false,
+        isEmptyNet: initialEmptyNet
       });
     }
   };
@@ -1556,7 +2549,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
   const executeDirectAction = async (flow) => {
     const eventTime = flow.actionTime !== undefined ? flow.actionTime : time;
     const isAttackerHome = flow.team === "LOCAL";
-    const defendingGoalkeeper = isAttackerHome ? awayActiveGk[0] : homeActiveGk[0];
+    const defendingRoster = isAttackerHome ? awayRoster : homeRoster;
+    const defendingActiveGkList = isAttackerHome ? awayActiveGk : homeActiveGk;
+    const rawDefendingGk = defendingActiveGkList[0];
+
+    // ¿Hay un portero real de oficio bajo palos en la portería defensora?
+    const isRealGkUnderPosts = Boolean(rawDefendingGk && isGk(rawDefendingGk, defendingRoster));
+
+    // Determinar si el lanzamiento se efectúa a portería vacía:
+    // 1. Si el usuario activó manualmente el toggle "Portería Vacía" (flow.isEmptyNet === true)
+    // 2. Si no hay portero de oficio en pista (o un jugador de campo está en el hueco del portero, ej: 7v6 o exclusión)
+    const isDefendingNetEmpty = Boolean(flow.isEmptyNet) || !isRealGkUnderPosts;
+
+    const defendingGoalkeeper = isDefendingNetEmpty ? null : rawDefendingGk;
 
     let eventType = "shot";
     let shotResult = "Gol";
@@ -1575,9 +2580,11 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     }
 
     const zoneStr = (flow.shotZone || "").toLowerCase();
-    let derivedShotType = "exterior";
+    let derivedShotType = isDefendingNetEmpty ? "Portería Vacía" : "exterior";
 
-    if (flow.actionKey === "gol_7m" || flow.actionKey === "parada_7m") {
+    if (isDefendingNetEmpty) {
+      derivedShotType = "Portería Vacía";
+    } else if (flow.actionKey === "gol_7m" || flow.actionKey === "parada_7m") {
       derivedShotType = "7m";
     } else if (flow.isFirstWave || zoneStr.includes("contraataque")) {
       derivedShotType = "contraataque";
@@ -1591,21 +2598,33 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       derivedShotType = "exterior";
     }
 
-    let derivedPlayPhase = "Posicional";
-    if (flow.isFirstWave || derivedShotType === "contraataque") {
+    let derivedPlayPhase = isDefendingNetEmpty ? "Portería Vacía" : "Posicional";
+    if (isDefendingNetEmpty) {
+      derivedPlayPhase = "Portería Vacía";
+    } else if (flow.isFirstWave || derivedShotType === "contraataque") {
       derivedPlayPhase = "1ª Oleada";
     } else if (derivedShotType === "7m") {
       derivedPlayPhase = "7m";
     }
 
     const currentSituation = getAutoNumericalSituation(flow.team, eventTime);
+    const defendingTeam = isAttackerHome ? "VISITANTE" : "LOCAL";
+    const defendingTacticalSituation = getAutoNumericalSituation(defendingTeam, eventTime);
+    const isFieldInDefendingGk = Boolean(rawDefendingGk && !isRealGkUnderPosts);
+
+    const goalZoneId = flow.goalZoneId || (flow.goalCoord ? getGoalZoneId(flow.goalCoord, flow.actionKey === "poste", flow.actionKey === "fuera") : null);
+    const canonicalZoneKey = goalZoneId || normalizeGoalZoneKey(flow.goalZone) || null;
 
     const xgValue = calculateShotXG({
       event_type: eventType,
       shot_type: derivedShotType,
       play_phase: derivedPlayPhase,
       numerical_situation: currentSituation,
-      target_zone: flow.goalZone || null
+      target_zone: canonicalZoneKey || flow.goalZone || null,
+      target_zone_id: canonicalZoneKey,
+      goal_zone: flow.goalZone || null,
+      goal_coord: flow.goalCoord || null,
+      is_empty_net: isDefendingNetEmpty
     });
 
     const xsavesValue = calculateShotXSaves({
@@ -1613,12 +2632,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       shot_type: derivedShotType,
       play_phase: derivedPlayPhase,
       numerical_situation: currentSituation,
-      target_zone: flow.goalZone || null
+      target_zone: canonicalZoneKey || flow.goalZone || null,
+      target_zone_id: canonicalZoneKey,
+      goal_zone: flow.goalZone || null,
+      goal_coord: flow.goalCoord || null,
+      is_empty_net: isDefendingNetEmpty
     });
 
     const is7m = derivedShotType === "7m" || (flow.shotZone && flow.shotZone.includes("7"));
-    const finalCourtCoord = flow.courtCoord || (is7m ? { x: 50, y: 55 } : courtCoord);
+    const defaultCourtCoord = isDefendingNetEmpty ? { x: 50, y: 15 } : (is7m ? { x: 50, y: 55 } : courtCoord);
+    const finalCourtCoord = flow.courtCoord || defaultCourtCoord;
     const finalGoalCoord = flow.goalCoord || (flow.goalZone ? goalCoord : null);
+    const defaultZone = isDefendingNetEmpty ? "Portería Vacía" : "Centro 9M";
+    const finalShotZone = flow.shotZone || defaultZone;
 
     const eventPayload = {
       event_type: eventType,
@@ -1626,6 +2652,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       shot_type: derivedShotType,
       play_phase: derivedPlayPhase,
       numerical_situation: currentSituation,
+      tactical_situation: currentSituation,
       turnover_type: flow.turnoverType || null,
       player_id: flow.player.number,
       player_number: flow.player.number,
@@ -1634,9 +2661,9 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       shooter_name: flow.player.name,
       team: flow.team,
       is_opponent_action: !isAttackerHome,
-      shot_zone: flow.shotZone || "Centro 9M",
-      court_zone: flow.shotZone || "Centro 9M",
-      shot_position: flow.shotZone || "Centro 9M",
+      shot_zone: finalShotZone,
+      court_zone: finalShotZone,
+      shot_position: finalShotZone,
       court_coord: finalCourtCoord,
       court_x: finalCourtCoord?.x ?? null,
       court_y: finalCourtCoord?.y ?? null,
@@ -1646,10 +2673,16 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       expected_saves: xsavesValue,
       xsaves: xsavesValue,
       goal_zone: flow.goalZone || null,
-      target_zone: flow.goalZone || null,
+      target_zone: canonicalZoneKey || flow.goalZone || null,
+      target_zone_id: canonicalZoneKey || null,
       goal_coord: finalGoalCoord,
       goal_x: finalGoalCoord?.x ?? null,
       goal_y: finalGoalCoord?.y ?? null,
+      is_empty_net: isDefendingNetEmpty,
+      empty_net_goal: isDefendingNetEmpty && shotResult === "Gol",
+      defending_team: defendingTeam,
+      defending_situation: defendingTacticalSituation,
+      defending_has_field_in_gk: isFieldInDefendingGk,
       goalkeeper_id: defendingGoalkeeper?.number || null,
       goalkeeper_number: defendingGoalkeeper?.number || null,
       goalkeeper_name: defendingGoalkeeper?.name || null,
@@ -1689,6 +2722,16 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     setActiveActionFlow(null);
     setSelectedPlayer(null);
   };
+
+  // Roster sincronizado y actualizado para el módulo de estadísticas y reportes
+  const syncedMatchForStats = useMemo(() => {
+    if (!currentMatch) return null;
+    return {
+      ...currentMatch,
+      home_players: homeRoster && homeRoster.length > 0 ? homeRoster : currentMatch.home_players,
+      away_players: awayRoster && awayRoster.length > 0 ? awayRoster : currentMatch.away_players,
+    };
+  }, [currentMatch, homeRoster, awayRoster]);
 
   return (
     <div className={`match-dashboard-wrapper ${mainViewMode === "stats" ? "stats-mode" : "live-mode"}`}>
@@ -1850,7 +2893,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       {mainViewMode === "stats" ? (
         <div className="mp-stats-scroll-container">
           <MatchStatsModule
-            match={currentMatch}
+            match={syncedMatchForStats}
             activePossession={activePossession}
             timeSeconds={time}
           />
@@ -1860,39 +2903,107 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         <div className="mp-main-container">
           {/* COLUMNA IZQUIERDA: MI EQUIPO (VERDE) */}
           <aside className="mp-team-column home-column">
+            <div className="mp-team-column-header">
+              <span className="mp-team-column-name">{currentMatch.home_team || t("common.home_team", "LOCAL")}</span>
+            </div>
+
+            {/* CAMBIO TÁCTICO AUTOMÁTICO ATAQUE ⇄ DEFENSA */}
+            {renderQuickTacticsBar("LOCAL")}
+
             {/* SECCIÓN PORTERO */}
             <div className="mp-roster-section gk-section">
-              <h4 className="mp-section-title">
-                <span>{t("common.goalkeeper").toUpperCase()}</span>
-                <span className="mp-pos-badge gk">
-                  <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
-                  POR
-                </span>
-              </h4>
-              <div className="mp-player-list">
-                {homeActiveGk.map((player, pIdx) => {
-                  const excl = activeExclusions[`LOCAL_${player.number}`];
-                  return (
-                    <div
-                      key={pIdx}
-                      className={`mp-player-row gk-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
-                      onClick={() => handleRosterPlayerClick(player, "LOCAL", "gk")}
-                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
+              <div className="mp-section-title-wrap">
+                <h4 className="mp-section-title">
+                  <span>{t("common.goalkeeper").toUpperCase()}</span>
+                  {homeActiveGk.length > 0 && !isGk(homeActiveGk[0], homeRoster) ? (
+                    <span
+                      className={`mp-pos-badge pj-badge ${homeExclusionsCount === 1 ? "warning" : homeExclusionsCount >= 2 ? "danger" : ""}`}
+                      title={homeExclusionsCount === 0 ? "Ataque 7vs6 (portero jugador sin exclusión)" : "6vs6 sin portero (portero jugador con exclusión)"}
                     >
-                      <div className="mp-player-number green">#{player.number}</div>
-                      <span className="mp-player-name">{player.name}</span>
-                      <span className="mp-pos-pill gk">POR</span>
-                      {excl ? (
-                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
-                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
-                          {excl.formattedCountdown}
+                      {homeExclusionsCount === 0 ? "7vs6 (PJ)" : homeExclusionsCount === 1 ? "6vs6 S/P (EXCL)" : `INF S/P (${homeExclusionsCount} EXCL)`}
+                    </span>
+                  ) : homeActiveGk.length === 0 ? (
+                    <span className="mp-pos-badge empty-net-badge" title={t("empty_net", "Portería Vacía")}>
+                      VACÍA
+                    </span>
+                  ) : (
+                    <span className="mp-pos-badge gk">
+                      <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
+                      POR
+                    </span>
+                  )}
+                </h4>
+                <div className="mp-gk-quick-actions">
+                  {homeActiveGk.length === 0 ? (
+                    <button
+                      type="button"
+                      className="mp-btn-gk-toggle restore"
+                      onClick={() => handleRestoreGoalkeeper("LOCAL")}
+                      title="Restaurar portero bajo palos"
+                    >
+                      + Portero
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="mp-btn-gk-toggle vacate"
+                      onClick={() => handleToggleEmptyNet("LOCAL")}
+                      title="Vaciar portería (portero al banquillo)"
+                    >
+                      Vaciar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="mp-player-list">
+                {homeActiveGk.length === 0 ? (
+                  <div
+                    className="mp-empty-net-row clickable"
+                    onClick={() => handleEmptyNetSlotClick("LOCAL")}
+                    title={selectedPlayer && selectedPlayer.team === "LOCAL" ? `Poner a #${selectedPlayer.number} en portería` : "Clic para asignar jugador o restaurar portero"}
+                  >
+                    <span>🥅</span>
+                    <span>{t("empty_net", "Portería Vacía")}</span>
+                    <span className="mp-empty-net-hint">
+                      {selectedPlayer && selectedPlayer.team === "LOCAL" ? `(Poner #${selectedPlayer.number})` : "(Clic para asignar)"}
+                    </span>
+                  </div>
+                ) : (
+                  homeActiveGk.map((player, pIdx) => {
+                    const isFieldInGk = !isGk(player, homeRoster);
+                    const excl = activeExclusions[`LOCAL_${player.number}`];
+                    return (
+                      <div
+                        key={pIdx}
+                        className={`mp-player-row gk-row ${isFieldInGk ? "empty-net-gk-row" : ""} ${selectedPlayer?.number === player.number && selectedPlayer?.team === "LOCAL" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                        onClick={() => handleRosterPlayerClick(player, "LOCAL", "gk")}
+                        title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : (isFieldInGk ? "Portero Jugador: Jugador de campo en hueco de portería" : undefined)}
+                      >
+                        <div className={`mp-player-number ${isFieldInGk ? "amber" : "green"}`}>#{player.number}</div>
+                        <span className="mp-player-name">{player.name}</span>
+                        <span className={`mp-pos-pill ${isFieldInGk ? "pj-pill" : "gk"}`}>
+                          {isFieldInGk ? "PJ" : "POR"}
                         </span>
-                      ) : (
-                        <span className="mp-status-dot" title={t("mesa_control.on_court")} />
-                      )}
-                    </div>
-                  );
-                })}
+                        <span
+                          className="mp-player-time-badge on-court"
+                          title={t("mesa_control.time_played", "Tiempo jugado")}
+                        >
+                          <IconClock size={9} style={{ marginRight: 2 }} />
+                          {getPlayerMinutesBadge(player, false)}
+                        </span>
+                        {excl ? (
+                          <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
+                            <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                            {excl.formattedCountdown}
+                          </span>
+                        ) : (
+                          <span className="mp-status-dot" title={t("mesa_control.on_court")} />
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -1911,6 +3022,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     >
                       <div className="mp-player-number green">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
+                      {tacticalConfig.LOCAL?.atqDefEnabled && player.number === tacticalConfig.LOCAL?.atqPlayerNumber && (
+                        <span className="mp-tactical-pill atq">ATQ</span>
+                      )}
+                      {tacticalConfig.LOCAL?.atqDefEnabled && player.number === tacticalConfig.LOCAL?.defPlayerNumber && (
+                        <span className="mp-tactical-pill def">DEF</span>
+                      )}
+                      <span
+                        className="mp-player-time-badge on-court"
+                        title={t("mesa_control.time_played", "Tiempo jugado")}
+                      >
+                        <IconClock size={9} style={{ marginRight: 2 }} />
+                        {getPlayerMinutesBadge(player, false)}
+                      </span>
                       {excl ? (
                         <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
@@ -1943,6 +3067,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       {(player.position === "PORTERO" || player.position === "POR") && (
                         <span className="mp-pos-pill bench-gk">POR</span>
                       )}
+                      {tacticalConfig.LOCAL?.atqDefEnabled && player.number === tacticalConfig.LOCAL?.atqPlayerNumber && (
+                        <span className="mp-tactical-pill atq">ATQ</span>
+                      )}
+                      {tacticalConfig.LOCAL?.atqDefEnabled && player.number === tacticalConfig.LOCAL?.defPlayerNumber && (
+                        <span className="mp-tactical-pill def">DEF</span>
+                      )}
+                      <span
+                        className="mp-player-time-badge"
+                        title={t("mesa_control.time_played", "Tiempo jugado")}
+                      >
+                        <IconClock size={9} style={{ marginRight: 2 }} />
+                        {getPlayerMinutesBadge(player, false)}
+                      </span>
                       {excl && (
                         <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
@@ -1972,10 +3109,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                   <span className="mp-step-val">{activeActionFlow ? (activeActionFlow.actionKey || "").toUpperCase().replace("_", " ") : t("mesa_control.choose_action_prompt")}</span>
                 </div>
                 <div className="mp-step-divider"><IconArrowRight size={12} /></div>
-                <div className={`mp-step-item ${activeActionFlow?.step === "AWAITING_COURT_CLICK" ? "pulsing" : activeActionFlow?.shotZone ? "active" : ""}`}>
+                <div className={`mp-step-item ${activeActionFlow?.step === "AWAITING_COURT_CLICK" ? "pulsing" : (activeActionFlow?.shotZone || activeActionFlow?.isEmptyNet) ? "active" : ""}`}>
                   <span className="mp-step-label">{t("mesa_control.step3_court")}</span>
                   <span className="mp-step-val">
-                    {activeActionFlow?.shotZone ? (
+                    {activeActionFlow?.isEmptyNet ? (
+                      <span style={{ color: "#D97706", fontWeight: "bold" }}>🥅 {t("empty_net", "Portería Vacía")}</span>
+                    ) : activeActionFlow?.shotZone ? (
                       formatCourtZoneName(activeActionFlow.shotZone, t)
                     ) : (activeActionFlow?.step === "AWAITING_COURT_CLICK" ? (
                       <><IconClick size={12} style={{ display: "inline-block", verticalAlign: "middle", marginRight: 4 }} /> {t("mesa_control.click_court_prompt")}</>
@@ -1994,6 +3133,42 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                   </span>
                 </div>
 
+                {activeActionFlow && (
+                  <button
+                    type="button"
+                    className={`mp-empty-net-toggle-btn ${activeActionFlow.isEmptyNet ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveActionFlow(prev => {
+                        if (!prev) return null;
+                        const willBeEmptyNet = !prev.isEmptyNet;
+                        if (willBeEmptyNet) {
+                          return {
+                            ...prev,
+                            isEmptyNet: true,
+                            step: "AWAITING_GOAL_CLICK",
+                            shotZone: prev.shotZone || "Portería Vacía",
+                            courtCoord: prev.courtCoord || { x: 50, y: 15 }
+                          };
+                        } else {
+                          const hadPreviousCourtZone = prev.shotZone && prev.shotZone !== "Portería Vacía";
+                          return {
+                            ...prev,
+                            isEmptyNet: false,
+                            step: hadPreviousCourtZone ? "AWAITING_GOAL_CLICK" : "AWAITING_COURT_CLICK",
+                            shotZone: hadPreviousCourtZone ? prev.shotZone : null,
+                            courtCoord: hadPreviousCourtZone ? prev.courtCoord : null
+                          };
+                        }
+                      });
+                    }}
+                    title={t("empty_net_tooltip", "Marcar como lanzamiento a portería vacía")}
+                  >
+                    <span>🥅</span>
+                    <span>{t("empty_net", "Portería Vacía")}</span>
+                    {activeActionFlow.isEmptyNet && <span style={{ marginLeft: 3 }}>✓</span>}
+                  </button>
+                )}
+
                 {(selectedPlayer || activeActionFlow) && (
                   <button
                     type="button"
@@ -2009,7 +3184,31 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
               {/* CONTENEDOR 2 COLUMNAS: MEDIA PISTA (IZQ) Y PORTERÍA (DER) */}
               <div className="mp-court-goal-grid">
                 {/* 1. MEDIA PISTA DE BALONMANO DETALLADA (CLICK EN CUALQUIER PUNTO) */}
-                <div className="mp-half-court-wrapper">
+                <div className={`mp-half-court-wrapper ${activeActionFlow?.isEmptyNet ? "empty-net-dimmed" : ""}`} style={{ position: "relative" }}>
+                  {activeActionFlow?.isEmptyNet && activeActionFlow?.step === "AWAITING_GOAL_CLICK" && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        background: "rgba(17, 24, 39, 0.94)",
+                        border: "1px solid #D97706",
+                        color: "#FDE68A",
+                        padding: "10px 18px",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                        fontWeight: "700",
+                        textAlign: "center",
+                        zIndex: 20,
+                        boxShadow: "0 6px 18px rgba(0,0,0,0.6)",
+                        pointerEvents: "none",
+                        backdropFilter: "blur(4px)"
+                      }}
+                    >
+                      🥅 {t("empty_net_court_skipped", "Portería vacía: haz clic directamente en la portería")}
+                    </div>
+                  )}
                   <div className="mp-card-subtitle" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span>{t("mesa_control.court_half", "MEDIA PISTA")}</span>
                     <button
@@ -2175,7 +3374,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     <span>{t("mesa_control.goal_click_hint", "PORTERÍA EN DETALLE (HAZ CLIC EN EL LUGAR DEL LANZAMIENTO)")}</span>
                   </div>
 
-                    <div className="mp-goal-frame interactive" onClick={handleGoalClick} title={t("mesa_control.click_goal_prompt", "Haz clic en cualquier punto de la portería o zonas exteriores")}>
+                  <div className="mp-goal-frame interactive" onClick={handleGoalClick} title={t("mesa_control.click_goal_prompt", "Haz clic en cualquier punto de la portería o zonas exteriores")}>
                     {/* SVG DE PORTERÍA DE BALONMANO DETALLADA CON MARGEN EXTERIOR */}
                     <svg viewBox="0 0 360 220" className="mp-goal-svg" preserveAspectRatio="none">
                       <defs>
@@ -2331,7 +3530,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                 </div>
               </div>
 
-              {/* HISTORIAL DE ACCIONES */}
+              {/* COLUMNA DERECHA: HISTORIAL DE ACCIONES */}
               <div className="mp-timeline-card">
                 <div className="mp-timeline-header">
                   <div className="mp-timeline-title-wrap">
@@ -2376,7 +3575,14 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                               • {evt.teamName}
                             </span>
                           </div>
-                          <span className="mp-item-desc">{evt.description}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", marginTop: "1px" }}>
+                            <span className="mp-item-desc">{evt.description}</span>
+                            {evt.isEmptyNetGoal && (
+                              <span className="mp-item-empty-net-tag" title={t("empty_net_tooltip", "Gol a portería vacía")}>
+                                🥅 {t("action_gol_porteria_vacia_detail", "Gol a portería vacía")}
+                              </span>
+                            )}
+                          </div>
                           {(evt.fromZoneRaw || evt.fromZone) && (evt.toZoneRaw || evt.toZone) ? (
                             <div className="mp-item-trajectory">
                               <span>{formatCourtZoneName(evt.fromZoneRaw || evt.fromZone, t)}</span>
@@ -2409,40 +3615,109 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
           </main>
 
           {/* COLUMNA DERECHA: RIVAL TEAM (AZUL) */}
+          {/* COLUMNA DERECHA: RIVAL TEAM (AZUL) */}
           <aside className="mp-team-column away-column">
+            <div className="mp-team-column-header">
+              <span className="mp-team-column-name">{currentMatch.away_team || t("common.away_team", "VISITANTE")}</span>
+            </div>
+
+            {/* CAMBIO TÁCTICO AUTOMÁTICO ATAQUE ⇄ DEFENSA */}
+            {renderQuickTacticsBar("VISITANTE")}
+
             {/* SECCIÓN PORTERO */}
             <div className="mp-roster-section gk-section">
-              <h4 className="mp-section-title">
-                <span>{t("common.goalkeeper").toUpperCase()}</span>
-                <span className="mp-pos-badge gk">
-                  <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
-                  POR
-                </span>
-              </h4>
-              <div className="mp-player-list">
-                {awayActiveGk.map((player, pIdx) => {
-                  const excl = activeExclusions[`VISITANTE_${player.number}`];
-                  return (
-                    <div
-                      key={pIdx}
-                      className={`mp-player-row gk-row ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
-                      onClick={() => handleRosterPlayerClick(player, "VISITANTE", "gk")}
-                      title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : undefined}
+              <div className="mp-section-title-wrap">
+                <h4 className="mp-section-title">
+                  <span>{t("common.goalkeeper").toUpperCase()}</span>
+                  {awayActiveGk.length > 0 && !isGk(awayActiveGk[0], awayRoster) ? (
+                    <span
+                      className={`mp-pos-badge pj-badge ${awayExclusionsCount === 1 ? "warning" : awayExclusionsCount >= 2 ? "danger" : ""}`}
+                      title={awayExclusionsCount === 0 ? "Ataque 7vs6 (portero jugador sin exclusión)" : "6vs6 sin portero (portero jugador con exclusión)"}
                     >
-                      <div className="mp-player-number blue">#{player.number}</div>
-                      <span className="mp-player-name">{player.name}</span>
-                      <span className="mp-pos-pill gk">POR</span>
-                      {excl ? (
-                        <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
-                          <IconTimer2m size={10} style={{ marginRight: 2 }} />
-                          {excl.formattedCountdown}
+                      {awayExclusionsCount === 0 ? "7vs6 (PJ)" : awayExclusionsCount === 1 ? "6vs6 S/P (EXCL)" : `INF S/P (${awayExclusionsCount} EXCL)`}
+                    </span>
+                  ) : awayActiveGk.length === 0 ? (
+                    <span className="mp-pos-badge empty-net-badge" title={t("empty_net", "Portería Vacía")}>
+                      VACÍA
+                    </span>
+                  ) : (
+                    <span className="mp-pos-badge gk">
+                      <IconShield size={10} style={{ marginRight: 3, display: "inline-block", verticalAlign: "middle" }} />
+                      POR
+                    </span>
+                  )}
+                </h4>
+                <div className="mp-gk-quick-actions">
+                  {awayActiveGk.length === 0 ? (
+                    <button
+                      type="button"
+                      className="mp-btn-gk-toggle restore"
+                      onClick={() => handleRestoreGoalkeeper("VISITANTE")}
+                      title="Restaurar portero bajo palos"
+                    >
+                      + Portero
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="mp-btn-gk-toggle vacate"
+                      onClick={() => handleToggleEmptyNet("VISITANTE")}
+                      title="Vaciar portería (portero al banquillo)"
+                    >
+                      Vaciar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="mp-player-list">
+                {awayActiveGk.length === 0 ? (
+                  <div
+                    className="mp-empty-net-row clickable"
+                    onClick={() => handleEmptyNetSlotClick("VISITANTE")}
+                    title={selectedPlayer && selectedPlayer.team === "VISITANTE" ? `Poner a #${selectedPlayer.number} en portería` : "Clic para asignar jugador o restaurar portero"}
+                  >
+                    <span>🥅</span>
+                    <span>{t("empty_net", "Portería Vacía")}</span>
+                    <span className="mp-empty-net-hint">
+                      {selectedPlayer && selectedPlayer.team === "VISITANTE" ? `(Poner #${selectedPlayer.number})` : "(Clic para asignar)"}
+                    </span>
+                  </div>
+                ) : (
+                  awayActiveGk.map((player, pIdx) => {
+                    const isFieldInGk = !isGk(player, awayRoster);
+                    const excl = activeExclusions[`VISITANTE_${player.number}`];
+                    return (
+                      <div
+                        key={pIdx}
+                        className={`mp-player-row gk-row ${isFieldInGk ? "empty-net-gk-row" : ""} ${selectedPlayer?.number === player.number && selectedPlayer?.team === "VISITANTE" ? "selected" : ""} ${excl ? "excluded locked" : ""}`}
+                        onClick={() => handleRosterPlayerClick(player, "VISITANTE", "gk")}
+                        title={excl ? t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Jugador excluido (2 min) — Tiempo restante: ${excl.formattedCountdown}` }) : (isFieldInGk ? "Portero Jugador: Jugador de campo en hueco de portería" : undefined)}
+                      >
+                        <div className={`mp-player-number ${isFieldInGk ? "amber" : "blue"}`}>#{player.number}</div>
+                        <span className="mp-player-name">{player.name}</span>
+                        <span className={`mp-pos-pill ${isFieldInGk ? "pj-pill" : "gk"}`}>
+                          {isFieldInGk ? "PJ" : "POR"}
                         </span>
-                      ) : (
-                        <span className="mp-status-dot" title={t("mesa_control.on_court")} />
-                      )}
-                    </div>
-                  );
-                })}
+                        <span
+                          className="mp-player-time-badge on-court"
+                          title={t("mesa_control.time_played", "Tiempo jugado")}
+                        >
+                          <IconClock size={9} style={{ marginRight: 2 }} />
+                          {getPlayerMinutesBadge(player, true)}
+                        </span>
+                        {excl ? (
+                          <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
+                            <IconTimer2m size={10} style={{ marginRight: 2 }} />
+                            {excl.formattedCountdown}
+                          </span>
+                        ) : (
+                          <span className="mp-status-dot" title={t("mesa_control.on_court")} />
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -2461,6 +3736,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     >
                       <div className="mp-player-number blue">#{player.number}</div>
                       <span className="mp-player-name">{player.name}</span>
+                      {tacticalConfig.VISITANTE?.atqDefEnabled && player.number === tacticalConfig.VISITANTE?.atqPlayerNumber && (
+                        <span className="mp-tactical-pill atq">ATQ</span>
+                      )}
+                      {tacticalConfig.VISITANTE?.atqDefEnabled && player.number === tacticalConfig.VISITANTE?.defPlayerNumber && (
+                        <span className="mp-tactical-pill def">DEF</span>
+                      )}
+                      <span
+                        className="mp-player-time-badge on-court"
+                        title={t("mesa_control.time_played", "Tiempo jugado")}
+                      >
+                        <IconClock size={9} style={{ marginRight: 2 }} />
+                        {getPlayerMinutesBadge(player, true)}
+                      </span>
                       {excl ? (
                         <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />
@@ -2493,6 +3781,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                       {(player.position === "PORTERO" || player.position === "POR") && (
                         <span className="mp-pos-pill bench-gk">POR</span>
                       )}
+                      {tacticalConfig.VISITANTE?.atqDefEnabled && player.number === tacticalConfig.VISITANTE?.atqPlayerNumber && (
+                        <span className="mp-tactical-pill atq">ATQ</span>
+                      )}
+                      {tacticalConfig.VISITANTE?.atqDefEnabled && player.number === tacticalConfig.VISITANTE?.defPlayerNumber && (
+                        <span className="mp-tactical-pill def">DEF</span>
+                      )}
+                      <span
+                        className="mp-player-time-badge"
+                        title={t("mesa_control.time_played", "Tiempo jugado")}
+                      >
+                        <IconClock size={9} style={{ marginRight: 2 }} />
+                        {getPlayerMinutesBadge(player, true)}
+                      </span>
                       {excl && (
                         <span className="mp-exclusion-countdown" title={t("mesa_control.player_excluded_tooltip", { time: excl.formattedCountdown, defaultValue: `Exclusión 2 min: ${excl.formattedCountdown}` })}>
                           <IconTimer2m size={10} style={{ marginRight: 2 }} />

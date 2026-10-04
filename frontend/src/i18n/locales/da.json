@@ -81,7 +81,9 @@
       "Handball Pro Analytics"
     ],
     "motto": [
-      "Analyze", "Improve", "Win"
+      "Analyze",
+      "Improve",
+      "Win"
     ]
   },
   "landing_stats": {
@@ -399,6 +401,7 @@
     "label_penetration": "Gennembrudsskud (6m)",
     "label_wing": "Fløjskud (6m)",
     "label_9m": "Bagkædeskud / Distance (9m)",
+    "label_empty_net": "Skud mod tomt mål",
     "label_superiority": "Overtalsbonus (+)",
     "label_inferiority": "Undertalsstraf (-)",
     "xsaves_title": "EXPECTED SAVES (xSAVES) & MÅLVOGTERMODIFIKATOR",
@@ -531,7 +534,33 @@
     "alert_select_player_first": "Vælg venligst en spiller fra opstillingen først for at registrere handlingen.",
     "alert_substitutes_sanctions_only": "Udskiftere kan kun modtage straffe (2 min, gult, rødt, blåt kort). Klik på en banespiller for at skifte ind.",
     "alert_free_throw_defending_only": "Frikast kan kun tildeles en spiller fra det FORSVARENDE hold (uden boldbesiddelse).",
-    "player_excluded_tooltip": "Udvist spiller (2 min) — Resterende tid: {{time}}"
+    "player_excluded_tooltip": "Udvist spiller (2 min) — Resterende tid: {{time}}",
+    "action_cambio": "UDSKIFTNING",
+    "filter_substitutions": "UDSKIFTNINGER",
+    "time_played": "Spilletid",
+    "btn_edit_minutes": "Juster spillede minutter",
+    "adjust_minutes_title": "Juster spillede minutter",
+    "adjust_minutes_desc": "Gennemgå eller juster manuelt de spillede minutter for hver spiller i denne kamp. Hvis feltet efterlades tomt, bruges den automatiske udskiftningsberegning.",
+    "auto_calculated": "Beregnet",
+    "error_saving_minutes": "Fejl under lagring af minutter. Prøv venligst igen.",
+    "tactical_btn": "Taktik",
+    "tactical_title": "Taktiske Indstillinger",
+    "atq_def_title": "Angreb / Forsvar Skifte",
+    "atq_def_badge": "Forsvarsspecialist",
+    "atq_def_desc": "Skifter automatisk angrebsspilleren ud med forsvarsspecialisten ved hvert boldtab og sporer deres nøjagtige minutter.",
+    "atq_player_label": "Angrebsspiller (ud i forsvar)",
+    "def_player_label": "Forsvarsspecialist (ind i forsvar)",
+    "seven_v_six_title": "Spil 7 mod 6",
+    "seven_v_six_desc": "Tager målmanden ud i angreb for at spille med 7 markspillere og sætter målmanden tilbage i forsvar.",
+    "seven_v_six_gk_label": "Målmand der udskiftes i angreb",
+    "seven_v_six_field_label": "7. Markspiller der kommer ind",
+    "save_tactics": "Gem taktik",
+    "tactics_saved": "Taktik opdateret",
+    "empty_net": "Tomt Mål",
+    "action_gol_porteria_vacia": "MÅL TOMT MÅL",
+    "empty_net_badge": "7v6 MARK",
+    "empty_net_tooltip": "Tomt mål / Markspiller på banen",
+    "empty_net_court_skipped": "Tomt mål: klik direkte på målet"
   },
   "dashboard": {
     "select_team_banner": "-- VÆLG HOLD FOR AT SE STATISTIK: --",
@@ -715,7 +744,8 @@
     "col_2min": "2 Min",
     "col_rating": "Rating",
     "role_gk": "Målvogter",
-    "role_player": "Markspiller"
+    "role_player": "Markspiller",
+    "col_minutes": "Min"
   },
   "chronology": {
     "tab_all": "Alle",
@@ -734,7 +764,8 @@
     "timeout_desc": "Timeout anmodet",
     "free_throw_desc": "Frikast tilkendt",
     "sanction_desc": "Disciplinærsanktion: {{type}}",
-    "no_events": "Ingen hændelser matcher filteret."
+    "no_events": "Ingen hændelser matcher filteret.",
+    "action_cambio": "UDSKIFTNING"
   },
   "report": {
     "title": "KOMPLET TEKNISK KAMPRAPPORT",

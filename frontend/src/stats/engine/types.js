@@ -82,7 +82,8 @@ export const ACTION_CATEGORIES = {
   PERDIDAS: "perdidas",
   TIEMPO_MUERTO: "tiempo_muerto",
   GOLPE_FRANCO: "golpe_franco",
-  SANCIONES: "sanciones"
+  SANCIONES: "sanciones",
+  CAMBIOS: "cambios"
 };
 
 export const ACTION_CATEGORY_LABELS = {
@@ -93,11 +94,12 @@ export const ACTION_CATEGORY_LABELS = {
   perdidas: "Pérdidas",
   tiempo_muerto: "Tiempo Muerto",
   golpe_franco: "Golpe Franco",
-  sanciones: "Sanciones"
+  sanciones: "Sanciones",
+  cambios: "Cambios"
 };
 
 /**
- * Clasifica cualquier evento registrado en una de las 7 categorías oficiales:
+ * Clasifica cualquier evento registrado en una de las categorías oficiales:
  * - "goles"
  * - "paradas"
  * - "fallo_lanzamiento"
@@ -105,6 +107,7 @@ export const ACTION_CATEGORY_LABELS = {
  * - "tiempo_muerto"
  * - "golpe_franco"
  * - "sanciones"
+ * - "cambios"
  */
 export function getEventCategory(e) {
   if (!e) return "otros";
@@ -177,6 +180,16 @@ export function getEventCategory(e) {
     return ACTION_CATEGORIES.PERDIDAS;
   }
 
+  // 8. Cambios / Sustituciones
+  if (
+    eventType === "substitution" ||
+    eventType === "cambio" ||
+    actionKey === "cambio" ||
+    actionKey === "substitution"
+  ) {
+    return ACTION_CATEGORIES.CAMBIOS;
+  }
+
   return "otros";
 }
 
@@ -188,6 +201,16 @@ export function formatCourtZoneName(zoneStr, t) {
   if (!zoneStr) return "";
 
   const z = zoneStr.toLowerCase().trim();
+
+  // Portería Vacía (salto de selección de pista)
+  if (
+    z.includes("porteria vacia") ||
+    z.includes("portería vacía") ||
+    z.includes("empty_net") ||
+    z.includes("empty net")
+  ) {
+    return t ? t("empty_net", "Portería Vacía") : "Portería Vacía";
+  }
 
   // 9M Lateral Derecho
   if (

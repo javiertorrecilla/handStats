@@ -11,7 +11,7 @@
  * - Normalización Logística (Sigmoide) centrada en 5.0 para partidos neutros
  */
 
-import { calculateShotXG } from "./xgModel";
+import { calculateShotXG } from "./xgModel.js";
 
 export const DEFAULT_RATING_CONFIG = {
   // Parámetros de Escala y Normalización

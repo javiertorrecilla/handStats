@@ -106,6 +106,77 @@ export function AttackStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, te
           </div>
         </div>
       </div>
+
+      {/* DESGLOSE POR SITUACIÓN NUMÉRICA Y TÁCTICA (7vs6 / 6vs6 Sin Portero) */}
+      {metrics.tacticalSituations && (
+        <div className="hs-card">
+          <h4 className="hs-card-title">{t("attack.eff_by_situation", { team: targetTeam, defaultValue: `DESGLOSE POR SITUACIÓN NUMÉRICA Y TÁCTICA — ${targetTeam.toUpperCase()}` })}</h4>
+          <div className="hs-table-container">
+            <table className="hs-data-table">
+              <thead>
+                <tr>
+                  <th>{t("attack.col_situation", "Situación Táctica")}</th>
+                  <th>{t("attack.col_shots", "Tiros")}</th>
+                  <th>{t("attack.col_goals", "Goles")}</th>
+                  <th>{t("attack.col_eff", "% Eficacia")}</th>
+                  <th>{t("attack.turnovers", "Pérdidas")}</th>
+                  <th>{t("empty_net_conceded", "Goles P.V. Recibidos")}</th>
+                  <th>{t("net_balance", "Balance (+/-)")}</th>
+                  <th>{t("report.pct_attack", "% Ataque")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const tacData = isAway ? metrics.tacticalSituations.away : metrics.tacticalSituations.home;
+                  if (!tacData) return null;
+                  const list = [
+                    { key: "equality", label: "Igualdad Numérica (6vs6 con portero)", tag: "6vs6", color: "#12843A", item: tacData.equality },
+                    { key: "superiority", label: "Superioridad Numérica (+1 o más)", tag: "SUPERIORIDAD", color: "#2563EB", item: tacData.superiority },
+                    { key: "inferiority", label: "Inferioridad Numérica (-1 o más)", tag: "INFERIORIDAD", color: "#DC2626", item: tacData.inferiority },
+                    { key: "sevenVsSix", label: "Ataque 7 vs 6 (Portero Jugador)", tag: "7vs6 (PJ)", color: "#7C3AED", item: tacData.sevenVsSix },
+                    { key: "sixVsSixNoGk", label: "6 vs 6 Sin Portero (Con Exclusión)", tag: "6vs6 S/P", color: "#EA580C", item: tacData.sixVsSixNoGk },
+                    { key: "emptyNet", label: "Portería Vacía", tag: "P. VACÍA", color: "#D97706", item: tacData.emptyNet }
+                  ];
+
+                  return list.map(({ key, label, tag, color, item }) => {
+                    if (!item) return null;
+                    const balance = item.netBalance ?? (item.goals - (item.emptyNetGoalsConceded || 0));
+                    return (
+                      <tr key={key}>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <strong>{label}</strong>
+                            <span style={{ fontSize: "8.5px", fontWeight: "800", color, background: `${color}15`, padding: "1px 5px", borderRadius: "3px" }}>
+                              {tag}
+                            </span>
+                          </div>
+                        </td>
+                        <td>{item.shots}</td>
+                        <td>{item.goals}</td>
+                        <td>
+                          <span className="hs-table-pct" style={{ color: item.goalPct >= 60 ? "var(--color-primary)" : "var(--text-primary)" }}>
+                            {item.goalPct}%
+                          </span>
+                        </td>
+                        <td>{item.turnovers}</td>
+                        <td style={{ color: item.emptyNetGoalsConceded > 0 ? "#DC2626" : "inherit" }}>
+                          {item.emptyNetGoalsConceded}
+                        </td>
+                        <td>
+                          <strong style={{ color: balance > 0 ? "#12843A" : balance < 0 ? "#DC2626" : "#6B7280" }}>
+                            {balance > 0 ? `+${balance}` : balance}
+                          </strong>
+                        </td>
+                        <td>{item.attackPct}%</td>
+                      </tr>
+                    );
+                  });
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -40,6 +40,10 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
         aVal = a.isGoalkeeper ? 1 : 0;
         bVal = b.isGoalkeeper ? 1 : 0;
         break;
+      case "minutesPlayed":
+        aVal = Number(a.secondsPlayed) || 0;
+        bVal = Number(b.secondsPlayed) || 0;
+        break;
       case "shotsCount":
         aVal = Number(a.shotsCount) || 0;
         bVal = Number(b.shotsCount) || 0;
@@ -97,6 +101,7 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
     { key: "number", label: t("players_table.col_number", "Dorsal") },
     { key: "name", label: t("players_table.col_name", "Nombre") },
     { key: "isGoalkeeper", label: t("players_table.col_role", "Rol") },
+    { key: "minutesPlayed", label: t("players_table.col_minutes", "Min") },
     { key: "shotsCount", label: t("players_table.col_shots", "Tiros Campo") },
     { key: "goals", label: t("players_table.col_goals", "Goles") },
     { key: "xg", label: t("players_table.col_xg", "xG Campo") },
@@ -140,6 +145,13 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
                   <td>
                     <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
                       {p.isGoalkeeper ? t("players_table.role_gk", "Portero") : t("players_table.role_player", "Jugador")}
+                    </span>
+                  </td>
+
+                  {/* TIEMPO JUGADO (MINUTOS) */}
+                  <td>
+                    <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, color: "var(--text-primary)" }}>
+                      {p.minutesPlayedFormatted || (p.minutesPlayed ? `${Math.round(p.minutesPlayed)}'` : "0'")}
                     </span>
                   </td>
 

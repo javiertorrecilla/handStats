@@ -32,6 +32,7 @@ import {
   IconZap,
   IconFileCheck
 } from "../common/Icons";
+import { isEmptyNetEvent } from "../../engine/metricsEngine";
 
 /**
  * Cabecera de Sección Visualmente Destacada para el Informe PDF
@@ -308,19 +309,50 @@ function getGamePhaseStatsData(match, t = (k, def) => def) {
 
 /**
  * Determina si un evento ocurrió en:
- * Igualdad (6vs6), Superioridad (+1 o más), Inferioridad (-1 o más)
+ * Igualdad (6vs6), Superioridad (+1 o más), Inferioridad (-1 o más), 7vs6 (portero jugador) o 6vs6 sin portero
  */
 function classifyEventSituation(ev, allEvents = []) {
-  const sit = String(ev.numerical_situation || ev.situation || "").toLowerCase();
+  // 0. Detección de Portería Vacía
+  if (isEmptyNetEvent(ev)) {
+    return "emptyNet";
+  }
 
-  if (sit.includes("superior") || sit.includes("+1") || sit.includes("+2") || sit.includes("7vs6")) {
+  const sit = String(ev.numerical_situation || ev.situation || ev.tactical_situation || "").toLowerCase();
+
+  // 1. Detección específica de 7vs6 (portero jugador sin exclusión / 7 atacantes)
+  if (
+    sit.includes("7vs6") ||
+    sit.includes("7v6") ||
+    sit.includes("7 contra 6") ||
+    sit.includes("7-6") ||
+    ev.tactical_situation === "7vs6"
+  ) {
+    return "sevenVsSix";
+  }
+
+  // 2. Detección específica de 6vs6 sin portero (portero jugador con 1 exclusión)
+  if (
+    sit.includes("6vs6 sin portero") ||
+    sit.includes("6v6 sin portero") ||
+    sit.includes("6vs6_sin_portero") ||
+    sit.includes("6v6_sin_portero") ||
+    sit.includes("sin portero") ||
+    ev.tactical_situation === "6vs6_sin_portero"
+  ) {
+    return "sixVsSixNoGk";
+  }
+
+  // 3. Superioridad numérica estándar (con portero de oficio bajo palos)
+  if (sit.includes("superior") || sit.includes("+1") || sit.includes("+2")) {
     return "superiority";
   }
+
+  // 4. Inferioridad numérica estándar (con portero de oficio bajo palos)
   if (sit.includes("inferior") || sit.includes("-1") || sit.includes("-2")) {
     return "inferiority";
   }
 
-  // Correlación temporal automática con las exclusiones de 2 minutos del partido si no se indicó explícitamente
+  // 5. Correlación temporal automática con las exclusiones de 2 minutos del partido si no se indicó explícitamente
   if (allEvents && allEvents.length > 0 && ev.match_time_seconds !== undefined && ev.match_time_seconds !== null) {
     const eventTime = Number(ev.match_time_seconds);
     let homeExcl = 0;
@@ -351,13 +383,13 @@ function classifyEventSituation(ev, allEvents = []) {
     }
   }
 
-  return "equality"; // Default: Igualdad (6vs6)
+  return "equality"; // Default: Igualdad (6vs6 con portero)
 }
 
 /**
- * Clasifica y calcula las métricas por Situación Numérica para ambos equipos:
- * Igualdad, Superioridad e Inferioridad
- * Métricas: Tiros, Goles, % Gol, 7 Metros, Pérdidas, % de Ataque
+ * Clasifica y calcula las métricas por Situación Numérica y Táctica para ambos equipos:
+ * Igualdad, Superioridad, Inferioridad, 7vs6 (Portero Jugador) y 6vs6 Sin Portero (Con Exclusión)
+ * Métricas: Tiros, Goles, % Gol, Pérdidas, Goles P.V. Recibidos, Balance (+/-), % de Ataque
  */
 function getNumericalSituationStatsData(match, t = (k, def) => def) {
   const events = match?.events || [];
@@ -365,7 +397,7 @@ function getNumericalSituationStatsData(match, t = (k, def) => def) {
   const homeEvents = events.filter((ev) => !ev.is_opponent_action);
   const awayEvents = events.filter((ev) => ev.is_opponent_action);
 
-  const calculateSituations = (teamEvents) => {
+  const calculateSituations = (teamEvents, opposingEvents, isHomeTeam = true) => {
     const data = {
       equality: {
         key: "equality",
@@ -373,7 +405,8 @@ function getNumericalSituationStatsData(match, t = (k, def) => def) {
         shots: 0,
         goals: 0,
         sevenMeters: 0,
-        turnovers: 0
+        turnovers: 0,
+        emptyNetGoalsConceded: 0
       },
       superiority: {
         key: "superiority",
@@ -381,7 +414,8 @@ function getNumericalSituationStatsData(match, t = (k, def) => def) {
         shots: 0,
         goals: 0,
         sevenMeters: 0,
-        turnovers: 0
+        turnovers: 0,
+        emptyNetGoalsConceded: 0
       },
       inferiority: {
         key: "inferiority",
@@ -389,15 +423,42 @@ function getNumericalSituationStatsData(match, t = (k, def) => def) {
         shots: 0,
         goals: 0,
         sevenMeters: 0,
-        turnovers: 0
+        turnovers: 0,
+        emptyNetGoalsConceded: 0
+      },
+      sevenVsSix: {
+        key: "sevenVsSix",
+        label: t("report.sit_7vs6", "Ataque 7 vs 6 (Portero Jugador)"),
+        shots: 0,
+        goals: 0,
+        sevenMeters: 0,
+        turnovers: 0,
+        emptyNetGoalsConceded: 0
+      },
+      sixVsSixNoGk: {
+        key: "sixVsSixNoGk",
+        label: t("report.sit_6vs6_nogk", "6 vs 6 Sin Portero (Con Exclusión)"),
+        shots: 0,
+        goals: 0,
+        sevenMeters: 0,
+        turnovers: 0,
+        emptyNetGoalsConceded: 0
+      },
+      emptyNet: {
+        key: "emptyNet",
+        label: t("report.sit_empty_net", "Portería Vacía"),
+        shots: 0,
+        goals: 0,
+        sevenMeters: 0,
+        turnovers: 0,
+        emptyNetGoalsConceded: 0
       }
     };
 
     teamEvents.forEach((ev) => {
       const type = String(ev.shot_type || "").toLowerCase();
       const sitKey = classifyEventSituation(ev, events);
-      const target = data[sitKey];
-      if (!target) return;
+      const target = data[sitKey] || data.equality;
 
       if (ev.event_type === "shot") {
         target.shots += 1;
@@ -412,42 +473,82 @@ function getNumericalSituationStatsData(match, t = (k, def) => def) {
       }
     });
 
+    // Calcular goles a portería vacía recibidos por este equipo mientras jugaba sin portero
+    opposingEvents.forEach((oppEv) => {
+      const isGoal = oppEv.event_type === "shot" && oppEv.result === "Gol";
+      const isEmptyNet = Boolean(isEmptyNetEvent(oppEv));
+      if (isGoal && isEmptyNet) {
+        const defSit = String(oppEv.defending_situation || "").toLowerCase();
+        if (defSit.includes("7vs6") || defSit.includes("7v6") || defSit.includes("7-6")) {
+          data.sevenVsSix.emptyNetGoalsConceded += 1;
+        } else if (defSit.includes("6vs6") || defSit.includes("sin portero")) {
+          data.sixVsSixNoGk.emptyNetGoalsConceded += 1;
+        } else if (defSit.includes("porteria vacia") || defSit.includes("portería vacía") || defSit.includes("vacia") || defSit.includes("vacía")) {
+          data.emptyNet.emptyNetGoalsConceded += 1;
+        } else {
+          // Si no está registrado explícitamente, deducir por exclusiones de este equipo en ese instante
+          const eventTime = Number(oppEv.match_time_seconds) || 0;
+          let teamExclusionsAtTime = 0;
+          events.forEach((otherEv) => {
+            const isSanction = otherEv.event_type === "sanction";
+            const sType = String(otherEv.sanction_type || "").toLowerCase();
+            const is2Min = sType.includes("2 min") || sType.includes("exclusion") || sType.includes("2min") || sType.includes("dos minutos");
+            if (isSanction && is2Min) {
+              const start = Number(otherEv.match_time_seconds) || 0;
+              const end = start + 120;
+              if (eventTime >= start && eventTime < end) {
+                const sanctionIsOpponent = otherEv.team === "VISITANTE" || otherEv.is_opponent_action === true || otherEv.is_opponent_action === "true";
+                const isOurTeamSanction = isHomeTeam ? !sanctionIsOpponent : sanctionIsOpponent;
+                if (isOurTeamSanction) teamExclusionsAtTime += 1;
+              }
+            }
+          });
+
+          if (teamExclusionsAtTime === 0) {
+            data.sevenVsSix.emptyNetGoalsConceded += 1;
+          } else if (teamExclusionsAtTime === 1) {
+            data.sixVsSixNoGk.emptyNetGoalsConceded += 1;
+          } else {
+            data.inferiority.emptyNetGoalsConceded += 1;
+          }
+        }
+      }
+    });
+
     const totalAttacks =
       data.equality.shots + data.equality.turnovers +
       data.superiority.shots + data.superiority.turnovers +
-      data.inferiority.shots + data.inferiority.turnovers;
+      data.inferiority.shots + data.inferiority.turnovers +
+      data.sevenVsSix.shots + data.sevenVsSix.turnovers +
+      data.sixVsSixNoGk.shots + data.sixVsSixNoGk.turnovers +
+      data.emptyNet.shots + data.emptyNet.turnovers;
 
     const grandTotal = Math.max(1, totalAttacks);
 
-    const eqAttacks = data.equality.shots + data.equality.turnovers;
-    const supAttacks = data.superiority.shots + data.superiority.turnovers;
-    const infAttacks = data.inferiority.shots + data.inferiority.turnovers;
+    const enrichSituation = (item) => {
+      const attacks = item.shots + item.turnovers;
+      return {
+        ...item,
+        goalPct: item.shots > 0 ? Math.round((item.goals / item.shots) * 100) : 0,
+        attackPct: Math.round((attacks / grandTotal) * 100),
+        totalAttacks: attacks,
+        netBalance: item.goals - item.emptyNetGoalsConceded
+      };
+    };
 
     return {
-      equality: {
-        ...data.equality,
-        goalPct: data.equality.shots > 0 ? Math.round((data.equality.goals / data.equality.shots) * 100) : 0,
-        attackPct: Math.round((eqAttacks / grandTotal) * 100),
-        totalAttacks: eqAttacks
-      },
-      superiority: {
-        ...data.superiority,
-        goalPct: data.superiority.shots > 0 ? Math.round((data.superiority.goals / data.superiority.shots) * 100) : 0,
-        attackPct: Math.round((supAttacks / grandTotal) * 100),
-        totalAttacks: supAttacks
-      },
-      inferiority: {
-        ...data.inferiority,
-        goalPct: data.inferiority.shots > 0 ? Math.round((data.inferiority.goals / data.inferiority.shots) * 100) : 0,
-        attackPct: Math.round((infAttacks / grandTotal) * 100),
-        totalAttacks: infAttacks
-      }
+      equality: enrichSituation(data.equality),
+      superiority: enrichSituation(data.superiority),
+      inferiority: enrichSituation(data.inferiority),
+      sevenVsSix: enrichSituation(data.sevenVsSix),
+      sixVsSixNoGk: enrichSituation(data.sixVsSixNoGk),
+      emptyNet: enrichSituation(data.emptyNet)
     };
   };
 
   return {
-    home: calculateSituations(homeEvents),
-    away: calculateSituations(awayEvents)
+    home: calculateSituations(homeEvents, awayEvents, true),
+    away: calculateSituations(awayEvents, homeEvents, false)
   };
 }
 
@@ -830,8 +931,9 @@ function GamePhaseAnalysisComparison({ phaseStats, homeTeam, awayTeam }) {
 }
 
 /**
- * Componente comparativo de Situaciones Numéricas: Igualdad, Superioridad e Inferioridad (PDF y Web)
- * Muestra: Tiros, Goles, % Gol, 7 Metros, Pérdidas y % de Ataque para cada equipo
+ * Componente comparativo de Situaciones Numéricas y Tácticas (PDF y Web)
+ * Muestra: Igualdad (6vs6), Superioridad (+1), Inferioridad (-1), 7vs6 (PJ) y 6vs6 Sin Portero (Exclusión)
+ * Métricas: Tiros, Goles, % Gol, Pérdidas, Goles P.V. Recibidos, Balance (+/-) y % de Ataque
  */
 function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTeam }) {
   const { t } = useTranslation();
@@ -839,8 +941,10 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
     {
       key: "equality",
       title: t("report.sit_equality", "Igualdad Numérica"),
-      subtitle: t("report.sit_equality_sub", "Acciones de ataque en igualdad (6 vs 6)"),
+      subtitle: t("report.sit_equality_sub", "Acciones de ataque en igualdad (6 vs 6 con portero)"),
       tag: t("report.sit_eq_tag", "IGUALDAD (6vs6)"),
+      tagColor: "#12843A",
+      tagBg: "rgba(18, 132, 58, 0.08)",
       home: situationStats.home.equality,
       away: situationStats.away.equality
     },
@@ -849,6 +953,8 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
       title: t("report.sit_superiority", "Superioridad Numérica"),
       subtitle: t("report.sit_superiority_sub", "Ataques con ventaja numérica (+1 o más)"),
       tag: t("report.sit_sup_tag", "SUPERIORIDAD"),
+      tagColor: "#2563EB",
+      tagBg: "rgba(37, 99, 235, 0.08)",
       home: situationStats.home.superiority,
       away: situationStats.away.superiority
     },
@@ -857,21 +963,46 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
       title: t("report.sit_inferiority", "Inferioridad Numérica"),
       subtitle: t("report.sit_inferiority_sub", "Ataques con desventaja numérica (-1 o más)"),
       tag: t("report.sit_inf_tag", "INFERIORIDAD"),
+      tagColor: "#DC2626",
+      tagBg: "rgba(220, 38, 38, 0.08)",
       home: situationStats.home.inferiority,
       away: situationStats.away.inferiority
+    },
+    {
+      key: "sevenVsSix",
+      title: t("report.sit_7vs6", "Ataque 7 vs 6 (Portero Jugador)"),
+      subtitle: t("report.sit_7vs6_sub", "Portero jugador en pista sin exclusión (7 atacantes vs 6 defensas)"),
+      tag: t("report.sit_7vs6_tag", "7vs6 (PORTERO JUGADOR)"),
+      tagColor: "#7C3AED",
+      tagBg: "rgba(124, 58, 237, 0.08)",
+      home: situationStats.home.sevenVsSix,
+      away: situationStats.away.sevenVsSix
+    },
+    {
+      key: "sixVsSixNoGk",
+      title: t("report.sit_6vs6_nogk", "6 vs 6 Sin Portero (Con Exclusión)"),
+      subtitle: t("report.sit_6vs6_nogk_sub", "Portero jugador en pista con exclusión (6 atacantes vs 6 defensas)"),
+      tag: t("report.sit_6vs6_nogk_tag", "6vs6 SIN PORTERO (EXCLUSIÓN)"),
+      tagColor: "#EA580C",
+      tagBg: "rgba(234, 88, 12, 0.08)",
+      home: situationStats.home.sixVsSixNoGk,
+      away: situationStats.away.sixVsSixNoGk
+    },
+    {
+      key: "emptyNet",
+      title: t("report.sit_empty_net", "Portería Vacía"),
+      subtitle: t("report.sit_empty_net_sub", "Lanzamientos y acciones ante portería desprotegida o sin portero"),
+      tag: t("report.sit_empty_net_tag", "PORTERÍA VACÍA"),
+      tagColor: "#D97706",
+      tagBg: "rgba(217, 119, 6, 0.08)",
+      home: situationStats.home.emptyNet,
+      away: situationStats.away.emptyNet
     }
   ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
       {situations.map((s) => {
-        let homeGoalPctBar = 50;
-        let awayGoalPctBar = 50;
-        if (s.home.goalPct + s.away.goalPct > 0) {
-          homeGoalPctBar = Math.round((s.home.goalPct / (s.home.goalPct + s.away.goalPct)) * 100);
-          awayGoalPctBar = 100 - homeGoalPctBar;
-        }
-
         return (
           <div
             key={s.key}
@@ -891,7 +1022,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
                 <span style={{ fontSize: "11px", fontWeight: 900, color: "#111827", textTransform: "uppercase", fontFamily: "'Raleway', 'Montserrat', sans-serif" }}>
                   {s.title}
                 </span>
-                <span style={{ fontSize: "8.5px", fontWeight: 800, color: "#12843A", background: "rgba(18, 132, 58, 0.08)", padding: "1px 5px", borderRadius: "3px" }}>
+                <span style={{ fontSize: "8.5px", fontWeight: 800, color: s.tagColor || "#12843A", background: s.tagBg || "rgba(18, 132, 58, 0.08)", padding: "1px 5px", borderRadius: "3px" }}>
                   {s.tag}
                 </span>
               </div>
@@ -900,8 +1031,8 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
               </span>
             </div>
 
-            {/* Cuadrícula Comparativa de las 6 Métricas requeridas */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "6px", textAlign: "center", fontSize: "10px" }}>
+            {/* Cuadrícula Comparativa de las 7 Métricas requeridas */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "6px", textAlign: "center", fontSize: "10px" }}>
               {/* Métrica 1: Tiros */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
                 <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.shots", "Tiros")}</span>
@@ -932,17 +1063,7 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
                 </div>
               </div>
 
-              {/* Métrica 4: 7 Metros */}
-              <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
-                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("mesa_control.action_gol_7m", "7 Metros")}</span>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
-                  <strong style={{ color: "#12843A", fontSize: "11px", fontFamily: "monospace" }}>{s.home.sevenMeters}</strong>
-                  <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
-                  <strong style={{ color: "#2563EB", fontSize: "11px", fontFamily: "monospace" }}>{s.away.sevenMeters}</strong>
-                </div>
-              </div>
-
-              {/* Métrica 5: Pérdidas */}
+              {/* Métrica 4: Pérdidas */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
                 <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("attack.turnovers", "Pérdidas")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
@@ -952,7 +1073,31 @@ function NumericalSituationAnalysisComparison({ situationStats, homeTeam, awayTe
                 </div>
               </div>
 
-              {/* Métrica 6: % Ataque (Volumen) */}
+              {/* Métrica 5: Goles P.V. Recibidos */}
+              <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
+                <span style={{ color: "#DC2626", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("empty_net_conceded", "Goles P.V. Recibidos")}</span>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                  <strong style={{ color: "#DC2626", fontSize: "11px", fontFamily: "monospace" }}>{s.home.emptyNetGoalsConceded}</strong>
+                  <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
+                  <strong style={{ color: "#DC2626", fontSize: "11px", fontFamily: "monospace" }}>{s.away.emptyNetGoalsConceded}</strong>
+                </div>
+              </div>
+
+              {/* Métrica 6: Balance (+/-) */}
+              <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
+                <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("net_balance", "Balance (+/-)")}</span>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                  <strong style={{ color: s.home.netBalance > 0 ? "#12843A" : s.home.netBalance < 0 ? "#DC2626" : "#6B7280", fontSize: "11px", fontFamily: "monospace" }}>
+                    {s.home.netBalance > 0 ? `+${s.home.netBalance}` : s.home.netBalance}
+                  </strong>
+                  <span style={{ color: "#D1D5DB", fontSize: "8px" }}>|</span>
+                  <strong style={{ color: s.away.netBalance > 0 ? "#2563EB" : s.away.netBalance < 0 ? "#DC2626" : "#6B7280", fontSize: "11px", fontFamily: "monospace" }}>
+                    {s.away.netBalance > 0 ? `+${s.away.netBalance}` : s.away.netBalance}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Métrica 7: % Ataque (Volumen) */}
               <div style={{ background: "#F9FAFB", padding: "5px 4px", borderRadius: "4px", border: "1px solid #F3F4F6" }}>
                 <span style={{ color: "#6B7280", fontSize: "8px", fontWeight: 700, textTransform: "uppercase", display: "block" }}>{t("report.pct_attack", "% Ataque")}</span>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "4px", marginTop: "2px" }}>
@@ -1593,6 +1738,8 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
 
   const totalTurnovers = sorted.reduce((sum, p) => sum + (Number(p.turnovers) || 0), 0);
   const totalTwoMins = sorted.reduce((sum, p) => sum + (Number(p.twoMins) || 0), 0);
+  const totalSecondsPlayed = sorted.reduce((sum, p) => sum + (Number(p.secondsPlayed) || 0), 0);
+  const totalMinutesFormatted = totalSecondsPlayed > 0 ? `${Math.floor(totalSecondsPlayed / 60)}'` : "—";
   const avgRating = sorted.length > 0
     ? (sorted.reduce((sum, p) => sum + (parseFloat(p.rating) || 0), 0) / sorted.length).toFixed(1)
     : "—";
@@ -1632,6 +1779,7 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
             <th style={{ padding: "6px 8px", textAlign: "left" }}>#</th>
             <th style={{ padding: "6px 8px", textAlign: "left" }}>{t("players_table.col_name", "Jugador")}</th>
             <th style={{ padding: "6px 8px", textAlign: "left" }}>{t("players_table.col_role", "Rol")}</th>
+            <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("players_table.col_minutes", "Min")}</th>
             <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("report.th_goals_shots", "G / T")}</th>
             <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("report.th_eff", "% Efic.")}</th>
             <th style={{ padding: "6px 8px", textAlign: "center" }}>{t("players_table.col_xg", "xG")}</th>
@@ -1658,6 +1806,9 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
                 <span style={{ fontSize: "8px", background: p.isGoalkeeper ? "rgba(245, 158, 11, 0.12)" : "rgba(107, 114, 128, 0.10)", color: p.isGoalkeeper ? "#D97706" : "#4B5563", padding: "1px 5px", borderRadius: "3px", fontWeight: 700 }}>
                   {p.isGoalkeeper ? t("players_table.role_gk", "Portero") : t("players_table.role_player", "Jugador")}
                 </span>
+              </td>
+              <td style={{ padding: "5px 8px", textAlign: "center", color: "#4B5563", fontWeight: 700, fontFamily: "monospace" }}>
+                {p.minutesPlayedFormatted || (p.minutesPlayed ? `${Math.round(p.minutesPlayed)}'` : "0'")}
               </td>
               <td style={{ padding: "5px 8px", textAlign: "center", fontWeight: 800, color: p.goals > 0 ? "#111827" : "#9CA3AF" }}>
                 {p.goals}/{p.shotsCount}
@@ -1694,6 +1845,9 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
           <tr style={{ background: "#F3F4F6", borderTop: "2px solid #E5E7EB", fontWeight: 900, color: "#111827", fontSize: "9px" }}>
             <td colSpan={3} style={{ padding: "6px 8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               {t("report.team_totals", "TOTALES EQUIPO")}
+            </td>
+            <td style={{ padding: "6px 8px", textAlign: "center", fontFamily: "monospace", color: "#4B5563" }}>
+              {totalMinutesFormatted}
             </td>
             <td style={{ padding: "6px 8px", textAlign: "center" }}>{totalGoals}/{totalShots}</td>
             <td style={{ padding: "6px 8px", textAlign: "center", color: color }}>{teamEff}%</td>
@@ -2972,8 +3126,8 @@ export function ReportStatsView({ metrics, match }) {
           {selectedSections.numericalSituationAnalysis && (
             <div className="hs-pdf-section" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <PDFSectionHeader
-                title={t("report.section_situations_title", "Análisis de Situaciones Numéricas")}
-                subtitle={t("report.section_situations_sub", "Rendimiento en Igualdad (6vs6), Superioridad (+1) e Inferioridad (-1)")}
+                title={t("report.section_situations_title", "Análisis de Situaciones Numéricas y Tácticas")}
+                subtitle={t("report.section_situations_sub", "Rendimiento en Igualdad (6vs6), Superioridad (+1), Inferioridad (-1), 7vs6, 6vs6 Sin Portero y Portería Vacía")}
                 tag={t("report.section_situations_tag", "Táctica Numérica")}
                 tagColor="#8B5CF6"
               />

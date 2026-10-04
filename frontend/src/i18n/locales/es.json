@@ -81,7 +81,9 @@
       "Handball Pro Analytics"
     ],
     "motto": [
-      "Analyze", "Improve", "Win"
+      "Analyze",
+      "Improve",
+      "Win"
     ]
   },
   "landing_stats": {
@@ -399,6 +401,7 @@
     "label_penetration": "Tiro de Penetración (6m)",
     "label_wing": "Tiro de Extremo (6m)",
     "label_9m": "Primera Línea / Distancia (9m)",
+    "label_empty_net": "Lanzamiento a Portería Vacía",
     "label_superiority": "Bonus Superioridad Numérica (+)",
     "label_inferiority": "Penalización Inferioridad (-)",
     "xsaves_title": "EXPECTED SAVES (xSAVES) & MODIFICADOR DE PORTERÍA",
@@ -531,7 +534,33 @@
     "alert_select_player_first": "Por favor, selecciona primero a un jugador de la alineación/plantilla para registrar la acción.",
     "alert_substitutes_sanctions_only": "Los suplentes solo pueden recibir Sanciones (2 min, Amarilla, Roja, Azul). Para meter a este jugador al campo, haz clic en un titular de la alineación.",
     "alert_free_throw_defending_only": "El Golpe Franco solo se puede atribuir a un jugador del equipo que DEFIENDE (sin posesión).",
-    "player_excluded_tooltip": "Jugador excluido (2 min) — Tiempo restante: {{time}}"
+    "player_excluded_tooltip": "Jugador excluido (2 min) — Tiempo restante: {{time}}",
+    "action_cambio": "CAMBIO",
+    "filter_substitutions": "CAMBIOS",
+    "time_played": "Tiempo jugado",
+    "btn_edit_minutes": "Ajustar minutos jugados",
+    "adjust_minutes_title": "Ajustar Minutos Jugados",
+    "adjust_minutes_desc": "Revisa o ajusta manualmente los minutos jugados por cada jugador en este partido. Si dejas el campo vacío, se usará el cálculo automático basado en cambios.",
+    "auto_calculated": "Calculado",
+    "error_saving_minutes": "Error al guardar los minutos. Inténtalo de nuevo.",
+    "tactical_btn": "Táctica",
+    "tactical_title": "Configuración Táctica",
+    "atq_def_title": "Cambio Ataque / Defensa",
+    "atq_def_badge": "Especialista Defensivo",
+    "atq_def_desc": "Sustituye automáticamente al jugador de ataque por el especialista defensivo en cada cambio de posesión y acumula sus minutos exactos.",
+    "atq_player_label": "Jugador de Ataque (sale en defensa)",
+    "def_player_label": "Especialista Defensivo (entra en defensa)",
+    "seven_v_six_title": "Jugar 7 contra 6",
+    "seven_v_six_desc": "Retira al portero en ataque para jugar con un 7º jugador de campo y lo devuelve a la portería en defensa.",
+    "seven_v_six_gk_label": "Portero a retirar en ataque",
+    "seven_v_six_field_label": "7º Jugador de campo que entra",
+    "save_tactics": "Guardar táctica",
+    "tactics_saved": "Táctica actualizada",
+    "empty_net": "Portería Vacía",
+    "action_gol_porteria_vacia": "GOL P. VACÍA",
+    "empty_net_badge": "7v6 CAMPO",
+    "empty_net_tooltip": "Portería vacía / Jugador de campo en pista",
+    "empty_net_court_skipped": "Portería vacía: haz clic directamente en la portería"
   },
   "dashboard": {
     "select_team_banner": "-- SELECCIONAR EQUIPO PARA VER ESTADÍSTICAS: --",
@@ -715,7 +744,8 @@
     "col_2min": "2 Min",
     "col_rating": "Rating",
     "role_gk": "Portero",
-    "role_player": "Jugador"
+    "role_player": "Jugador",
+    "col_minutes": "Min"
   },
   "chronology": {
     "tab_all": "Todos",
@@ -734,7 +764,8 @@
     "timeout_desc": "Tiempo Muerto solicitado",
     "free_throw_desc": "Golpe Franco cometido",
     "sanction_desc": "Sanción disciplinaria: {{type}}",
-    "no_events": "No se encontraron eventos coincidentes con el filtro."
+    "no_events": "No se encontraron eventos coincidentes con el filtro.",
+    "action_cambio": "CAMBIO"
   },
   "report": {
     "title": "INFORME TÉCNICO COMPLETO DE PARTIDO",
@@ -760,6 +791,12 @@
     "sit_equality": "Igualdad Numérica",
     "sit_superiority": "Superioridad Numérica",
     "sit_inferiority": "Inferioridad Numérica",
+    "sit_7vs6": "Ataque 7 vs 6 (Portero Jugador)",
+    "sit_6vs6_nogk": "6 vs 6 Sin Portero (Con Exclusión)",
+    "sit_empty_net": "Portería Vacía",
+    "empty_net_conceded": "Goles P.V. Recibidos",
+    "net_balance": "Balance (+/-)",
+    "action_gol_porteria_vacia_detail": "Gol a portería vacía",
     "metrics_comparison": "COMPARATIVA DE MÉTRICAS",
     "total_shots_label": "total",
     "preset_all": "Informe Integral Completo",
@@ -847,6 +884,12 @@
     "sit_sup_tag": "SUPERIORIDAD",
     "sit_inferiority_sub": "Ataques con desventaja numérica (-1 o más)",
     "sit_inf_tag": "INFERIORIDAD",
+    "sit_7vs6_sub": "Portero jugador en pista sin exclusión (7 atacantes vs 6 defensas)",
+    "sit_7vs6_tag": "7vs6 (PORTERO JUGADOR)",
+    "sit_6vs6_nogk_sub": "Portero jugador en pista con exclusión (6 atacantes vs 6 defensas)",
+    "sit_6vs6_nogk_tag": "6vs6 SIN PORTERO (EXCLUSIÓN)",
+    "sit_empty_net_sub": "Lanzamientos y acciones ante portería vacía o sin portero",
+    "sit_empty_net_tag": "PORTERÍA VACÍA",
     "court_shots_title": "Tiros en Media Pista",
     "goal_shots_title": "Impacto en Portería",
     "shots": "Tiros",

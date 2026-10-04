@@ -47,23 +47,26 @@ async def list_matches_by_user(user_id: str):
     return matches
 
 # ==========================================================
-# ACTUALIZAR JUGADORES DE UN PARTIDO
-# ==========================================================
+from pydantic import BaseModel
+from typing import List, Optional
+
+class UpdateMatchPlayersPayload(BaseModel):
+    home_players: Optional[List[MatchPlayer]] = None
+    away_players: Optional[List[MatchPlayer]] = None
 
 @router.put("/{match_id}/players", response_description="Actualizar jugadores del partido")
 async def update_match_players(
     match_id: str,
-    home_players: List[MatchPlayer] = [],
-    away_players: List[MatchPlayer] = [],
+    payload: UpdateMatchPlayersPayload,
 ):
     if not ObjectId.is_valid(match_id):
         raise HTTPException(status_code=400, detail="ID de partido inválido")
 
     update = {}
-    if home_players:
-        update["home_players"] = [p.model_dump() for p in home_players]
-    if away_players:
-        update["away_players"] = [p.model_dump() for p in away_players]
+    if payload.home_players is not None:
+        update["home_players"] = [p.model_dump() for p in payload.home_players]
+    if payload.away_players is not None:
+        update["away_players"] = [p.model_dump() for p in payload.away_players]
 
     if not update:
         raise HTTPException(status_code=400, detail="No hay datos para actualizar")

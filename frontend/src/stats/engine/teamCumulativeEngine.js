@@ -1,4 +1,4 @@
-import { calculateMatchMetrics } from "./metricsEngine";
+import { calculateMatchMetrics, isEmptyNetEvent } from "./metricsEngine";
 import { generateGoalGridMatrix, generateCourtHeatmap } from "./heatmapEngine";
 
 /**
@@ -186,8 +186,8 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
             totalSanctions++;
           }
         } else {
-          // Eventos del rival (tiros recibidos en portería por el equipo)
-          if (ev.event_type === "shot") {
+          // Eventos del rival (tiros recibidos en portería por el equipo, excluyendo portería vacía)
+          if (ev.event_type === "shot" && !isEmptyNetEvent(ev)) {
             allTeamGkShotsFaced.push(ev);
           }
         }

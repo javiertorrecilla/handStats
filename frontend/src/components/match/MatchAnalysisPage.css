@@ -967,6 +967,13 @@
   overflow: hidden;
 }
 
+.mp-half-court-wrapper.empty-net-dimmed .mp-half-court {
+  opacity: 0.55;
+  filter: grayscale(30%);
+  cursor: not-allowed;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
 /* MEDIA PISTA DE BALONMANO */
 .mp-half-court {
   position: relative;
@@ -1352,7 +1359,17 @@
   width: 100%;
 }
 
-/* HISTORIAL DE ACCIONES COMPACTO */
+/* COLUMNA DERECHA INFERIOR: HISTORIAL COMPACTO + TÁCTICA DEBAJO */
+.mp-bottom-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* HISTORIAL DE ACCIONES COMPACTO ("haz el historial más chico") */
 .mp-timeline-card {
   background: var(--bg-surface, #12261a);
   border: 1px solid var(--border-color, #1d3b2e);
@@ -1364,6 +1381,153 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
+}
+
+.mp-timeline-card.compact {
+  flex: 0 1 auto;
+  max-height: 130px;
+  min-height: 75px;
+  height: auto;
+}
+
+.mp-timeline-card.compact .mp-timeline-list {
+  max-height: 90px;
+  min-height: 45px;
+  overflow-y: auto;
+}
+
+/* TARJETA DE CAMBIOS TÁCTICOS DEBAJO DEL HISTORIAL */
+.mp-tactics-under-history-card {
+  flex: 1;
+  min-height: 0;
+  background: var(--bg-surface, #12261a);
+  border: 1px solid var(--border-color, #1d3b2e);
+  border-radius: var(--radius-lg, 12px);
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Cabecera del módulo táctico con tabs */
+.mp-tactics-uh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mp-tactics-uh-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-display, 'Raleway', sans-serif);
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b8c78);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* Tabs de equipo Local / Visitante */
+.mp-tactics-team-tabs {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px;
+  border-radius: 6px;
+  gap: 2px;
+}
+
+.mp-tactics-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.mp-tactics-tab-btn:hover {
+  color: #f1f5f9;
+}
+
+.mp-tactics-tab-btn.home.active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.mp-tactics-tab-btn.away.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.mp-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.mp-tab-dot.home {
+  background: #22c55e;
+}
+
+.mp-tab-dot.away {
+  background: #3b82f6;
+}
+
+.mp-tab-text {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-tab-possession {
+  font-size: 9px;
+  color: #eab308;
+  line-height: 1;
+}
+
+.mp-tab-badge {
+  font-size: 7.5px;
+  font-weight: 900;
+  background: #10b981;
+  color: #ffffff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.mp-tactics-uh-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mp-tactics-uh-body .mp-clean-tactics-bar {
+  padding: 0;
+  gap: 5px;
 }
 
 .mp-timeline-header {
@@ -1911,10 +2075,44 @@
 [data-theme="light"] .mp-team-column,
 [data-theme="light"] .mp-pitch-card,
 [data-theme="light"] .mp-actions-card,
-[data-theme="light"] .mp-timeline-card {
+[data-theme="light"] .mp-timeline-card,
+[data-theme="light"] .mp-tactics-under-history-card {
   background: #ffffff;
   border-color: #cbd7d0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .mp-tactics-uh-header {
+  border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .mp-tactics-uh-title {
+  color: #475569;
+}
+
+[data-theme="light"] .mp-tactics-team-tabs {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .mp-tactics-tab-btn {
+  color: #64748b;
+}
+
+[data-theme="light"] .mp-tactics-tab-btn:hover {
+  color: #0f172a;
+}
+
+[data-theme="light"] .mp-tactics-tab-btn.home.active {
+  background: #ffffff;
+  color: #15803d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .mp-tactics-tab-btn.away.active {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="light"] .home-header h3,
@@ -2730,4 +2928,990 @@
 .mp-rebound-btn.attack:hover {
   background: #12843A;
   color: var(--text-contrast);
+}
+
+/* ==========================================================
+   MINUTOS JUGADOS (TIEMPO EN PISTA Y AJUSTE MANUAL)
+========================================================== */
+
+.mp-team-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color, #1d3b2e);
+  margin-bottom: 4px;
+}
+
+.mp-team-column-name {
+  font-family: var(--font-display, 'Raleway', sans-serif);
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.home-column .mp-team-column-name {
+  color: var(--brand-accent, #2DBE60);
+}
+
+.away-column .mp-team-column-name {
+  color: #38bdf8;
+}
+
+.mp-btn-adjust-minutes {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mp-btn-adjust-minutes:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary, #f8fafc);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="light"] .mp-btn-adjust-minutes {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+[data-theme="light"] .mp-btn-adjust-minutes:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.mp-player-time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary, #94a3b8);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: auto;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.mp-player-time-badge.on-court {
+  color: #2DBE60;
+  background: rgba(45, 190, 96, 0.12);
+  border: 1px solid rgba(45, 190, 96, 0.25);
+}
+
+.away-column .mp-player-time-badge.on-court {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+[data-theme="light"] .mp-player-time-badge {
+  background: rgba(0, 0, 0, 0.04);
+  color: #64748b;
+}
+
+[data-theme="light"] .home-column .mp-player-time-badge.on-court {
+  background: rgba(18, 132, 58, 0.10);
+  border-color: rgba(18, 132, 58, 0.25);
+  color: #12843A;
+}
+
+[data-theme="light"] .away-column .mp-player-time-badge.on-court {
+  background: rgba(14, 116, 144, 0.10);
+  border-color: rgba(14, 116, 144, 0.25);
+  color: #0369a1;
+}
+
+/* Modal Ajuste de Minutos */
+.mp-adjust-minutes-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mp-adjust-minutes-modal {
+  background: var(--bg-surface, #12261a);
+  border: 1px solid var(--border-color, #1d3b2e);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .mp-adjust-minutes-modal {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.mp-adjust-minutes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #1d3b2e);
+}
+
+.mp-adjust-minutes-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display, 'Raleway', sans-serif);
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-contrast, #ffffff);
+  margin: 0;
+}
+
+.mp-adjust-minutes-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mp-adjust-minutes-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+}
+
+.mp-adjust-minutes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.mp-adjust-minutes-table th {
+  padding: 8px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-secondary, #94a3b8);
+  border-bottom: 1px solid var(--border-color, #1d3b2e);
+}
+
+.mp-adjust-minutes-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .mp-adjust-minutes-table th {
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .mp-adjust-minutes-table td {
+  border-bottom-color: #f1f5f9;
+}
+
+.mp-adjust-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mp-adjust-minutes-input {
+  width: 65px;
+  padding: 4px 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, #1d3b2e);
+  background: var(--bg-inset, #081210);
+  color: var(--text-contrast, #ffffff);
+}
+
+[data-theme="light"] .mp-adjust-minutes-input {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.mp-adjust-minutes-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color, #1d3b2e);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .mp-adjust-minutes-footer {
+  background: #f8fafc;
+  border-top-color: #e2e8f0;
+}
+
+/* ==========================================================
+   TACTICAL CONFIGURATION & EMPTY NET STYLES
+   ========================================================== */
+
+.mp-btn-tactical {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.mp-btn-tactical:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.mp-tactical-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+  display: inline-block;
+  margin-left: 2px;
+}
+
+.mp-tactical-pill {
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.mp-tactical-pill.atq {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.mp-tactical-pill.def {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.mp-tactical-pill.seven {
+  background: rgba(245, 158, 11, 0.18);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+/* Portería Vacía & 7v6 en la lista de jugadores */
+.empty-net-gk-row {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  background: rgba(245, 158, 11, 0.06) !important;
+}
+
+.seven-v-six-pill,
+.pj-pill {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #f59e0b !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  font-weight: 800;
+  font-size: 8px !important;
+}
+
+.seven-v-six-badge,
+.pj-badge {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #f59e0b !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.pj-badge.warning {
+  background: rgba(234, 88, 12, 0.2) !important;
+  color: #fb923c !important;
+  border-color: rgba(234, 88, 12, 0.45) !important;
+}
+
+.pj-badge.danger {
+  background: rgba(220, 38, 38, 0.2) !important;
+  color: #f87171 !important;
+  border-color: rgba(220, 38, 38, 0.45) !important;
+}
+
+.empty-net-badge {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.mp-item-empty-net-tag {
+  font-family: var(--font-sans, 'Montserrat', sans-serif);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.mp-section-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.mp-section-title-wrap .mp-section-title {
+  margin-bottom: 0;
+}
+
+.mp-gk-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mp-btn-gk-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1.5px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #cbd5e1;
+}
+
+.mp-btn-gk-toggle.vacate {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.mp-btn-gk-toggle.vacate:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: #ef4444;
+}
+
+.mp-btn-gk-toggle.restore {
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.mp-btn-gk-toggle.restore:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #10b981;
+}
+
+.mp-empty-net-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px dashed rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  color: #f87171;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.mp-empty-net-row.clickable {
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mp-empty-net-row.clickable:hover {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.mp-empty-net-hint {
+  font-size: 10px;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+/* Botón de alternar Portería Vacía en la barra de selección */
+.mp-empty-net-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  color: var(--text-secondary, #cbd5e1);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.mp-empty-net-toggle-btn:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.mp-empty-net-toggle-btn.active {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+/* Modal Táctica */
+.mp-tactical-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.mp-tactical-modal {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: mpModalFadeIn 0.2s ease;
+}
+
+.mp-tactical-card-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.mp-tactical-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.mp-tactical-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.mp-tactical-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.mp-tactical-switch input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #10b981;
+  cursor: pointer;
+}
+
+.mp-tactical-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0 0 12px 0;
+}
+
+.mp-tactical-pair-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mp-tactical-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mp-tactical-select-group label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.mp-tactical-select {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #f8fafc;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.mp-tactical-select:focus {
+  border-color: #38bdf8;
+}
+
+/* ==========================================================
+   CUADRO ATAQUE / DEFENSA — ROBUSTO, VISIBLE Y CLARO
+   ========================================================== */
+.mp-atqdef-box {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  margin: 3px 0 6px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: visible;
+}
+
+.mp-atqdef-box.is-active {
+  border-color: #94a3b8;
+}
+
+.is-home.mp-atqdef-box.is-active {
+  border-left: 4px solid #16a34a !important;
+}
+
+.is-away.mp-atqdef-box.is-active {
+  border-left: 4px solid #2563eb !important;
+}
+
+/* Cabecera básica: Título a la izquierda, Controles a la derecha */
+.mp-atqdef-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  min-height: 32px;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+.mp-atqdef-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mp-atqdef-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.1px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.mp-atqdef-possession-pill {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.mp-atqdef-possession-pill.atq {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.mp-atqdef-possession-pill.def {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.mp-atqdef-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Botón Invertir sobrio */
+.mp-atqdef-invert-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  line-height: 1.3;
+  transition: all 0.15s ease;
+}
+
+.mp-atqdef-invert-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Switch */
+.mp-atqdef-switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.mp-atqdef-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.mp-atqdef-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #cbd5e1;
+  border-radius: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.mp-atqdef-slider::before {
+  content: "";
+  position: absolute;
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  top: 2px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.is-home .mp-atqdef-switch input:checked + .mp-atqdef-slider {
+  background-color: #16a34a;
+}
+
+.is-away .mp-atqdef-switch input:checked + .mp-atqdef-slider {
+  background-color: #2563eb;
+}
+
+.mp-atqdef-switch input:checked + .mp-atqdef-slider::before {
+  transform: translateX(14px);
+}
+
+/* Cuerpo con selectores de jugadores */
+.mp-atqdef-body {
+  padding: 6px 8px 8px 8px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+.mp-atqdef-player-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  padding: 3px 6px;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+}
+
+.mp-atqdef-player-row.active-court {
+  border-color: #86efac;
+  background: #f0fdf4;
+  box-shadow: 0 1px 2px rgba(22, 163, 74, 0.08);
+}
+
+.is-away .mp-atqdef-player-row.active-court {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.08);
+}
+
+/* Etiquetas ATQ / DEF */
+.mp-atqdef-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  width: 30px;
+  height: 22px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  text-align: center;
+  color: #ffffff;
+}
+
+.mp-atqdef-tag.atq {
+  background: #2563eb;
+}
+
+.mp-atqdef-tag.def {
+  background: #dc2626;
+}
+
+/* Select de jugadores */
+.mp-atqdef-select {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 18px 0 6px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 10px;
+  transition: border-color 0.15s ease;
+}
+
+.mp-atqdef-select:hover {
+  border-color: #94a3b8;
+}
+
+.is-home .mp-atqdef-select:focus {
+  border-color: #16a34a;
+}
+
+.is-away .mp-atqdef-select:focus {
+  border-color: #2563eb;
+}
+
+.mp-atqdef-select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+/* Badges En pista / Banquillo */
+.mp-atqdef-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.mp-atqdef-badge.pista {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.is-away .mp-atqdef-badge.pista {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.mp-atqdef-badge.banquillo {
+  background: #e2e8f0;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+/* Resumen del cambio */
+.mp-atqdef-summary {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 6px;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.mp-atqdef-summary strong {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+/* ==========================================================
+   MODO OSCURO (DARK MODE)
+   ========================================================== */
+[data-theme="dark"] .mp-atqdef-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .mp-atqdef-box.is-active {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .is-home.mp-atqdef-box.is-active {
+  border-left-color: #22c55e !important;
+}
+
+[data-theme="dark"] .is-away.mp-atqdef-box.is-active {
+  border-left-color: #3b82f6 !important;
+}
+
+[data-theme="dark"] .mp-atqdef-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .mp-atqdef-invert-btn {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .mp-atqdef-invert-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .mp-atqdef-slider {
+  background-color: #475569;
+}
+
+[data-theme="dark"] .mp-atqdef-body {
+  border-top-color: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .mp-atqdef-player-row {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .mp-atqdef-player-row.active-court {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+[data-theme="dark"] .is-away .mp-atqdef-player-row.active-court {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+[data-theme="dark"] .mp-atqdef-select {
+  background-color: #1e2430;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .mp-atqdef-select option {
+  background-color: #1a202c;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .mp-atqdef-badge.banquillo {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .mp-atqdef-summary {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .mp-atqdef-summary strong {
+  color: #f1f5f9;
 }

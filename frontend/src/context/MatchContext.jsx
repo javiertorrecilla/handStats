@@ -84,29 +84,54 @@ export const MatchProvider = ({ children }) => {
       fullEvent.numerical_situation = autoSituation;
     }
 
+    // Salvaguarda infalible: evitar duplicación de eventos de sustitución idénticos
+    const isSubEvent = eventData.event_type === "substitution" || eventData.action_key === "cambio" || eventData.category === "cambios";
+    if (isSubEvent) {
+      const pInId = eventData.player_in_id || eventData.player_in_number || eventData.player_id;
+      const pOutId = eventData.player_out_id || eventData.player_out_number;
+      const team = eventData.team;
+
+      const recentDuplicate = (currentMatch.events || []).slice(-15).some((e) => {
+        const isPrevSub = e.event_type === "substitution" || e.action_key === "cambio" || e.category === "cambios";
+        if (!isPrevSub) return false;
+        const sameTeam = e.team === team;
+        const samePlayerIn = (e.player_in_id || e.player_in_number || e.player_id) === pInId;
+        const samePlayerOut = (e.player_out_id || e.player_out_number) === pOutId;
+        const timeDiff = Math.abs((Number(e.match_time_seconds) || 0) - eventTime);
+        return sameTeam && samePlayerIn && (samePlayerOut || (!pOutId && !e.player_out_id)) && timeDiff <= 2;
+      });
+
+      if (recentDuplicate) {
+        console.warn("⚠️ Sustitución duplicada prevenida en sendMatchEvent:", { team, pInId, pOutId, eventTime });
+        return;
+      }
+    }
+
+    // 1. Actualización optimista inmediata en memoria de React para sincronización en tiempo real
+    setCurrentMatch(prev => {
+      if (!prev) return prev;
+      const updatedEvents = [...(prev.events || []), fullEvent];
+      let goalsHome = prev.goals_home || 0;
+      let goalsAway = prev.goals_away || 0;
+
+      if (fullEvent.event_type === 'shot' && fullEvent.result === 'Gol') {
+        if (fullEvent.is_opponent_action) {
+          goalsAway += 1;
+        } else {
+          goalsHome += 1;
+        }
+      }
+
+      return {
+        ...prev,
+        events: updatedEvents,
+        goals_home: goalsHome,
+        goals_away: goalsAway
+      };
+    });
+
     try {
       await matchService.addEvent(currentMatch._id, fullEvent);
-
-      setCurrentMatch(prev => {
-        const updatedEvents = [...prev.events, fullEvent];
-        let goalsHome = prev.goals_home;
-        let goalsAway = prev.goals_away;
-
-        if (fullEvent.event_type === 'shot' && fullEvent.result === 'Gol') {
-          if (fullEvent.is_opponent_action) {
-            goalsAway += 1;
-          } else {
-            goalsHome += 1;
-          }
-        }
-
-        return {
-          ...prev,
-          events: updatedEvents,
-          goals_home: goalsHome,
-          goals_away: goalsAway
-        };
-      });
     } catch (error) {
       console.error("Error al registrar el evento en el servidor:", error);
     }
@@ -157,6 +182,19 @@ export const MatchProvider = ({ children }) => {
     }
   };
 
+  // Actualizar jugadores del partido (plantilla / minutos manuales)
+  const updatePlayers = async (homePlayers, awayPlayers) => {
+    if (!currentMatch) return;
+    try {
+      const updated = await matchService.updatePlayers(currentMatch._id, homePlayers, awayPlayers);
+      setCurrentMatch(updated);
+      return updated;
+    } catch (error) {
+      console.error("Error al actualizar jugadores:", error);
+      throw error;
+    }
+  };
+
   return (
     <MatchContext.Provider value={{
       currentMatch,
@@ -167,6 +205,7 @@ export const MatchProvider = ({ children }) => {
       sendMatchEvent,
       closePossession,
       undoLastEvent,
+      updatePlayers,
       setCurrentMatch
     }}>
       {children}

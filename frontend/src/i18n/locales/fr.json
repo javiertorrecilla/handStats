@@ -81,7 +81,9 @@
       "Handball Pro Analytics"
     ],
     "motto": [
-      "Analyze", "Improve", "Win"
+      "Analyze",
+      "Improve",
+      "Win"
     ]
   },
   "landing_stats": {
@@ -399,6 +401,7 @@
     "label_penetration": "Tir en Pénétration (6m)",
     "label_wing": "Tir d'Ailier (6m)",
     "label_9m": "Base Arrière / Loin (9m)",
+    "label_empty_net": "Tir en cage vide",
     "label_superiority": "Bonus Supériorité Numérique (+)",
     "label_inferiority": "Pénalité Infériorité (-)",
     "xsaves_title": "EXPECTED SAVES (xSAVES) & MODIFICATEUR GARDIEN",
@@ -531,7 +534,33 @@
     "alert_select_player_first": "Veuillez d'abord sélectionner un joueur de l'alignement pour enregistrer l'action.",
     "alert_substitutes_sanctions_only": "Les remplaçants ne peuvent recevoir que des sanctions (2 min, carton jaune, rouge, bleu). Pour faire entrer ce joueur, cliquez sur un titulaire.",
     "alert_free_throw_defending_only": "Le jet franc ne peut être attribué qu'à un joueur de l'équipe qui DÉFEND (sans possession).",
-    "player_excluded_tooltip": "Joueur exclu (2 min) — Temps restant : {{time}}"
+    "player_excluded_tooltip": "Joueur exclu (2 min) — Temps restant : {{time}}",
+    "action_cambio": "CHANGEMENT",
+    "filter_substitutions": "CHANGEMENTS",
+    "time_played": "Temps de jeu",
+    "btn_edit_minutes": "Ajuster les minutes jouées",
+    "adjust_minutes_title": "Ajuster les minutes jouées",
+    "adjust_minutes_desc": "Vérifiez ou ajustez manuellement les minutes jouées par chaque joueur dans ce match. Si laissé vide, le calcul automatique basé sur les changements sera utilisé.",
+    "auto_calculated": "Calculé",
+    "error_saving_minutes": "Erreur lors de l'enregistrement des minutes. Veuillez réessayer.",
+    "tactical_btn": "Tactique",
+    "tactical_title": "Configuration Tactique",
+    "atq_def_title": "Changement Attaque / Défense",
+    "atq_def_badge": "Spécialiste Défensif",
+    "atq_def_desc": "Remplace automatiquement le joueur d'attaque par le spécialiste défensif à chaque changement de possession et comptabilise leurs minutes exactes.",
+    "atq_player_label": "Joueur d'Attaque (sort en défense)",
+    "def_player_label": "Spécialiste Défensif (entre en défense)",
+    "seven_v_six_title": "Jouer à 7 contre 6",
+    "seven_v_six_desc": "Sort le gardien en attaque pour jouer avec un 7e joueur de champ et le réintègre en défense.",
+    "seven_v_six_gk_label": "Gardien sortant en attaque",
+    "seven_v_six_field_label": "7e Joueur de champ entrant",
+    "save_tactics": "Sauvegarder",
+    "tactics_saved": "Tactique mise à jour",
+    "empty_net": "Cage Vide",
+    "action_gol_porteria_vacia": "BUT CAGE VIDE",
+    "empty_net_badge": "7v6 CHAMP",
+    "empty_net_tooltip": "Cage vide / Joueur de champ sur le terrain",
+    "empty_net_court_skipped": "Cage vide : cliquez directement sur le but"
   },
   "dashboard": {
     "select_team_banner": "-- SÉLECTIONNER L'ÉQUIPE POUR AFFICHER LES STATS : --",
@@ -715,7 +744,8 @@
     "col_2min": "2 Min",
     "col_rating": "Note",
     "role_gk": "Gardien",
-    "role_player": "Joueur"
+    "role_player": "Joueur",
+    "col_minutes": "Min"
   },
   "chronology": {
     "tab_all": "Tous",
@@ -734,7 +764,8 @@
     "timeout_desc": "Temps Mort demandé",
     "free_throw_desc": "Jet Franc accordé",
     "sanction_desc": "Sanction disciplinaire : {{type}}",
-    "no_events": "Aucun événement correspondant au filtre."
+    "no_events": "Aucun événement correspondant au filtre.",
+    "action_cambio": "CHANGEMENT"
   },
   "report": {
     "title": "RAPPORT TECHNIQUE DE MATCH COMPLET",
@@ -760,6 +791,9 @@
     "sit_equality": "Égalité Numérique",
     "sit_superiority": "Supériorité Numérique",
     "sit_inferiority": "Infériorité Numérique",
+    "sit_7vs6": "Attaque 7 contre 6 (Joueur de champ en cage)",
+    "sit_6vs6_nogk": "6 contre 6 sans gardien",
+    "sit_empty_net": "Cage Vide",
     "metrics_comparison": "COMPARAISON DES MÉTRIQUES",
     "total_shots_label": "total",
     "preset_all": "Rapport Intégral Complet",

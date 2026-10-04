@@ -34,6 +34,13 @@ class MatchPlayer(BaseModel):
     name: str
     number: int
     is_goalkeeper: bool = False
+    is_starter: Optional[bool] = None
+    initial_starter: Optional[bool] = None
+    minutes_played: Optional[float] = None
+    position: Optional[str] = None
+
+    class Config:
+        extra = "allow"
 
 # ==========================================
 # SUB-MODELOS DE ESTADÍSTICAS DETALLADAS
@@ -116,6 +123,7 @@ class MatchEvent(BaseModel):
     shot_position: Optional[str] = None  
     shot_zone: Optional[str] = None
     is_penetration: Optional[bool] = False
+    is_empty_net: Optional[bool] = False
     goal_zone: Optional[str] = None
     result: Optional[str] = None  
     target_zone: Optional[str] = None  
@@ -141,7 +149,16 @@ class MatchEvent(BaseModel):
     goal_y: Optional[float] = None
     court_coord: Optional[Dict[str, Any]] = None
     goal_coord: Optional[Dict[str, Any]] = None
-    rebound: Optional[str] = None
+
+    # Sustituciones y metadatos de cambios
+    player_in_id: Optional[Any] = None
+    player_in_number: Optional[Any] = None
+    player_in_name: Optional[str] = None
+    player_out_id: Optional[Any] = None
+    player_out_number: Optional[Any] = None
+    player_out_name: Optional[str] = None
+    action_key: Optional[str] = None
+    description: Optional[str] = None
 
     class Config:
         extra = "allow"

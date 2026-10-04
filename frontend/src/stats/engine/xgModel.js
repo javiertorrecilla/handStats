@@ -5,7 +5,57 @@
    Fórmula xSaves = (1 - xG) + ModificadorZonaXSaves(z)
    ========================================================== */
 
-import { getSettings } from "../../services/settingsService";
+import { getSettings, normalizeGoalZoneKey } from "../../services/settingsService.js";
+
+/**
+ * Helper unificado para determinar si un evento corresponde a un lanzamiento a portería vacía.
+ */
+export function isEventEmptyNet(event) {
+  if (!event) return false;
+  if (
+    event.is_empty_net === true ||
+    event.is_empty_net === "true" ||
+    event.is_empty_net === 1 ||
+    event.is_empty_net === "1" ||
+    event.empty_net_goal === true ||
+    event.empty_net_goal === "true" ||
+    event.empty_net_goal === 1 ||
+    event.empty_net_goal === "1"
+  ) {
+    return true;
+  }
+  const shotType = String(event.shot_type || "").toLowerCase().trim();
+  if (
+    shotType.includes("portería vacía") ||
+    shotType.includes("porteria vacia") ||
+    shotType.includes("empty_net") ||
+    shotType.includes("p. vacía") ||
+    shotType.includes("p. vacia")
+  ) {
+    return true;
+  }
+  const phase = String(event.play_phase || "").toLowerCase().trim();
+  if (
+    phase.includes("portería vacía") ||
+    phase.includes("porteria vacia") ||
+    phase.includes("empty_net")
+  ) {
+    return true;
+  }
+  const zone = String(event.shot_zone || event.court_zone || "").toLowerCase().trim();
+  if (zone.includes("portería vacía") || zone.includes("porteria vacia")) {
+    return true;
+  }
+  const sit = String(event.numerical_situation || event.tactical_situation || "").toLowerCase().trim();
+  if (sit.includes("portería vacía") || sit.includes("porteria vacia") || sit.includes("empty_net")) {
+    return true;
+  }
+  const defSit = String(event.defending_situation || "").toLowerCase().trim();
+  if (defSit.includes("portería vacía") || defSit.includes("porteria vacia") || defSit.includes("empty_net")) {
+    return true;
+  }
+  return false;
+}
 
 /**
  * Calcula el valor xG (Expected Goals) para un evento de tiro específico.
@@ -20,12 +70,18 @@ export function calculateShotXG(event, empiricalOverride = null) {
   const shotType = (event.shot_type || "").toLowerCase();
   const phase = (event.play_phase || "").toLowerCase();
   const sit = event.numerical_situation || "Igualdad";
-  const zone = event.target_zone || "";
+  const zone = normalizeGoalZoneKey(event) || event.target_zone || "";
 
   // Determinar probabilidades a usar (empíricas si están activas o configuradas)
   const activeWeights = (settings.autoEmpiricalMode && empiricalOverride?.empiricalWeights)
     ? empiricalOverride.empiricalWeights
     : settings;
+
+  // Si es un lanzamiento a portería vacía, se aplica su xG base (0.40 por defecto antes de ser automático)
+  if (isEventEmptyNet(event)) {
+    const emptyNetBase = typeof activeWeights.xgEmptyNet === "number" ? activeWeights.xgEmptyNet : 0.40;
+    return Math.min(0.95, Math.max(0.05, Math.round(emptyNetBase * 100) / 100));
+  }
 
   let baseProbability = 0.45; // Base promedio general
 
@@ -73,8 +129,10 @@ export function calculateShotXG(event, empiricalOverride = null) {
  */
 export function calculateShotXSaves(event, empiricalOverride = null) {
   if (!event || event.event_type !== "shot") return 0;
+  if (isEventEmptyNet(event)) return 0; // En portería vacía no hay portero para detener el lanzamiento
+
   const settings = getSettings();
-  const zone = event.target_zone || "";
+  const zone = normalizeGoalZoneKey(event) || event.target_zone || "";
   const xg = calculateShotXG(event, empiricalOverride);
 
   let rawXSaves = (1 - xg) * settings.xSavesBaseFactor;

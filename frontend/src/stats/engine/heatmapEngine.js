@@ -234,6 +234,18 @@ export function generateContinuousCourtHeatmapData(events = [], options = {}) {
   if (!events || events.length === 0) return [];
 
   const filtered = events.filter((ev) => {
+    // 0. Excluir terminantemente sustituciones (no son acciones de juego en pista)
+    if (
+      ev.event_type === "substitution" ||
+      ev.event_type === "cambio" ||
+      ev.category === "cambios" ||
+      ev.category === "cambio" ||
+      ev.action_key === "cambio" ||
+      ev.action_key === "substitution"
+    ) {
+      return false;
+    }
+
     // 1. Filtro equipo (solo si se especifica isOpponent como boolean)
     if (typeof isOpponent === "boolean") {
       const isAway = isAwayEvent(ev, match);
@@ -256,7 +268,7 @@ export function generateContinuousCourtHeatmapData(events = [], options = {}) {
 
     // 4. Filtro por métrica
     if (metricType === "all_actions" || metricType === "all") {
-      return true;
+      return ev.event_type === "shot" || ev.event_type === "turnover" || ev.event_type === "steal" || ev.event_type === "sanction" || ev.event_type === "foul";
     }
     if (metricType === "all_shots" || metricType === "shots") {
       return ev.event_type === "shot";

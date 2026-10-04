@@ -81,7 +81,9 @@
       "Handball Pro Analytics"
     ],
     "motto": [
-      "Analyze", "Improve", "Win"
+      "Analyze",
+      "Improve",
+      "Win"
     ]
   },
   "landing_stats": {
@@ -399,6 +401,7 @@
     "label_penetration": "Durchbruchswurf (6m)",
     "label_wing": "Außenwurf (6m)",
     "label_9m": "Rückraum / Distanz (9m)",
+    "label_empty_net": "Wurf auf leeres Tor",
     "label_superiority": "Überzahl-Bonus (+)",
     "label_inferiority": "Unterzahl-Abzug (-)",
     "xsaves_title": "EXPECTED SAVES (xSAVES) & TORMODIFIKATOR",
@@ -531,7 +534,33 @@
     "alert_select_player_first": "Bitte zuerst einen Spieler aus der Aufstellung auswählen, um die Aktion zu erfassen.",
     "alert_substitutes_sanctions_only": "Auswechselspieler können nur Strafen (2 Min, Gelb, Rot, Blau) erhalten. Klicke auf einen Feldspieler, um einzuwechseln.",
     "alert_free_throw_defending_only": "Freiwurf kann nur einem Spieler der VERTEIDIGENDEN Mannschaft (ohne Ballbesitz) zugeordnet werden.",
-    "player_excluded_tooltip": "Hinausgestellter Spieler (2 Min) — Verbleibende Zeit: {{time}}"
+    "player_excluded_tooltip": "Hinausgestellter Spieler (2 Min) — Verbleibende Zeit: {{time}}",
+    "action_cambio": "WECHSEL",
+    "filter_substitutions": "WECHSEL",
+    "time_played": "Spielzeit",
+    "btn_edit_minutes": "Gespielte Minuten anpassen",
+    "adjust_minutes_title": "Gespielte Minuten anpassen",
+    "adjust_minutes_desc": "Überprüfen oder passen Sie die gespielten Minuten jedes Spielers in diesem Spiel manuell an. Wenn das Feld leer bleibt, wird die automatische wechselbasierte Berechnung verwendet.",
+    "auto_calculated": "Berechnet",
+    "error_saving_minutes": "Fehler beim Speichern der Minuten. Bitte versuchen Sie es erneut.",
+    "tactical_btn": "Taktik",
+    "tactical_title": "Taktische Einstellungen",
+    "atq_def_title": "Angriff / Abwehr Wechsel",
+    "atq_def_badge": "Abwehrspezialist",
+    "atq_def_desc": "Wechselt automatisch bei Ballbesitzwechsel den Angreifer gegen den Abwehrspezialisten und erfasst die exakten Spielminuten.",
+    "atq_player_label": "Angriffsspieler (geht in Abwehr raus)",
+    "def_player_label": "Abwehrspezialist (kommt in Abwehr rein)",
+    "seven_v_six_title": "7 gegen 6 spielen",
+    "seven_v_six_desc": "Nimmt den Torwart im Angriff heraus, um mit 7 Feldspielern zu spielen, und bringt ihn in der Abwehr zurück.",
+    "seven_v_six_gk_label": "Torwart, der im Angriff rausgeht",
+    "seven_v_six_field_label": "7. Feldspieler, der reinkommt",
+    "save_tactics": "Taktik speichern",
+    "tactics_saved": "Taktik aktualisiert",
+    "empty_net": "Leeres Tor",
+    "action_gol_porteria_vacia": "LEERES TOR TOR",
+    "empty_net_badge": "7v6 FELD",
+    "empty_net_tooltip": "Leeres Tor / Feldspieler auf dem Feld",
+    "empty_net_court_skipped": "Leeres Tor: Klicke direkt auf das Tor"
   },
   "dashboard": {
     "select_team_banner": "-- TEAM AUSWÄHLEN FÜR STATISTIKEN: --",
@@ -715,7 +744,8 @@
     "col_2min": "2 Min",
     "col_rating": "Note",
     "role_gk": "Torwart",
-    "role_player": "Feldspieler"
+    "role_player": "Feldspieler",
+    "col_minutes": "Min"
   },
   "chronology": {
     "tab_all": "Alle",
@@ -734,7 +764,8 @@
     "timeout_desc": "Auszeit genommen",
     "free_throw_desc": "Freiwurf begangen",
     "sanction_desc": "Disziplinarstrafe: {{type}}",
-    "no_events": "Keine Ereignisse entsprechen dem Filter."
+    "no_events": "Keine Ereignisse entsprechen dem Filter.",
+    "action_cambio": "WECHSEL"
   },
   "report": {
     "title": "VOLLSTÄNDIGER TECHNISCHER SPIELBERICHT",
@@ -760,6 +791,9 @@
     "sit_equality": "Gleichzahl (6 gegen 6)",
     "sit_superiority": "Überzahl",
     "sit_inferiority": "Unterzahl",
+    "sit_7vs6": "7 gegen 6 Angriff (Zusätzlicher Feldspieler)",
+    "sit_6vs6_nogk": "6 gegen 6 ohne Torwart",
+    "sit_empty_net": "Leeres Tor",
     "metrics_comparison": "METRIKEN-VERGLEICH",
     "total_shots_label": "gesamt",
     "preset_all": "Vollständiger Gesamtbericht",

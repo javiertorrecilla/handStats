@@ -81,7 +81,9 @@
       "Handball Pro Analytics"
     ],
     "motto": [
-      "Analyze", "Improve", "Win"
+      "Analyze",
+      "Improve",
+      "Win"
     ]
   },
   "landing_stats": {
@@ -399,6 +401,7 @@
     "label_penetration": "Wejście / Przebicie (6m)",
     "label_wing": "Rzut ze skrzydła (6m)",
     "label_9m": "Druga linia / Dystans (9m)",
+    "label_empty_net": "Rzut do pustej bramki",
     "label_superiority": "Bonus Przewaga Liczebna (+)",
     "label_inferiority": "Kara Osłabienie Liczebne (-)",
     "xsaves_title": "EXPECTED SAVES (xSAVES) I MODYFIKATOR BRAMKI",
@@ -531,7 +534,33 @@
     "alert_select_player_first": "Proszę najpierw wybrać zawodnika ze składu, aby zarejestrować akcję.",
     "alert_substitutes_sanctions_only": "Rezerwowi mogą otrzymać tylko kary (2 min, żółta, czerwona, niebieska kartka). Aby wprowadzić na boisko, kliknij zawodnika ze składu podstawowego.",
     "alert_free_throw_defending_only": "Rzut wolny można przyznać tylko zawodnikowi drużyny BRONIĄCEJ (bez posiadania).",
-    "player_excluded_tooltip": "Wykluczony zawodnik (2 min) — Pozostały czas: {{time}}"
+    "player_excluded_tooltip": "Wykluczony zawodnik (2 min) — Pozostały czas: {{time}}",
+    "action_cambio": "ZMIANA",
+    "filter_substitutions": "ZMIANY",
+    "time_played": "Czas gry",
+    "btn_edit_minutes": "Dostosuj rozegrane minuty",
+    "adjust_minutes_title": "Dostosuj rozegrane minuty",
+    "adjust_minutes_desc": "Przejrzyj lub ręcznie dostosuj minuty rozegrane przez każdego zawodnika w tym meczu. W przypadku pozostawienia pustego pola zostanie użyte automatyczne obliczanie oparte na zmianach.",
+    "auto_calculated": "Obliczone",
+    "error_saving_minutes": "Błąd podczas zapisywania minut. Spróbuj ponownie.",
+    "tactical_btn": "Taktyka",
+    "tactical_title": "Ustawienia Taktyczne",
+    "atq_def_title": "Zmiana Atak / Obrona",
+    "atq_def_badge": "Specjalista Obrony",
+    "atq_def_desc": "Automatycznie zmienia zawodnika ataku na specjalistę obrony przy każdej zmianie posiadania i zlicza dokładny czas gry obu.",
+    "atq_player_label": "Zawodnik Ataku (schodzi w obronie)",
+    "def_player_label": "Specjalista Obrony (wchodzi w obronie)",
+    "seven_v_six_title": "Gra 7 na 6",
+    "seven_v_six_desc": "Zdejmuje bramkarza w ataku, aby grać z 7 zawodnikami w polu, i przywraca go w obronie.",
+    "seven_v_six_gk_label": "Bramkarz schodzący w ataku",
+    "seven_v_six_field_label": "7. Zawodnik z pola wchodzący",
+    "save_tactics": "Zapisz taktykę",
+    "tactics_saved": "Taktyka zaktualizowana",
+    "empty_net": "Pusta Bramka",
+    "action_gol_porteria_vacia": "GOL DO PUSTEJ BRAMKI",
+    "empty_net_badge": "7v6 POLE",
+    "empty_net_tooltip": "Pusta bramka / Zawodnik z pola w bramce",
+    "empty_net_court_skipped": "Pusta bramka: kliknij bezpośrednio w bramkę"
   },
   "dashboard": {
     "select_team_banner": "-- WYBIERZ DRUŻYNĘ, ABY ZOBACZYĆ STATYSTYKI: --",
@@ -715,7 +744,8 @@
     "col_2min": "2 Min",
     "col_rating": "Ocena",
     "role_gk": "Bramkarz",
-    "role_player": "Zawodnik z pola"
+    "role_player": "Zawodnik z pola",
+    "col_minutes": "Min"
   },
   "chronology": {
     "tab_all": "Wszystkie",
@@ -734,7 +764,8 @@
     "timeout_desc": "Zażądano czasu dla drużyny",
     "free_throw_desc": "Odgwizdano rzut wolny",
     "sanction_desc": "Kara dyscyplinarna: {{type}}",
-    "no_events": "Brak zdarzeń spełniających kryteria filtra."
+    "no_events": "Brak zdarzeń spełniających kryteria filtra.",
+    "action_cambio": "ZMIANA"
   },
   "report": {
     "title": "KOMPLETNY RAPORT TECHNICZNY MECZU",

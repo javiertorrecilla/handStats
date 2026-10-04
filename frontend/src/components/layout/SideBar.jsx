@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 import LanguageSelector from "../common/LanguageSelector";
 import isotipo from "../../assets/isotipo.png";
 import "./Sidebar.css";
@@ -82,18 +83,27 @@ export default function Sidebar({
   user,
   guestMatches,
   logout,
-  view,
-  setView,
   theme = "light",
   toggleTheme,
 }) {
   const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const isMatchesActive = view === "list" || view === "create";
 
-  const handleSelectView = (newView) => {
-    setView(newView);
+  const pathname = location?.pathname || "";
+  const isMatchesActive = pathname === "/matches" || pathname === "/matches/new" || pathname === "/";
+  const isTeamsActive = pathname === "/teams";
+  const isSettingsActive = pathname === "/settings";
+
+  const handleSelectRoute = (path) => {
+    navigate(path);
     setIsOpen(false);
+  };
+
+  const handleLogout = async () => {
+    if (logout) await logout();
+    navigate("/");
   };
 
   return (
@@ -145,7 +155,7 @@ export default function Sidebar({
         <nav className="sidebar-nav">
           <button
             className={`sidebar-item ${isMatchesActive ? "active" : ""}`}
-            onClick={() => handleSelectView("list")}
+            onClick={() => handleSelectRoute("/matches")}
           >
             <div className="sidebar-icon-box">
               <IconCalendar />
@@ -156,8 +166,8 @@ export default function Sidebar({
 
           {user.role !== "guest" && (
             <button
-              className={`sidebar-item ${view === "teams" ? "active" : ""}`}
-              onClick={() => handleSelectView("teams")}
+              className={`sidebar-item ${isTeamsActive ? "active" : ""}`}
+              onClick={() => handleSelectRoute("/teams")}
             >
               <div className="sidebar-icon-box">
                 <IconTeams />
@@ -168,8 +178,8 @@ export default function Sidebar({
           )}
 
           <button
-            className={`sidebar-item ${view === "settings" ? "active" : ""}`}
-            onClick={() => handleSelectView("settings")}
+            className={`sidebar-item ${isSettingsActive ? "active" : ""}`}
+            onClick={() => handleSelectRoute("/settings")}
           >
             <div className="sidebar-icon-box">
               <IconSettings />
@@ -220,7 +230,7 @@ export default function Sidebar({
           <button
             type="button"
             className="sidebar-logout-btn"
-            onClick={logout}
+            onClick={handleLogout}
             title={t("sidebar.logout")}
           >
             <IconLogout />

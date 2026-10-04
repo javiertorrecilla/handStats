@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getEventCategory, ACTION_CATEGORIES, formatCourtZoneName, formatGoalZoneName } from "../../engine/types";
+import { isEmptyNetEvent } from "../../engine/metricsEngine";
 
 export function ChronologyStatsView({ match }) {
   const { t } = useTranslation();
@@ -13,7 +14,22 @@ export function ChronologyStatsView({ match }) {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const categories = events.map(e => ({
+  const isSubstitution = (e) => {
+    return (
+      e.event_type === "substitution" ||
+      e.event_type === "cambio" ||
+      e.category === "cambios" ||
+      e.category === "cambio" ||
+      e.action_key === "cambio" ||
+      e.action_key === "substitution" ||
+      getEventCategory(e) === ACTION_CATEGORIES.CAMBIOS
+    );
+  };
+
+  // Excluir sustituciones del timeline cronológico e historial
+  const displayableEvents = events.filter(e => !isSubstitution(e));
+
+  const categories = displayableEvents.map(e => ({
     event: e,
     cat: getEventCategory(e)
   }));
@@ -40,7 +56,7 @@ export function ChronologyStatsView({ match }) {
           className={`btn btn-sm ${filterType === ACTION_CATEGORIES.TODOS ? "btn-primary" : "btn-ghost"}`}
           onClick={() => setFilterType(ACTION_CATEGORIES.TODOS)}
         >
-          {t("chronology.tab_all", "Todos")} ({events.length})
+          {t("chronology.tab_all", "Todos")} ({displayableEvents.length})
         </button>
 
         <button
@@ -114,11 +130,15 @@ export function ChronologyStatsView({ match }) {
                     {cat === ACTION_CATEGORIES.GOLES && (
                       <>
                         <strong>{t("chronology.action_gol", "GOL")}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
-                        {ev.goalkeeper_name && (
+                        {isEmptyNetEvent(ev) ? (
+                          <span className="hs-pos-badge" style={{ marginLeft: 6, fontSize: "0.8em", background: "rgba(245, 158, 11, 0.15)", color: "#f59e0b", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "1px 6px", borderRadius: "3px", fontWeight: "700" }}>
+                            🥅 {t("action_gol_porteria_vacia_detail", "Gol a portería vacía")}
+                          </span>
+                        ) : ev.goalkeeper_name ? (
                           <span style={{ marginLeft: 6, color: "var(--text-muted)", fontSize: "0.9em" }}>
                             vs POR #{ev.goalkeeper_number} {ev.goalkeeper_name}
                           </span>
-                        )}
+                        ) : null}
                       </>
                     )}
                     {cat === ACTION_CATEGORIES.PARADAS && (

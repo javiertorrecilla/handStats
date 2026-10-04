@@ -81,7 +81,9 @@
       "Handball Pro Analytics"
     ],
     "motto": [
-      "Analyze", "Improve", "Win"
+      "Analyze",
+      "Improve",
+      "Win"
     ]
   },
   "landing_stats": {
@@ -399,6 +401,7 @@
     "label_penetration": "Breakthrough Shot (6m)",
     "label_wing": "Wing Shot (6m)",
     "label_9m": "Backcourt / Distance (9m)",
+    "label_empty_net": "Empty Net Shot",
     "label_superiority": "Numerical Superiority Bonus (+)",
     "label_inferiority": "Numerical Inferiority Penalty (-)",
     "xsaves_title": "EXPECTED SAVES (xSAVES) & GOAL MODIFIER",
@@ -531,7 +534,33 @@
     "alert_select_player_first": "Please select a player from the lineup/roster first to record the action.",
     "alert_substitutes_sanctions_only": "Substitutes can only receive Sanctions (2 min, Yellow, Red, Blue). To bring this player on court, click an on-court player in the lineup.",
     "alert_free_throw_defending_only": "Free Throw can only be awarded to a player on the DEFENDING team (without possession).",
-    "player_excluded_tooltip": "Excluded player (2 min) — Remaining time: {{time}}"
+    "player_excluded_tooltip": "Excluded player (2 min) — Remaining time: {{time}}",
+    "action_cambio": "SUBSTITUTION",
+    "filter_substitutions": "SUBSTITUTIONS",
+    "time_played": "Playing time",
+    "btn_edit_minutes": "Adjust minutes played",
+    "adjust_minutes_title": "Adjust Minutes Played",
+    "adjust_minutes_desc": "Review or manually adjust the minutes played by each player in this match. If left empty, automatic substitution-based calculation will be used.",
+    "auto_calculated": "Calculated",
+    "error_saving_minutes": "Error saving minutes. Please try again.",
+    "tactical_btn": "Tactics",
+    "tactical_title": "Tactical Settings",
+    "atq_def_title": "Attack / Defense Swap",
+    "atq_def_badge": "Defense Specialist",
+    "atq_def_desc": "Automatically swaps the attacking player for the defensive specialist on every change of possession and tracks their exact minutes.",
+    "atq_player_label": "Attacking Player (out on defense)",
+    "def_player_label": "Defense Specialist (in on defense)",
+    "seven_v_six_title": "Play 7 vs 6",
+    "seven_v_six_desc": "Pulls the goalkeeper on attack to play with a 7th field player, returning the goalkeeper on defense.",
+    "seven_v_six_gk_label": "Goalkeeper pulled on attack",
+    "seven_v_six_field_label": "7th Field Player entering",
+    "save_tactics": "Save Tactics",
+    "tactics_saved": "Tactics updated",
+    "empty_net": "Empty Net",
+    "action_gol_porteria_vacia": "EMPTY NET GOAL",
+    "empty_net_badge": "7v6 FIELD",
+    "empty_net_tooltip": "Empty net / Field player on court",
+    "empty_net_court_skipped": "Empty net: click directly on the goal"
   },
   "dashboard": {
     "select_team_banner": "-- SELECT TEAM TO VIEW STATS: --",
@@ -715,7 +744,8 @@
     "col_2min": "2 Min",
     "col_rating": "Rating",
     "role_gk": "Goalkeeper",
-    "role_player": "Field Player"
+    "role_player": "Field Player",
+    "col_minutes": "Min"
   },
   "chronology": {
     "tab_all": "All",
@@ -734,7 +764,8 @@
     "timeout_desc": "Timeout called",
     "free_throw_desc": "Free Throw awarded",
     "sanction_desc": "Disciplinary sanction: {{type}}",
-    "no_events": "No events match the selected filter."
+    "no_events": "No events match the selected filter.",
+    "action_cambio": "SUBSTITUTION"
   },
   "report": {
     "title": "COMPLETE TECHNICAL MATCH REPORT",
@@ -760,6 +791,12 @@
     "sit_equality": "Numerical Equality",
     "sit_superiority": "Numerical Superiority",
     "sit_inferiority": "Numerical Inferiority",
+    "sit_7vs6": "7 vs 6 Attack (Extra Attacker)",
+    "sit_6vs6_nogk": "6 vs 6 No GK (With Exclusion)",
+    "sit_empty_net": "Empty Net",
+    "empty_net_conceded": "Empty Net Goals Conceded",
+    "net_balance": "Net Balance (+/-)",
+    "action_gol_porteria_vacia_detail": "Empty net goal",
     "metrics_comparison": "METRICS COMPARISON",
     "total_shots_label": "total",
     "preset_all": "Full Comprehensive Report",
@@ -847,6 +884,12 @@
     "sit_sup_tag": "SUPERIORITY",
     "sit_inferiority_sub": "Attacks with numerical disadvantage (-1 or more)",
     "sit_inf_tag": "INFERIORITY",
+    "sit_7vs6_sub": "Extra field player in goal without exclusion (7 attackers vs 6 defenders)",
+    "sit_7vs6_tag": "7vs6 (EXTRA ATTACKER)",
+    "sit_6vs6_nogk_sub": "Extra field player in goal with exclusion (6 attackers vs 6 defenders)",
+    "sit_6vs6_nogk_tag": "6vs6 NO GK (EXCLUSION)",
+    "sit_empty_net_sub": "Shots and actions against empty net or without goalkeeper",
+    "sit_empty_net_tag": "EMPTY NET",
     "court_shots_title": "Shots on Half-Court",
     "goal_shots_title": "Goal Impact",
     "shots": "Shots",

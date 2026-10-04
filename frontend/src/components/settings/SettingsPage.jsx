@@ -46,7 +46,7 @@ const IconZap = () => (
   </svg>
 );
 
-export default function SettingsPage({ matchesList = [] }) {
+export default function SettingsPage({ matchesList = [], currentMatch = null }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("xg"); // "xg" | "xsaves" | "rating"
   const [form, setForm] = useState(DEFAULT_SETTINGS);
@@ -58,8 +58,21 @@ export default function SettingsPage({ matchesList = [] }) {
 
   // Calcular estadísticas empíricas del usuario sobre sus partidos registrados
   const empiricalData = useMemo(() => {
-    return calculateUserEmpiricalXG(matchesList);
-  }, [matchesList]);
+    let combined = Array.isArray(matchesList) ? [...matchesList] : [];
+    if (currentMatch) {
+      const idx = combined.findIndex(
+        (m) =>
+          (m && m._id && currentMatch._id && m._id === currentMatch._id) ||
+          (m && m.id && currentMatch.id && m.id === currentMatch.id)
+      );
+      if (idx >= 0) {
+        combined[idx] = currentMatch;
+      } else {
+        combined.push(currentMatch);
+      }
+    }
+    return calculateUserEmpiricalXG(combined);
+  }, [matchesList, currentMatch]);
 
   const handleChange = (field, value) => {
     setSavedSuccess(false);
@@ -103,6 +116,7 @@ export default function SettingsPage({ matchesList = [] }) {
     { key: "penetration", label: t("settings.label_penetration"), paramKey: "xgPenetration", defaultVal: 0.64 },
     { key: "wing", label: t("settings.label_wing"), paramKey: "xgWing", defaultVal: 0.56 },
     { key: "9m", label: t("settings.label_9m"), paramKey: "xg9m", defaultVal: 0.34 },
+    { key: "emptyNet", label: t("settings.label_empty_net", "Portería Vacía"), paramKey: "xgEmptyNet", defaultVal: 0.40 },
   ];
 
   const goalZoneLabels = {
@@ -468,6 +482,22 @@ export default function SettingsPage({ matchesList = [] }) {
                     className="input-field"
                     value={form.xg9m}
                     onChange={(e) => handleChange("xg9m", e.target.value)}
+                  />
+                  <span className="unit-tag">xG</span>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>{t("settings.label_empty_net", "Portería Vacía")}</label>
+                <div className="input-group-unit">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.05"
+                    max="1.0"
+                    className="input-field"
+                    value={form.xgEmptyNet ?? 0.40}
+                    onChange={(e) => handleChange("xgEmptyNet", e.target.value)}
                   />
                   <span className="unit-tag">xG</span>
                 </div>

@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS = {
   xgPenetration: 0.64,
   xgWing: 0.56,
   xg9m: 0.34,
+  xgEmptyNet: 0.40,
   xgSuperiorityBonus: 0.07,
   xgInferiorityPenalty: 0.08,
 
@@ -82,6 +83,7 @@ const STORAGE_KEY = "handstats_settings";
 
 export const getSettings = () => {
   try {
+    if (typeof localStorage === "undefined") return { ...DEFAULT_SETTINGS };
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return { ...DEFAULT_SETTINGS };
     const parsed = JSON.parse(saved);
@@ -95,8 +97,12 @@ export const getSettings = () => {
 export const saveSettings = (newSettings) => {
   try {
     const merged = { ...DEFAULT_SETTINGS, ...newSettings };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    window.dispatchEvent(new Event("handstats_settings_updated"));
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("handstats_settings_updated"));
+    }
     return merged;
   } catch (e) {
     console.error("Error al guardar ajustes de parámetros:", e);
@@ -106,14 +112,122 @@ export const saveSettings = (newSettings) => {
 
 export const resetSettings = () => {
   try {
-    localStorage.removeItem(STORAGE_KEY);
-    window.dispatchEvent(new Event("handstats_settings_updated"));
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("handstats_settings_updated"));
+    }
     return { ...DEFAULT_SETTINGS };
   } catch (e) {
     console.error("Error al restablecer ajustes:", e);
     return { ...DEFAULT_SETTINGS };
   }
 };
+
+/**
+ * Normaliza cualquier formato de zona de portería (código ID 'TL', descripciones de texto o coordenadas)
+ * a uno de los 9 cuadrantes 3x3 de portería: TL, TC, TR, ML, C, MR, BL, BC, BR.
+ * @param {Object|string} evOrZone - Evento de tiro o cadena de zona
+ * @returns {string|null} Código de zona 3x3 normalizado o null si no aplica
+ */
+export function normalizeGoalZoneKey(evOrZone) {
+  if (!evOrZone) return null;
+
+  let raw = "";
+  let coord = null;
+
+  if (typeof evOrZone === "string") {
+    raw = evOrZone.trim();
+  } else if (typeof evOrZone === "object") {
+    raw = String(evOrZone.target_zone_id || evOrZone.target_zone || evOrZone.goal_zone || "").trim();
+    if (evOrZone.goal_x !== undefined && evOrZone.goal_x !== null && evOrZone.goal_y !== undefined && evOrZone.goal_y !== null) {
+      coord = { x: Number(evOrZone.goal_x), y: Number(evOrZone.goal_y) };
+    } else if (evOrZone.goal_coord && typeof evOrZone.goal_coord.x === "number") {
+      coord = { x: Number(evOrZone.goal_coord.x), y: Number(evOrZone.goal_coord.y) };
+    }
+  }
+
+  const valid9Zones = ["TL", "TC", "TR", "ML", "C", "MR", "BL", "BC", "BR"];
+  const upper = raw.toUpperCase();
+
+  // 1. Si ya es una de las 9 zonas
+  if (valid9Zones.includes(upper)) {
+    return upper;
+  }
+
+  // 2. Mapeo de códigos exteriores/postes hacia la zona más cercana
+  if (upper === "TP" || upper === "OA") {
+    if (coord && coord.x < 38) return "TL";
+    if (coord && coord.x > 62) return "TR";
+    return "TC";
+  }
+  if (upper === "LP" || upper === "OL") {
+    if (coord && coord.y < 45) return "TL";
+    if (coord && coord.y >= 75) return "BL";
+    return "ML";
+  }
+  if (upper === "RP" || upper === "OR") {
+    if (coord && coord.y < 45) return "TR";
+    if (coord && coord.y >= 75) return "BR";
+    return "MR";
+  }
+
+  // 3. Si hay coordenadas numéricas (goal_x, goal_y en escala 0-100)
+  if (coord && !isNaN(coord.x) && !isNaN(coord.y)) {
+    const isLeft = coord.x < 38;
+    const isRight = coord.x > 62;
+    if (coord.y <= 45) {
+      return isLeft ? "TL" : isRight ? "TR" : "TC";
+    }
+    if (coord.y < 75) {
+      return isLeft ? "ML" : isRight ? "MR" : "C";
+    }
+    return isLeft ? "BL" : isRight ? "BR" : "BC";
+  }
+
+  // 4. Reconocimiento semántico por texto
+  const lower = raw.toLowerCase();
+
+  const isLeft = lower.includes("izq") || lower.includes("left");
+  const isRight = lower.includes("der") || lower.includes("right");
+  const isCenter = lower.includes("cen") || lower.includes("centro") || lower.includes("center");
+
+  // Superior / Escuadras
+  if (lower.includes("sup") || lower.includes("escuadra") || lower.includes("arriba") || lower.includes("top") || lower.includes("high")) {
+    if (isLeft) return "TL";
+    if (isRight) return "TR";
+    return "TC";
+  }
+
+  // Inferior / Raso / Abajo
+  if (lower.includes("inf") || lower.includes("raso") || lower.includes("abajo") || lower.includes("bot") || lower.includes("low")) {
+    if (isLeft) return "BL";
+    if (isRight) return "BR";
+    return "BC";
+  }
+
+  // Medio
+  if (lower.includes("med") || lower.includes("mid")) {
+    if (isLeft) return "ML";
+    if (isRight) return "MR";
+    return "C";
+  }
+
+  // Postes y larguero por texto
+  if (lower.includes("larguero") || lower.includes("crossbar")) return "TC";
+  if (lower.includes("poste izq") || lower.includes("left post")) return "ML";
+  if (lower.includes("poste der") || lower.includes("right post")) return "MR";
+  if (lower.includes("fuera arr")) return "TC";
+  if (lower.includes("fuera izq")) return "ML";
+  if (lower.includes("fuera der")) return "MR";
+
+  if (isCenter || lower === "c" || lower.includes("centro")) {
+    return "C";
+  }
+
+  return null;
+}
 
 /**
  * Calcula la calibración empírica basada en el volumen de lanzamientos, paradas y modificador zonal de portería 3x3.
@@ -135,6 +249,7 @@ export function calculateUserEmpiricalXG(matchesList = []) {
     penetration: { name: "Penetración (6m)", shots: 0, goals: 0 },
     wing: { name: "Extremo (6m)", shots: 0, goals: 0 },
     "9m": { name: "Primera Línea / 9m", shots: 0, goals: 0 },
+    emptyNet: { name: "Portería Vacía", shots: 0, goals: 0 },
   };
 
   const zoneCounts = {
@@ -156,11 +271,33 @@ export function calculateUserEmpiricalXG(matchesList = []) {
         totalShots += 1;
         const type = (ev.shot_type || "").toLowerCase();
         const phase = (ev.play_phase || "").toLowerCase();
-        const zone = ev.target_zone;
         const isGoal = ev.result === "Gol";
 
         let category = "9m";
-        if (type.includes("7m") || type.includes("7 metros") || ev.sanction_type === "7m") {
+        const rawZone = (ev.shot_zone || ev.court_zone || "").toLowerCase();
+        const rawSit = (ev.numerical_situation || ev.tactical_situation || "").toLowerCase();
+        const rawDefSit = (ev.defending_situation || "").toLowerCase();
+        const isEmptyNet = Boolean(
+          ev.is_empty_net ||
+          ev.empty_net_goal ||
+          type.includes("portería vacía") ||
+          type.includes("porteria vacia") ||
+          type.includes("empty_net") ||
+          type.includes("p. vacía") ||
+          type.includes("p. vacia") ||
+          phase.includes("portería vacía") ||
+          phase.includes("porteria vacia") ||
+          rawZone.includes("portería vacía") ||
+          rawZone.includes("porteria vacia") ||
+          rawSit.includes("portería vacía") ||
+          rawSit.includes("porteria vacia") ||
+          rawDefSit.includes("portería vacía") ||
+          rawDefSit.includes("porteria vacia")
+        );
+
+        if (isEmptyNet) {
+          category = "emptyNet";
+        } else if (type.includes("7m") || type.includes("7 metros") || ev.sanction_type === "7m") {
           category = "7m";
         } else if (phase.includes("1ª oleada") || phase.includes("contraataque") || type.includes("contra")) {
           category = "counter";
@@ -177,12 +314,14 @@ export function calculateUserEmpiricalXG(matchesList = []) {
         counts[category].shots += 1;
         if (isGoal) counts[category].goals += 1;
 
-        if (zone && zoneCounts[zone]) {
+        // Normalización unificada de zona de destino en portería
+        const goalZoneKey = normalizeGoalZoneKey(ev);
+        if (goalZoneKey && zoneCounts[goalZoneKey]) {
           totalShotsWithZone += 1;
-          zoneCounts[zone].shots += 1;
+          zoneCounts[goalZoneKey].shots += 1;
           if (isGoal) {
             totalGoalsWithZone += 1;
-            zoneCounts[zone].goals += 1;
+            zoneCounts[goalZoneKey].goals += 1;
           }
         }
       }
@@ -237,6 +376,7 @@ export function calculateUserEmpiricalXG(matchesList = []) {
     xgPenetration: counts.penetration.shots > 0 ? Math.round((counts.penetration.goals / counts.penetration.shots) * 100) / 100 : 0.64,
     xgWing: counts.wing.shots > 0 ? Math.round((counts.wing.goals / counts.wing.shots) * 100) / 100 : 0.56,
     xg9m: counts["9m"].shots > 0 ? Math.round((counts["9m"].goals / counts["9m"].shots) * 100) / 100 : 0.34,
+    xgEmptyNet: counts.emptyNet?.shots > 0 ? Math.round((counts.emptyNet.goals / counts.emptyNet.shots) * 100) / 100 : 0.40,
   };
 
   return {
