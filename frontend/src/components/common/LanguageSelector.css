@@ -169,25 +169,25 @@
 
 /* Dark mode adjustments */
 [data-theme="dark"] .hs-lang-btn {
-  background: var(--bg-surface, #0B1911);
-  color: var(--text-primary, #E1E8E3);
-  border-color: var(--border-color, #1A3826);
+  background: var(--bg-surface, #111729);
+  color: var(--text-primary, #EDEFEE);
+  border-color: var(--border-color, #2C3448);
 }
 
 [data-theme="dark"] .hs-lang-btn:hover {
-  background: var(--bg-inset, #060F0A);
+  background: var(--bg-inset, #080C1C);
   border-color: var(--color-accent-border, rgba(74, 222, 128, 0.35));
 }
 
 [data-theme="dark"] .hs-lang-dropdown {
-  background: var(--bg-elevated, #0F2217);
-  border-color: var(--border-color, #1A3826);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: var(--bg-elevated, #181C2C);
+  border-color: var(--border-color, #2C3448);
+  box-shadow: 0 8px 24px rgba(4, 8, 20, 0.6);
 }
 
 [data-theme="dark"] .hs-lang-dropdown-header {
-  color: var(--text-secondary, #7C9885);
-  border-bottom-color: var(--border-subtle, #12281B);
+  color: var(--text-secondary, #94A3B8);
+  border-bottom-color: var(--border-subtle, #1C2438);
 }
 
 [data-theme="dark"] .hs-lang-option {

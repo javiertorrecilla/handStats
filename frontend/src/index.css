@@ -63,10 +63,16 @@
     --color-success-subtle: rgba(46, 125, 79, 0.10);
 
     /* ---- Superficies (Modo Claro Técnico) ---- */
-    --bg-primary:   #F7F8F7; /* Fondo base */
-    --bg-surface:   #FFFFFF; /* Superficie de card */
-    --bg-elevated:  #FFFFFF; /* Superficie elevada */
-    --bg-inset:     #EEF0EE; /* Recuadro inset */
+    --bg-primary:            #F7F8F7; /* Fondo base */
+    --bg-sidebar:            #FFFFFF; /* Sidebar */
+    --bg-darker:             #E4E8E5; /* Fondo más oscuro */
+    --bg-header:             #FFFFFF; /* Header superior */
+    --bg-surface:            #FFFFFF; /* Superficie de card */
+    --bg-surface-secondary:  #F3F5F4; /* Tarjeta secundaria */
+    --bg-card-secondary:     #F3F5F4;
+    --bg-elevated:           #FFFFFF; /* Superficie elevada */
+    --bg-inset:              #EEF0EE; /* Recuadro inset */
+    --bg-ultra-dark:         #14181B; /* Fondo ultra oscuro */
 
     /* ---- Textos (Modo Claro: Sin negro puro #000000) ---- */
     --text-primary:   #14181B; /* Texto principal */
@@ -149,50 +155,56 @@
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         /* ---- Brand Identity (Identidad de marca) ---- */
-        --brand-primary:    #2E7D4F; /* Verde principal (marca/acción) */
-        --brand-accent:     #4ADE80; /* Verde acento (highlights, texto positivo, datos destacados) */
+        --brand-primary:    #44D878; /* Verde principal HandStats */
+        --brand-accent:     #74D888; /* Verde claro */
         --brand-secondary:  #F59E0B; /* Ámbar/naranja (alertas, MVP, penaltis) */
         --brand-danger:     #EF4444; /* Rojo (pérdidas, eliminar, tarjetas) */
-        --brand-highlight:  #4ADE80;
+        --brand-highlight:  #74D888;
         --brand-tactical:   #38BDF8;
 
-        /* ---- Superficies (Modo Oscuro con Jerarquía Clara: Fondo -> Card -> Card Elevada) ---- */
-        --bg-primary:   #12181A; /* Fondo base */
-        --bg-surface:   #1B2326; /* Superficie de card (nivel 1) */
-        --bg-elevated:  #232D30; /* Superficie elevada (nivel 2, modales/cards destacadas) */
-        --bg-inset:     #151D20; /* Recuadro inset */
+        /* ---- Superficies (Modo Oscuro Midnight Navy) ---- */
+        --bg-primary:            #090E19; /* Fondo general / contenido */
+        --bg-sidebar:            #090E1C; /* Sidebar */
+        --bg-darker:             #080C1C; /* Fondo más oscuro */
+        --bg-header:             #101628; /* Header superior */
+        --bg-surface:            #111729; /* Tarjetas / paneles */
+        --bg-surface-secondary:  #141828; /* Tarjeta secundaria */
+        --bg-card-secondary:     #141828;
+        --bg-elevated:           #181C2C; /* Elementos ligeramente elevados */
+        --bg-inset:              #080C1C; /* Recuadro inset */
+        --bg-ultra-dark:         #040814; /* Fondo ultra oscuro */
 
         /* ---- Textos (Modo Oscuro: Sin blanco puro #FFFFFF) ---- */
         --text-primary:   #EDEFEE; /* Texto principal */
-        --text-secondary: #9CA6A3; /* Texto secundario */
-        --text-muted:     #9CA6A3;
+        --text-secondary: #94A3B8; /* Texto secundario */
+        --text-muted:     #7E8B9F;
         --text-contrast:  #EDEFEE;
-        --text-inverse:   #14181B;
+        --text-inverse:   #090E19;
         --text-color:     var(--text-primary);
 
-        /* ---- Bordes (Modo Oscuro) ---- */
-        --border-color:  #2D383C; /* Borde sutil */
-        --border-subtle: #242E32;
-        --border-strong: #3D4B50;
+        /* ---- Bordes (Modo Oscuro: Bordes azul grisáceos) ---- */
+        --border-color:  #2C3448; /* Bordes azul grisáceos */
+        --border-subtle: #1C2438;
+        --border-strong: #3B4660;
 
         /* ---- Sombras ---- */
-        --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.40);
-        --shadow-md:   0 2px 6px rgba(0, 0, 0, 0.50);
-        --shadow-lg:   0 6px 18px rgba(0, 0, 0, 0.60);
-        --shadow-xl:   0 12px 30px rgba(0, 0, 0, 0.70);
+        --shadow-sm:   0 1px 2px rgba(4, 8, 20, 0.45);
+        --shadow-md:   0 2px 6px rgba(4, 8, 20, 0.55);
+        --shadow-lg:   0 6px 18px rgba(4, 8, 20, 0.65);
+        --shadow-xl:   0 12px 30px rgba(4, 8, 20, 0.75);
 
-        /* ---- Primary Action (Verde Principal #2E7D4F) ---- */
-        --color-primary:        #2E7D4F;
-        --color-primary-hover:  #38965f;
-        --color-primary-subtle: rgba(46, 125, 79, 0.16);
-        --color-primary-ring:   rgba(46, 125, 79, 0.35);
-        --color-primary-border: rgba(46, 125, 79, 0.40);
+        /* ---- Primary Action (Verde Principal HandStats #44D878) ---- */
+        --color-primary:        #44D878;
+        --color-primary-hover:  #38C26A;
+        --color-primary-subtle: #1A5138; /* Verde oscuro/transparente */
+        --color-primary-ring:   rgba(68, 216, 120, 0.35);
+        --color-primary-border: rgba(68, 216, 120, 0.40);
 
-        /* ---- Accent Highlights (Verde Acento #4ADE80) ---- */
-        --color-accent:         #4ADE80;
-        --color-accent-hover:   #6ee7b7;
-        --color-accent-subtle:  rgba(74, 222, 128, 0.15);
-        --color-accent-border:  rgba(74, 222, 128, 0.40);
+        /* ---- Accent Highlights (Verde Claro #74D888) ---- */
+        --color-accent:         #74D888;
+        --color-accent-hover:   #8FE8A0;
+        --color-accent-subtle:  rgba(116, 216, 136, 0.15);
+        --color-accent-border:  rgba(116, 216, 136, 0.40);
 
         /* ---- Secondary Accent (Ámbar/Naranja #F59E0B) ---- */
         --color-secondary:        #F59E0B;
@@ -216,8 +228,8 @@
         --color-danger-subtle:  rgba(239, 68, 68, 0.14);
         --color-danger-border:  rgba(239, 68, 68, 0.35);
 
-        --color-success:        #2E7D4F;
-        --color-success-subtle: rgba(46, 125, 79, 0.16);
+        --color-success:        #143D32; /* Verde de éxito */
+        --color-success-subtle: rgba(20, 61, 50, 0.65);
     }
 }
 
@@ -227,50 +239,56 @@
 
 [data-theme="dark"] {
     /* ---- Brand Identity (Identidad de marca) ---- */
-    --brand-primary:    #2E7D4F; /* Verde principal (marca/acción) */
-    --brand-accent:     #4ADE80; /* Verde acento (highlights, texto positivo, datos destacados) */
+    --brand-primary:    #44D878; /* Verde principal HandStats */
+    --brand-accent:     #74D888; /* Verde claro */
     --brand-secondary:  #F59E0B; /* Ámbar/naranja (alertas, MVP, penaltis) */
     --brand-danger:     #EF4444; /* Rojo (pérdidas, eliminar, tarjetas) */
-    --brand-highlight:  #4ADE80;
+    --brand-highlight:  #74D888;
     --brand-tactical:   #38BDF8;
 
-    /* ---- Superficies (Modo Oscuro con Jerarquía Clara: Fondo -> Card -> Card Elevada) ---- */
-    --bg-primary:   #12181A; /* Fondo base */
-    --bg-surface:   #1B2326; /* Superficie de card (nivel 1) */
-    --bg-elevated:  #232D30; /* Superficie elevada (nivel 2, modales/cards destacadas) */
-    --bg-inset:     #151D20; /* Recuadro inset */
+    /* ---- Superficies (Modo Oscuro Midnight Navy) ---- */
+    --bg-primary:            #090E19; /* Fondo general / contenido */
+    --bg-sidebar:            #090E1C; /* Sidebar */
+    --bg-darker:             #080C1C; /* Fondo más oscuro */
+    --bg-header:             #101628; /* Header superior */
+    --bg-surface:            #111729; /* Tarjetas / paneles */
+    --bg-surface-secondary:  #141828; /* Tarjeta secundaria */
+    --bg-card-secondary:     #141828;
+    --bg-elevated:           #181C2C; /* Elementos ligeramente elevados */
+    --bg-inset:              #080C1C; /* Recuadro inset */
+    --bg-ultra-dark:         #040814; /* Fondo ultra oscuro */
 
     /* ---- Textos (Modo Oscuro: Sin blanco puro #FFFFFF) ---- */
     --text-primary:   #EDEFEE; /* Texto principal */
-    --text-secondary: #9CA6A3; /* Texto secundario */
-    --text-muted:     #9CA6A3;
+    --text-secondary: #94A3B8; /* Texto secundario */
+    --text-muted:     #7E8B9F;
     --text-contrast:  #EDEFEE;
-    --text-inverse:   #14181B;
+    --text-inverse:   #090E19;
     --text-color:     var(--text-primary);
 
-    /* ---- Bordes (Modo Oscuro) ---- */
-    --border-color:  #2D383C; /* Borde sutil */
-    --border-subtle: #242E32;
-    --border-strong: #3D4B50;
+    /* ---- Bordes (Modo Oscuro: Bordes azul grisáceos) ---- */
+    --border-color:  #2C3448; /* Bordes azul grisáceos */
+    --border-subtle: #1C2438;
+    --border-strong: #3B4660;
 
     /* ---- Sombras ---- */
-    --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.40);
-    --shadow-md:   0 2px 6px rgba(0, 0, 0, 0.50);
-    --shadow-lg:   0 6px 18px rgba(0, 0, 0, 0.60);
-    --shadow-xl:   0 12px 30px rgba(0, 0, 0, 0.70);
+    --shadow-sm:   0 1px 2px rgba(4, 8, 20, 0.45);
+    --shadow-md:   0 2px 6px rgba(4, 8, 20, 0.55);
+    --shadow-lg:   0 6px 18px rgba(4, 8, 20, 0.65);
+    --shadow-xl:   0 12px 30px rgba(4, 8, 20, 0.75);
 
-    /* ---- Primary Action (Verde Principal #2E7D4F) ---- */
-    --color-primary:        #2E7D4F;
-    --color-primary-hover:  #38965f;
-    --color-primary-subtle: rgba(46, 125, 79, 0.16);
-    --color-primary-ring:   rgba(46, 125, 79, 0.35);
-    --color-primary-border: rgba(46, 125, 79, 0.40);
+    /* ---- Primary Action (Verde Principal HandStats #44D878) ---- */
+    --color-primary:        #44D878;
+    --color-primary-hover:  #38C26A;
+    --color-primary-subtle: #1A5138; /* Verde oscuro/transparente */
+    --color-primary-ring:   rgba(68, 216, 120, 0.35);
+    --color-primary-border: rgba(68, 216, 120, 0.40);
 
-    /* ---- Accent Highlights (Verde Acento #4ADE80) ---- */
-    --color-accent:         #4ADE80;
-    --color-accent-hover:   #6ee7b7;
-    --color-accent-subtle:  rgba(74, 222, 128, 0.15);
-    --color-accent-border:  rgba(74, 222, 128, 0.40);
+    /* ---- Accent Highlights (Verde Claro #74D888) ---- */
+    --color-accent:         #74D888;
+    --color-accent-hover:   #8FE8A0;
+    --color-accent-subtle:  rgba(116, 216, 136, 0.15);
+    --color-accent-border:  rgba(116, 216, 136, 0.40);
 
     /* ---- Secondary Accent (Ámbar/Naranja #F59E0B) ---- */
     --color-secondary:        #F59E0B;
@@ -294,8 +312,8 @@
     --color-danger-subtle:  rgba(239, 68, 68, 0.14);
     --color-danger-border:  rgba(239, 68, 68, 0.35);
 
-    --color-success:        #2E7D4F;
-    --color-success-subtle: rgba(46, 125, 79, 0.16);
+    --color-success:        #143D32; /* Verde de éxito */
+    --color-success-subtle: rgba(20, 61, 50, 0.65);
 }
 
 /* ==========================================================

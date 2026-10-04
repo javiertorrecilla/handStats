@@ -6,24 +6,24 @@
 
 :root,
 [data-theme="dark"] {
-    --lp-bg-hero: #12181A;
-    --lp-bg-hero-grad: radial-gradient(circle at 50% 0%, #1B2326 0%, #12181A 75%);
-    --lp-bg-main: #12181A;
-    --lp-bg-section-alt: #161E21;
-    --lp-bg-surface: #1B2326;
-    --lp-bg-surface-elevated: #232D30;
-    --lp-bg-card: #1B2326;
-    --lp-bg-card-hover: #232D30;
+    --lp-bg-hero: #090E19;
+    --lp-bg-hero-grad: radial-gradient(circle at 50% 0%, #111729 0%, #090E19 75%);
+    --lp-bg-main: #090E19;
+    --lp-bg-section-alt: #080C1C;
+    --lp-bg-surface: #111729;
+    --lp-bg-surface-elevated: #181C2C;
+    --lp-bg-card: #111729;
+    --lp-bg-card-hover: #181C2C;
     
-    --lp-nav-bg: rgba(18, 24, 26, 0.92);
-    --lp-nav-scrolled-bg: rgba(18, 24, 26, 0.98);
-    --lp-nav-border: #2D383C;
+    --lp-nav-bg: rgba(16, 22, 40, 0.92);
+    --lp-nav-scrolled-bg: rgba(16, 22, 40, 0.98);
+    --lp-nav-border: #2C3448;
 
-    --lp-primary: #2E7D4F;
-    --lp-primary-bright: #4ADE80;
-    --lp-primary-subtle: rgba(46, 125, 79, 0.16);
-    --lp-primary-border: rgba(46, 125, 79, 0.40);
-    --lp-primary-border-strong: rgba(46, 125, 79, 0.60);
+    --lp-primary: #44D878;
+    --lp-primary-bright: #74D888;
+    --lp-primary-subtle: #1A5138;
+    --lp-primary-border: rgba(68, 216, 120, 0.40);
+    --lp-primary-border-strong: rgba(68, 216, 120, 0.60);
 
     --lp-secondary: #F59E0B;
     --lp-secondary-subtle: rgba(245, 158, 11, 0.14);
@@ -33,23 +33,23 @@
     --lp-tactical-subtle: rgba(56, 189, 248, 0.14);
 
     --lp-text-title: #EDEFEE;
-    --lp-text-body: #9CA6A3;
-    --lp-text-muted: #9CA6A3;
-    --lp-text-dim: #717D7A;
+    --lp-text-body: #94A3B8;
+    --lp-text-muted: #7E8B9F;
+    --lp-text-dim: #5C677D;
 
-    --lp-marquee-bg: #151D20;
-    --lp-marquee-text: #9CA6A3;
-    --lp-footer-bg: #0E1315;
+    --lp-marquee-bg: #080C1C;
+    --lp-marquee-text: #94A3B8;
+    --lp-footer-bg: #040814;
     --lp-footer-text: #EDEFEE;
 
-    --lp-border: #2D383C;
-    --lp-border-strong: #3D4B50;
-    --lp-shadow-card: 0 4px 18px rgba(0, 0, 0, 0.40);
-    --lp-shadow-subtle: 0 2px 6px rgba(0, 0, 0, 0.30);
+    --lp-border: #2C3448;
+    --lp-border-strong: #3B4660;
+    --lp-shadow-card: 0 4px 18px rgba(4, 8, 20, 0.45);
+    --lp-shadow-subtle: 0 2px 6px rgba(4, 8, 20, 0.35);
 
-    --lp-browser-topbar: #161E21;
-    --lp-browser-bg: #12181A;
-    --lp-browser-slot: #1B2326;
+    --lp-browser-topbar: #101628;
+    --lp-browser-bg: #090E19;
+    --lp-browser-slot: #111729;
 }
 
 [data-theme="light"] {

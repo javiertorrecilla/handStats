@@ -46,6 +46,54 @@ const IconZap = () => (
   </svg>
 );
 
+const IconGoalkeeperHand = ({ size = 26, color = "var(--color-primary, #44D878)" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ width: size, height: size, flexShrink: 0 }}
+  >
+    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4" />
+    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v7" />
+    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+    <path d="M6 14v-1.5a1.5 1.5 0 0 0-3 0V16a7 7 0 0 0 7 7h3a7 7 0 0 0 7-7v-3a2 2 0 0 0-2-2h0a2 2 0 0 0-2 2v2" />
+  </svg>
+);
+
+const IconBallHandball = ({ size = 20, color = "var(--color-primary, #44D878)" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ width: size, height: size, flexShrink: 0 }}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="m4.93 4.93 4.24 4.24" />
+    <path d="m14.83 9.17 4.24-4.24" />
+    <path d="m14.83 14.83 4.24 4.24" />
+    <path d="m9.17 14.83-4.24 4.24" />
+    <circle cx="12" cy="12" r="3.5" />
+  </svg>
+);
+
+const BENCHMARK_GOAL_DATA = {
+  TL: { label: "SUP. IZQUIERDO", shots: 7, saves: 1, xSavesPct: 5, mod: -0.23 },
+  TC: { label: "SUP. CENTRO",    shots: 6, saves: 5, xSavesPct: 95, mod: 0.46 },
+  TR: { label: "SUP. DERECHO",   shots: 6, saves: 1, xSavesPct: 5, mod: -0.21 },
+  ML: { label: "MED. IZQUIERDO", shots: 16, saves: 10, xSavesPct: 87, mod: 0.25 },
+  C:  { label: "CENTRO",         shots: 2, saves: 0, xSavesPct: 5, mod: -0.37 },
+  MR: { label: "MED. DERECHO",   shots: 15, saves: 11, xSavesPct: 95, mod: 0.36 },
+  BL: { label: "INF. IZQUIERDO", shots: 14, saves: 2, xSavesPct: 5, mod: -0.23 },
+  BC: { label: "INF. CENTRO",    shots: 4, saves: 0, xSavesPct: 5, mod: -0.37 },
+  BR: { label: "INF. DERECHO",   shots: 21, saves: 4, xSavesPct: 5, mod: -0.18 },
+};
+
 export default function SettingsPage({ matchesList = [], currentMatch = null }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("xg"); // "xg" | "xsaves" | "rating"
@@ -540,98 +588,133 @@ export default function SettingsPage({ matchesList = [], currentMatch = null }) 
 
         {/* SECCIÓN 2: xSaves */}
         {activeTab === "xsaves" && (
-          <div className="hs-card settings-card">
-            <div className="settings-card-header">
-              <div className="settings-card-header-avatar">
-                <IconGlove size={20} />
-              </div>
-              <div>
-                <h4 className="hs-card-title" style={{ margin: 0 }}>{t("settings.xsaves_title")}</h4>
-                <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", fontWeight: 500 }}>
-                  {t("settings.xsaves_subtitle")}
-                </span>
-              </div>
-            </div>
-
-            {/* CAJA EXPLICATIVA CON LA FÓRMULA DE xSaves Y MODIFICADOR DE PORTERÍA POR ZONA 3X3 */}
-            <div className="formula-callout-box">
-              <div className="formula-header-banner">
-                <div className="formula-title-badge">
-                  <IconInfo /> {t("settings.xsaves_formula_title")}
-                </div>
-                <span className="formula-subtitle-tag">{t("settings.xsaves_formula_subtitle")}</span>
-              </div>
-
-              {/* FILA DE TARJETAS DE FÓRMULAS */}
-              <div className="formula-cards-row">
-                <div className="formula-card">
-                  <span className="formula-card-title">{t("settings.xsaves_f1_title")}</span>
-                  <div className="formula-card-code">
-                    {t("settings.xsaves_f1_code")}
+          <div className="xsaves-section-container">
+            {/* TARJETA 1: FÓRMULAS Y EXPLICACIÓN */}
+            <div className="xsaves-panel-card">
+              {/* HEADER SUPERIOR */}
+              <div className="xsaves-card-header">
+                <div className="xsaves-header-left">
+                  <div className="xsaves-avatar-box">
+                    <IconGoalkeeperHand size={26} color="var(--color-primary, #44D878)" />
+                  </div>
+                  <div className="xsaves-header-titles">
+                    <h3 className="xsaves-title">
+                      {t("settings.xsaves_title", "EXPECTED SAVES (XSAVES) & MODIFICADOR DE PORTERÍA")}
+                    </h3>
+                    <p className="xsaves-subtitle">
+                      {t(
+                        "settings.xsaves_subtitle_custom",
+                        "Modificador empírico por cuadrante (3×3) y paradas esperadas del portero en base a colocación, biomecánica y distancia."
+                      )}
+                    </p>
                   </div>
                 </div>
-                <div className="formula-card">
-                  <span className="formula-card-title">{t("settings.xsaves_f2_title")}</span>
-                  <div className="formula-card-code">
-                    {t("settings.xsaves_f2_code")}
+
+                <div className="xsaves-formula-badge">
+                  <span>xSaves = (1 - xG) +</span>
+                  <span>Modificadores</span>
+                </div>
+              </div>
+
+              {/* FILA DE 3 TARJETAS DE FÓRMULAS */}
+              <div className="xsaves-formulas-grid">
+                <div className="xsaves-formula-item">
+                  <span className="xsaves-formula-item-label">
+                    {t("settings.xsaves_f1_title", "1. XSAVES POR ZONA (Z)")}
+                  </span>
+                  <div className="xsaves-formula-item-code">
+                    {t("settings.xsaves_f1_code", "(1 - xG) + ModificadorZona(z)")}
                   </div>
                 </div>
-                <div className="formula-card">
-                  <span className="formula-card-title">{t("settings.xsaves_f3_title")}</span>
-                  <div className="formula-card-code">
-                    {t("settings.xsaves_f3_code")}
+
+                <div className="xsaves-formula-item">
+                  <span className="xsaves-formula-item-label">
+                    {t("settings.xsaves_f2_title", "2. MODIFICADOR PORTERÍA (Z)")}
+                  </span>
+                  <div className="xsaves-formula-item-code">
+                    {t("settings.xsaves_f2_code", "TasaParadas(z) - TasaGlobal")}
+                  </div>
+                </div>
+
+                <div className="xsaves-formula-item">
+                  <span className="xsaves-formula-item-label">
+                    {t("settings.xsaves_f3_title", "3. EVALUACIÓN CUADRANTES")}
+                  </span>
+                  <div className="xsaves-formula-item-code">
+                    {t("settings.xsaves_f3_code", "Desviación vs Eficiencia Global")}
                   </div>
                 </div>
               </div>
 
               {/* BLOQUE EXPLICATIVO INFERIOR */}
-              <div className="formula-explanation-block">
+              <div className="xsaves-explanation-box">
                 <p>
-                  {t("settings.xsaves_explanation")}
+                  Las paradas esperadas del portero se calculan como <strong>(1 - xG) + ModificadorZonaXSave</strong>. El Modificador de Portería por Zona 3×3 evalúa el rendimiento empírico del portero en cada cuadrante de la portería restando su porcentaje de paradas reales en ese cuadrante respecto a su efectividad global.
                 </p>
               </div>
             </div>
 
-            {/* MARCO DE PORTERÍA 3X3 CON VALORES xSAVES Y MODIFICADORES AUTOMÁTICOS */}
-            <div style={{ marginTop: "var(--space-12)" }}>
-              <div className="empirical-breakdown-card" style={{ marginTop: 0 }}>
-                <h5 style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", marginBottom: "var(--space-12)", textAlign: "center" }}>
-                  {t("settings.zone_modifiers_title")}
-                </h5>
+            {/* TARJETA 2: MODIFICADORES POR ZONA (MARCO 3X3) */}
+            <div className="xsaves-goal-panel">
+              {/* ENCABEZADO DE PORTERÍA */}
+              <div className="xsaves-goal-header">
+                <div className="xsaves-goal-title">
+                  <IconBallHandball size={20} color="var(--color-primary, #44D878)" />
+                  <span>{t("settings.zone_modifiers_title_custom", "MODIFICADORES POR ZONA (MARCO 3×3)")}</span>
+                </div>
+                <div className="xsaves-goal-dimensions">
+                  <span>Dimensiones: 3.00m × 2.00m</span>
+                </div>
+              </div>
 
-                <div className="empirical-goal-grid-3x3" style={{ maxWidth: "540px", margin: "0 auto" }}>
+              {/* ESTRUCTURA MARCO DE PORTERÍA */}
+              <div className="xsaves-goal-frame-wrapper">
+                <div className="xsaves-crossbar-badge">
+                  <span>LARGUERO SUPERIOR</span>
+                </div>
+
+                <div className="xsaves-goal-grid-3x3">
                   {["TL", "TC", "TR", "ML", "C", "MR", "BL", "BC", "BR"].map((zKey) => {
-                    const zData = empiricalData.zoneCounts[zKey] || { shots: 0, goals: 0 };
-                    const saves = Math.max(0, zData.shots - zData.goals);
-                    const modXSaves = empiricalData.zoneXSavesModifiers[zKey] ?? 0;
-                    const xSaveEmpiricalVal = empiricalData.zoneXSaves[zKey] ?? 0.40;
-                    const xSavePct = Math.round(xSaveEmpiricalVal * 100);
+                    const benchmark = BENCHMARK_GOAL_DATA[zKey];
+                    const hasShots = empiricalData && empiricalData.zoneCounts && empiricalData.zoneCounts[zKey]?.shots > 0;
+
+                    let saves = benchmark.saves;
+                    let totalShots = benchmark.shots;
+                    let xSavePct = benchmark.xSavesPct;
+                    let modXSaves = benchmark.mod;
+
+                    if (hasShots) {
+                      const zData = empiricalData.zoneCounts[zKey];
+                      totalShots = zData.shots;
+                      saves = Math.max(0, zData.shots - zData.goals);
+                      modXSaves = empiricalData.zoneXSavesModifiers[zKey] ?? 0;
+                      const xSaveVal = empiricalData.zoneXSaves[zKey] ?? 0.40;
+                      xSavePct = Math.round(xSaveVal * 100);
+                    }
 
                     const isPositive = modXSaves > 0;
                     const isNegative = modXSaves < 0;
+                    const formattedMod = isPositive
+                      ? `+${Number(modXSaves).toFixed(2)} xSaves`
+                      : `${Number(modXSaves).toFixed(2)} xSaves`;
 
                     return (
                       <div
                         key={zKey}
-                        className="empirical-goal-cell-3x3"
-                        style={{
-                          border: `1px solid ${isPositive ? "rgba(16, 185, 129, 0.4)" : isNegative ? "rgba(239, 68, 68, 0.4)" : "var(--border-color)"}`,
-                          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, var(--bg-surface) 100%)",
-                          padding: "12px 8px"
-                        }}
+                        className={`xsaves-quadrant-cell ${isPositive ? "is-positive" : isNegative ? "is-negative" : "is-neutral"}`}
                       >
-                        <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>
-                          {goalZoneLabels[zKey]}
+                        <span className="xsaves-quadrant-title">
+                          {benchmark.label}
                         </span>
-                        <span style={{ fontSize: "14px", fontWeight: 900, fontFamily: "var(--font-mono)", margin: "3px 0", color: "var(--color-primary)" }}>
-                          {saves}/{zData.shots} {t("players_table.col_saves")}
-                        </span>
-                        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-primary)" }}>
-                          xSaves: {xSavePct}%
-                        </span>
-                        <span style={{ fontSize: "11px", fontWeight: 800, color: isPositive ? "var(--color-primary)" : isNegative ? "var(--color-danger)" : "var(--text-muted)", marginTop: "3px" }}>
-                          {modXSaves > 0 ? `+${modXSaves} xSaves` : `${modXSaves} xSaves`}
-                        </span>
+                        <div className="xsaves-quadrant-saves">
+                          {saves}/{totalShots} Paradas
+                        </div>
+                        <div className="xsaves-quadrant-pct">
+                          xSaves: <strong>{xSavePct}%</strong>
+                        </div>
+                        <div className={`xsaves-quadrant-badge ${isPositive ? "positive" : isNegative ? "negative" : "neutral"}`}>
+                          {formattedMod}
+                        </div>
                       </div>
                     );
                   })}

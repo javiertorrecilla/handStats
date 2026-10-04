@@ -27,7 +27,7 @@
     height: 100vh;
     height: 100dvh;
     max-height: 100dvh;
-    background: var(--bg-surface);
+    background: var(--bg-sidebar, var(--bg-surface));
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -246,7 +246,7 @@
     margin-top: auto;
     padding: var(--space-12) var(--space-10);
     border-top: 1px solid var(--border-color);
-    background: var(--bg-surface);
+    background: var(--bg-sidebar, var(--bg-surface));
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
@@ -323,7 +323,7 @@
     align-items: center;
     gap: var(--space-10);
     padding: 8px var(--space-10);
-    background: var(--bg-inset);
+    background: var(--bg-surface-secondary, var(--bg-inset));
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     transition: border-color 0.15s var(--easing);
@@ -442,7 +442,7 @@
         left: 0;
         right: 0;
         height: 60px;
-        background: var(--bg-surface);
+        background: var(--bg-header, var(--bg-surface));
         border-bottom: 1px solid var(--border-color);
         padding: 0 var(--space-16);
         z-index: calc(var(--z-sidebar) - 1);

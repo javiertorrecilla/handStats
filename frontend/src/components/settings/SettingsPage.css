@@ -708,3 +708,355 @@
   gap: var(--space-12);
   margin-top: var(--space-8);
 }
+
+/* ==========================================================
+   EXPECTED SAVES & MODIFICADOR DE PORTERÍA (3X3) v3.0
+   ========================================================== */
+
+.xsaves-section-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20, 20px);
+  width: 100%;
+}
+
+/* TARJETA 1: PANEL SUPERIOR DE FÓRMULAS */
+.xsaves-panel-card {
+  background: var(--bg-surface, #111729);
+  border: 1px solid var(--border-color, #2C3448);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(4, 8, 20, 0.4);
+}
+
+.xsaves-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.xsaves-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.xsaves-avatar-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  background: var(--bg-elevated, #181C2C);
+  border: 1px solid var(--border-color, #2C3448);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(4, 8, 20, 0.35);
+}
+
+.xsaves-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.xsaves-title {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary, #EDEFEE);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.xsaves-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary, #94A3B8);
+  margin: 0;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.xsaves-formula-badge {
+  background: #0E1526;
+  border: 1px solid rgba(44, 52, 72, 0.9);
+  border-radius: 6px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  color: #74D888;
+  line-height: 1.35;
+  text-align: left;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* FILA DE 3 TARJETAS DE FÓRMULAS */
+.xsaves-formulas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .xsaves-formulas-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.xsaves-formula-item {
+  background: var(--bg-surface-secondary, #141828);
+  border: 1px solid var(--border-color, #2C3448);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.xsaves-formula-item:hover {
+  border-color: rgba(44, 52, 72, 1);
+  transform: translateY(-1px);
+}
+
+.xsaves-formula-item-label {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 11px;
+  font-weight: 800;
+  color: #8E9BAE;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.xsaves-formula-item-code {
+  background: var(--bg-inset, #080C1C);
+  border: 1px solid #1C2438;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  color: #74D888;
+  text-align: center;
+  line-height: 1.35;
+}
+
+/* BLOQUE EXPLICATIVO INFERIOR */
+.xsaves-explanation-box {
+  background: var(--bg-inset, #080C1C);
+  border: 1px solid #1C2438;
+  border-left: 3px solid #44D878;
+  border-radius: 6px;
+  padding: 14px 18px;
+}
+
+.xsaves-explanation-box p {
+  font-size: 12.5px;
+  color: #8E9BAE;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.xsaves-explanation-box strong {
+  color: #EDEFEE;
+  font-weight: 700;
+}
+
+/* ==========================================================
+   TARJETA 2: MODIFICADORES POR ZONA (MARCO 3X3)
+   ========================================================== */
+
+.xsaves-goal-panel {
+  background: var(--bg-surface, #111729);
+  border: 1px solid var(--border-color, #2C3448);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(4, 8, 20, 0.4);
+}
+
+.xsaves-goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.xsaves-goal-title {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary, #EDEFEE);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xsaves-goal-dimensions {
+  background: var(--bg-surface-secondary, #141828);
+  border: 1px solid var(--border-color, #2C3448);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8E9BAE;
+  letter-spacing: 0.02em;
+}
+
+/* MARCO DE PORTERÍA */
+.xsaves-goal-frame-wrapper {
+  background: var(--bg-inset, #080C1C);
+  border: 2px solid var(--border-color, #2C3448);
+  border-radius: 8px;
+  padding: 30px 16px 16px 16px;
+  position: relative;
+  max-width: 820px;
+  margin: 0 auto;
+  width: 100%;
+  box-shadow: inset 0 2px 14px rgba(4, 8, 20, 0.6);
+}
+
+.xsaves-crossbar-badge {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elevated, #181C2C);
+  border: 1px solid var(--border-color, #2C3448);
+  border-radius: 4px;
+  padding: 2px 14px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #8E9BAE;
+  text-transform: uppercase;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.xsaves-goal-grid-3x3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 580px) {
+  .xsaves-goal-grid-3x3 {
+    gap: 8px;
+  }
+}
+
+.xsaves-quadrant-cell {
+  background: var(--bg-surface, #111729);
+  border-radius: 6px;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  min-height: 108px;
+}
+
+.xsaves-quadrant-cell.is-positive {
+  border: 1px solid rgba(68, 216, 120, 0.45);
+  box-shadow: 0 0 10px rgba(68, 216, 120, 0.08);
+}
+
+.xsaves-quadrant-cell.is-positive:hover {
+  border-color: rgba(68, 216, 120, 0.7);
+  box-shadow: 0 0 16px rgba(68, 216, 120, 0.14);
+}
+
+.xsaves-quadrant-cell.is-negative {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.06);
+}
+
+.xsaves-quadrant-cell.is-negative:hover {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.12);
+}
+
+.xsaves-quadrant-cell.is-neutral {
+  border: 1px solid var(--border-color, #2C3448);
+}
+
+.xsaves-quadrant-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #7E8B9F;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.xsaves-quadrant-saves {
+  font-family: var(--font-data, sans-serif);
+  font-size: 17px;
+  font-weight: 900;
+  color: #44D878;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.xsaves-quadrant-pct {
+  font-size: 12px;
+  color: #8E9BAE;
+  font-weight: 500;
+}
+
+.xsaves-quadrant-pct strong {
+  color: #EDEFEE;
+  font-weight: 800;
+}
+
+.xsaves-quadrant-badge {
+  border-radius: 4px;
+  padding: 2.5px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  margin-top: 3px;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.xsaves-quadrant-badge.positive {
+  background: #143D32;
+  border: 1px solid #1A5138;
+  color: #74D888;
+}
+
+.xsaves-quadrant-badge.negative {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #F87171;
+}
+
+.xsaves-quadrant-badge.neutral {
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--border-color, #2C3448);
+  color: #8E9BAE;
+}
