@@ -363,27 +363,6 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
     }
   ];
 
-  const testimonialsData = [
-    {
-      quote: t("testimonials.t1_quote"),
-      name: t("testimonials.t1_name"),
-      role: t("testimonials.t1_role"),
-      initials: "CM"
-    },
-    {
-      quote: t("testimonials.t2_quote"),
-      name: t("testimonials.t2_name"),
-      role: t("testimonials.t2_role"),
-      initials: "LV"
-    },
-    {
-      quote: t("testimonials.t3_quote"),
-      name: t("testimonials.t3_name"),
-      role: t("testimonials.t3_role"),
-      initials: "MT"
-    }
-  ];
-
   const currentTab = productTabs.find(t => t.id === activeTabId) || productTabs[0];
   const activeDeviceData = deviceDetails[selectedDevice] || deviceDetails.desktop;
 
@@ -400,7 +379,6 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
             <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
             <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
-            <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollTo("testimonials"); }}>{t("nav.testimonials")}</a>
           </nav>
 
           <div className="landing-nav-actions">
@@ -447,7 +425,6 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
         <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
         <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
-        <a href="#testimonials" onClick={(e) => { e.preventDefault(); scrollTo("testimonials"); }}>{t("nav.testimonials")}</a>
         
         <div style={{ padding: "6px 0", display: "flex", justifyContent: "center" }}>
           <LanguageSelector />
@@ -876,38 +853,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         </div>
       </section>
 
-      {/* ======== 8. TESTIMONIALS ======== */}
-      <section className="landing-testimonials-section" id="testimonials">
-        <div className="landing-container">
-          <div className="center-header">
-            <div className="section-broadcast-kicker">
-              <span className="section-kicker-num">{t("testimonials.kicker_num")}</span>
-              <span className="section-kicker-title">{t("testimonials.kicker_title")}</span>
-            </div>
-            <h2 className="landing-title">{t("testimonials.title")}</h2>
-            <p className="landing-subtitle">
-              {t("testimonials.subtitle")}
-            </p>
-          </div>
-
-          <div className="testimonials-grid-3">
-            {testimonialsData.map((tItem, i) => (
-              <div key={i} className="testimonial-bubble">
-                <p className="testimonial-quote">"{tItem.quote}"</p>
-                <div className="testimonial-user-row">
-                  <div className="testimonial-user-avatar">{tItem.initials}</div>
-                  <div>
-                    <div className="testimonial-user-name">{tItem.name}</div>
-                    <div className="testimonial-user-role">{tItem.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ======== 9. FINAL CTA ======== */}
+      {/* ======== 8. FINAL CTA ======== */}
       <section className="landing-cta-banner">
         <div className="cta-box-center">
           <h2 className="cta-main-title">
@@ -923,7 +869,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         </div>
       </section>
 
-      {/* ======== 10. FOOTER ======== */}
+      {/* ======== 9. FOOTER ======== */}
       <footer className="landing-footer-main">
         <div className="footer-content-row">
           <div className="footer-brand-side">

@@ -1663,83 +1663,7 @@
 }
 
 /* ==========================================================
-   8. TESTIMONIALS
-   ========================================================== */
-
-.landing-testimonials-section {
-    background: var(--lp-bg-section-alt);
-    padding: 90px 0;
-    transition: background 0.25s ease;
-}
-
-.testimonials-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-
-.testimonial-bubble {
-    background: var(--lp-bg-card);
-    border: 1px solid var(--lp-border);
-    border-radius: var(--radius);
-    padding: 26px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all 0.2s ease;
-    box-shadow: var(--lp-shadow-subtle);
-}
-
-.testimonial-bubble:hover {
-    transform: translateY(-3px);
-    border-color: var(--lp-border-strong);
-    box-shadow: var(--lp-shadow-card);
-}
-
-.testimonial-quote {
-    font-size: 0.94rem;
-    line-height: 1.65;
-    color: var(--lp-text-body);
-    font-style: italic;
-    margin-bottom: 20px;
-}
-
-.testimonial-user-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.testimonial-user-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--radius-sm);
-    background: var(--lp-primary);
-    color: var(--text-contrast);
-    font-weight: 900;
-    font-size: 0.95rem;
-    display: grid;
-    place-items: center;
-    font-family: var(--font-data);
-}
-
-.testimonial-user-name {
-    font-family: var(--font-sans);
-    font-weight: 800;
-    color: var(--lp-text-title);
-    font-size: 0.92rem;
-}
-
-.testimonial-user-role {
-    font-size: 0.76rem;
-    color: var(--lp-secondary);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-}
-
-/* ==========================================================
-   9. FINAL CTA SECTION
+   8. FINAL CTA SECTION
    ========================================================== */
 
 .landing-cta-banner {
@@ -1874,10 +1798,6 @@
     }
 
     .how-steps-flex {
-        grid-template-columns: 1fr;
-    }
-
-    .testimonials-grid-3 {
         grid-template-columns: 1fr;
     }
 }
