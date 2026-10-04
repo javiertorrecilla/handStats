@@ -20,14 +20,6 @@ async def parse_acta(file: UploadFile = File(...)):
 
     try:
         pdf_bytes = await file.read()
-        
-        # Guardar para depuración
-        import os
-        debug_dir = "/Users/javiertorrecilla/handStats/backend/static/uploads"
-        os.makedirs(debug_dir, exist_ok=True)
-        with open(os.path.join(debug_dir, "debug.pdf"), "wb") as f:
-            f.write(pdf_bytes)
-            
         result = parse_acta_pdf(pdf_bytes)
         return result
     except Exception as e:
