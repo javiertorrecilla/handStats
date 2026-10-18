@@ -84,14 +84,14 @@ const IconBallHandball = ({ size = 20, color = "var(--color-primary, #44D878)" }
 
 const BENCHMARK_GOAL_DATA = {
   TL: { label: "SUP. IZQUIERDO", shots: 7, saves: 1, xSavesPct: 5, mod: -0.23 },
-  TC: { label: "SUP. CENTRO",    shots: 6, saves: 5, xSavesPct: 95, mod: 0.46 },
-  TR: { label: "SUP. DERECHO",   shots: 6, saves: 1, xSavesPct: 5, mod: -0.21 },
+  TC: { label: "SUP. CENTRO", shots: 6, saves: 5, xSavesPct: 95, mod: 0.46 },
+  TR: { label: "SUP. DERECHO", shots: 6, saves: 1, xSavesPct: 5, mod: -0.21 },
   ML: { label: "MED. IZQUIERDO", shots: 16, saves: 10, xSavesPct: 87, mod: 0.25 },
-  C:  { label: "CENTRO",         shots: 2, saves: 0, xSavesPct: 5, mod: -0.37 },
-  MR: { label: "MED. DERECHO",   shots: 15, saves: 11, xSavesPct: 95, mod: 0.36 },
+  C: { label: "CENTRO", shots: 2, saves: 0, xSavesPct: 5, mod: -0.37 },
+  MR: { label: "MED. DERECHO", shots: 15, saves: 11, xSavesPct: 95, mod: 0.36 },
   BL: { label: "INF. IZQUIERDO", shots: 14, saves: 2, xSavesPct: 5, mod: -0.23 },
-  BC: { label: "INF. CENTRO",    shots: 4, saves: 0, xSavesPct: 5, mod: -0.37 },
-  BR: { label: "INF. DERECHO",   shots: 21, saves: 4, xSavesPct: 5, mod: -0.18 },
+  BC: { label: "INF. CENTRO", shots: 4, saves: 0, xSavesPct: 5, mod: -0.37 },
+  BR: { label: "INF. DERECHO", shots: 21, saves: 4, xSavesPct: 5, mod: -0.18 },
 };
 
 export default function SettingsPage({ matchesList = [], currentMatch = null }) {
@@ -258,14 +258,14 @@ export default function SettingsPage({ matchesList = [], currentMatch = null }) 
                   <p className="empirical-status-subtext">
                     {empiricalData.isEligible
                       ? t("settings.empirical_active_desc", {
-                          total: empiricalData.totalShots,
-                          next: empiricalData.nextCheckpoint,
-                          remaining: empiricalData.shotsUntilNextRecalc
-                        })
+                        total: empiricalData.totalShots,
+                        next: empiricalData.nextCheckpoint,
+                        remaining: empiricalData.shotsUntilNextRecalc
+                      })
                       : t("settings.empirical_pending_desc", {
-                          total: empiricalData.totalShots,
-                          remaining: 500 - empiricalData.totalShots
-                        })}
+                        total: empiricalData.totalShots,
+                        remaining: 500 - empiricalData.totalShots
+                      })}
                   </p>
                 </div>
 
@@ -347,41 +347,46 @@ export default function SettingsPage({ matchesList = [], currentMatch = null }) 
             <div className="empirical-side-by-side-grid">
               {/* COLUMNA IZQUIERDA: MARCO DE PORTERÍA 3X3 */}
               <div className="empirical-breakdown-card" style={{ marginTop: 0 }}>
-                <h5 style={{ fontSize: "var(--text-xs)", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase", marginBottom: "var(--space-12)", textAlign: "center" }}>
-                  {t("settings.zone_modifiers_title")}
-                </h5>
+                {/* ENCABEZADO DE PORTERÍA */}
+                <div className="xsaves-goal-header">
+                  <div className="xsaves-goal-title">
+                    <IconBallHandball size={20} color="var(--color-primary, #44D878)" />
+                    <span>{t("settings.zone_modifiers_title")}</span>
+                  </div>
+                </div>
 
-                <div className="empirical-goal-grid-3x3" style={{ maxWidth: "540px", margin: "0 auto" }}>
+                {/* ESTRUCTURA MARCO DE PORTERÍA */}
+
+                <div className="xsaves-goal-grid-3x3">
                   {["TL", "TC", "TR", "ML", "C", "MR", "BL", "BC", "BR"].map((zKey) => {
+                    const benchmark = BENCHMARK_GOAL_DATA[zKey];
                     const zData = empiricalData.zoneCounts[zKey] || { shots: 0, goals: 0 };
                     const modVal = empiricalData.zoneModifiers[zKey] ?? 0;
                     const ratePct = zData.shots > 0 ? Math.round((zData.goals / zData.shots) * 100) : 0;
 
                     const isPositive = modVal > 0;
                     const isNegative = modVal < 0;
+                    const formattedMod = isPositive
+                      ? `+${Number(modVal).toFixed(2)} xG`
+                      : `${Number(modVal).toFixed(2)} xG`;
 
                     return (
                       <div
                         key={zKey}
-                        className="empirical-goal-cell-3x3"
-                        style={{
-                          border: `1px solid ${isPositive ? "rgba(16, 185, 129, 0.4)" : isNegative ? "rgba(239, 68, 68, 0.4)" : "var(--border-color)"}`,
-                          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, var(--bg-surface) 100%)",
-                          padding: "12px 8px"
-                        }}
+                        className={`xsaves-quadrant-cell ${isPositive ? "is-positive" : isNegative ? "is-negative" : "is-neutral"}`}
                       >
-                        <span style={{ fontSize: "10px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase" }}>
-                          {goalZoneLabels[zKey]}
+                        <span className="xsaves-quadrant-title">
+                          {benchmark?.label || goalZoneLabels[zKey]}
                         </span>
-                        <span style={{ fontSize: "14px", fontWeight: 900, fontFamily: "var(--font-mono)", margin: "3px 0", color: "var(--color-primary)" }}>
+                        <div className="xsaves-quadrant-saves">
                           {zData.goals}/{zData.shots} {t("common.goals")}
-                        </span>
-                        <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--text-primary)" }}>
-                          {t("common.efficiency")}: {ratePct}%
-                        </span>
-                        <span style={{ fontSize: "11px", fontWeight: 800, color: isPositive ? "var(--color-primary)" : isNegative ? "var(--color-danger)" : "var(--text-muted)", marginTop: "3px" }}>
-                          {modVal > 0 ? `+${modVal} xG` : `${modVal} xG`}
-                        </span>
+                        </div>
+                        <div className="xsaves-quadrant-pct">
+                          {t("common.efficiency")}: <strong>{ratePct}%</strong>
+                        </div>
+                        <div className={`xsaves-quadrant-badge ${isPositive ? "positive" : isNegative ? "negative" : "neutral"}`}>
+                          {formattedMod}
+                        </div>
                       </div>
                     );
                   })}

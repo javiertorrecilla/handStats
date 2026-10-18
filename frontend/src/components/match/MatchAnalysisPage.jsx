@@ -39,7 +39,9 @@ import {
   Swords as IconSwords,
   Info as IconInfo,
   Target as IconTarget,
-  ArrowLeftRight as IconSwap
+  ArrowLeftRight as IconSwap,
+  Pencil as IconEdit,
+  AlertCircle as IconAlertCircle
 } from 'lucide-react';
 import { useTranslation } from "react-i18next";
 import { useMatch } from "../../context/MatchContext";
@@ -47,7 +49,15 @@ import userService from "../../services/userService";
 import MatchStatsModule from "../../stats/MatchStatsModule";
 import LanguageSelector from "../common/LanguageSelector";
 import { getEventCategory, formatCourtZoneName, formatGoalZoneName } from "../../stats/engine/types";
-import { calculatePlayerPlayingSeconds, formatMinutesSeconds, isEmptyNetEvent } from "../../stats/engine/metricsEngine";
+import {
+  calculatePlayerPlayingSeconds,
+  formatMinutesSeconds,
+  isEmptyNetEvent,
+  is7mEvent,
+  isOffensiveFoulEvent,
+  matchesPlayerRef,
+  isSamePlayer
+} from "../../stats/engine/metricsEngine";
 import { calculateShotXG, calculateShotXSaves } from "../../stats/engine/xgModel";
 import { normalizeGoalZoneKey } from "../../services/settingsService";
 import isotipo from "../../assets/isotipo.png";
@@ -205,6 +215,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     activePossession,
     setActivePossession,
     sendMatchEvent,
+    updateMatchEvent,
     closePossession,
     undoLastEvent,
     updatePlayers,
@@ -582,6 +593,11 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
   const [selectedTeamAction, setSelectedTeamAction] = useState(null); // null | { team: "LOCAL" | "VISITANTE", action: "lanzamiento" | "perdida" | "sancion" | "free_throw" | "penalty_7m" | "falta_en_ataque" }
   const [pending7mDetails, setPending7mDetails] = useState({ defender: null, attacker: null });
   const [pendingFaltaAtaqueDetails, setPendingFaltaAtaqueDetails] = useState({ attacker: null, defender: null });
+
+  // Modal interactivo en 2 pasos para 7m y falta en ataque (Opción C)
+  const [roleActionModal, setRoleActionModal] = useState(null);
+  // Modal de edición posterior para asignar o corregir jugadores en cronología
+  const [editingEventModal, setEditingEventModal] = useState(null);
 
   const [actionCaptureTime, setActionCaptureTime] = useState(null); // Captura el tiempo en el momento del click inicial
 
@@ -1093,62 +1109,168 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     setSelectedAssistPosition("Ninguna");
   };
 
-  // Confirmar 7m provocado en defensa
-  const handleConfirm7mPenalty = async (defender, attacker) => {
-    const eventTime = actionCaptureTime !== null ? actionCaptureTime : time;
-    setActionCaptureTime(null);
+  // Confirmar selección en el modal interactivo de 2 pasos para 7m y falta en ataque
+  const handleSelectRolePlayer = async (playerOrSkip) => {
+    if (!roleActionModal) return;
 
-    const isOpponent = selectedTeamAction.team === "VISITANTE";
-    const defenderId = defender === "team" ? "Equipo" : `${defender.number} - ${defender.name}`;
-    const attackerId = attacker === "team" ? "Equipo" : `${attacker.number} - ${attacker.name}`;
+    const { actionType, step, committed, provoked, captureTime, attackingTeam, defendingTeam } = roleActionModal;
 
-    await sendMatchEvent({
-      event_type: "sanction",
-      sanction_type: "7m Provocado",
-      player_id: defenderId,
-      drawn_by_player: attackerId,
-      is_opponent_action: isOpponent
-    }, eventTime);
-
-    setPending7mDetails({ defender: null, attacker: null });
-    setSelectedPlayer(null);
-    setSelectedTeamAction(null);
-  };
-
-  // Confirmar Falta en Ataque (atacante provoca, defensa la sufre)
-  const handleConfirmFaltaAtaque = async (attacker, defender) => {
-    const eventTime = actionCaptureTime !== null ? actionCaptureTime : time;
-    setActionCaptureTime(null);
-
-    const isOpponent = selectedTeamAction.team === "VISITANTE";
-    const attackerId = attacker === "team" ? "Equipo" : (attacker ? `${attacker.number} - ${attacker.name}` : "No especificado");
-    const defenderId = defender === "team" ? "Equipo" : (defender ? `${defender.number} - ${defender.name}` : null);
-
-    const details = {
-      end_reason: "Falta en ataque"
+    const isSkip = !playerOrSkip;
+    const selectedObj = isSkip ? null : {
+      id: playerOrSkip._id || playerOrSkip.id || playerOrSkip.number,
+      number: playerOrSkip.number,
+      name: playerOrSkip.name,
+      team: playerOrSkip.team
     };
 
-    if (defender && defender !== "team") {
-      details.defender_number = defender.number;
-      details.defender_name = defender.name;
-      details.defender_id = defenderId;
-    } else if (defender === "team") {
-      details.defender_name = "Equipo";
-      details.defender_id = "Equipo";
+    // Validar regla de consistencia: el mismo jugador no puede cometer y provocar la misma acción
+    if (selectedObj) {
+      if (committed && isSamePlayer(selectedObj, committed)) {
+        setRoleActionModal((prev) => ({
+          ...prev,
+          errorMsg: t("mesa_control.error_same_player", "¡Regla de consistencia! El mismo jugador no puede cometer y provocar la misma acción.")
+        }));
+        return;
+      }
+      if (provoked && isSamePlayer(selectedObj, provoked)) {
+        setRoleActionModal((prev) => ({
+          ...prev,
+          errorMsg: t("mesa_control.error_same_player", "¡Regla de consistencia! El mismo jugador no puede cometer y provocar la misma acción.")
+        }));
+        return;
+      }
     }
 
-    await sendMatchEvent({
-      event_type: "turnover",
-      player_id: attackerId,
-      is_opponent_action: isOpponent,
-      ...details
-    }, eventTime);
+    if (actionType === "penalti_7m") {
+      const nextProvoked = provoked || attacker;
+      const nextCommitted = selectedObj;
 
-    await closePossession(eventTime, "Pérdida");
+      await sendMatchEvent({
+        event_type: "sanction",
+        sanction_type: "7m Provocado",
+        action_key: "penalti_7m",
+        committed_by: nextCommitted,
+        provoked_by: nextProvoked,
+        player_id: nextCommitted ? `${nextCommitted.number} - ${nextCommitted.name}` : "Equipo",
+        player_number: nextCommitted?.number ?? null,
+        player_name: nextCommitted?.name ?? null,
+        drawn_by_player: nextProvoked ? `${nextProvoked.number} - ${nextProvoked.name}` : "Equipo",
+        drawn_by_number: nextProvoked?.number ?? null,
+        drawn_by_name: nextProvoked?.name ?? null,
+        team: attackingTeam,
+        is_opponent_action: attackingTeam !== "LOCAL"
+      }, captureTime);
 
-    setPendingFaltaAtaqueDetails({ attacker: null, defender: null });
-    setSelectedPlayer(null);
-    setSelectedTeamAction(null);
+      setRoleActionModal(null);
+    } else if (actionType === "falta_ataque") {
+      const nextCommitted = committed || attacker;
+      const nextProvoked = selectedObj;
+
+      await sendMatchEvent({
+        event_type: "turnover",
+        end_reason: "Falta en ataque",
+        turnover_type: "Falta en ataque",
+        action_key: "falta_ataque",
+        committed_by: nextCommitted,
+        provoked_by: nextProvoked,
+        player_id: nextCommitted ? `${nextCommitted.number} - ${nextCommitted.name}` : "Equipo",
+        player_number: nextCommitted?.number ?? null,
+        player_name: nextCommitted?.name ?? null,
+        defender_id: nextProvoked ? `${nextProvoked.number} - ${nextProvoked.name}` : null,
+        defender_number: nextProvoked?.number ?? null,
+        defender_name: nextProvoked?.name ?? null,
+        team: attackingTeam,
+        is_opponent_action: attackingTeam !== "LOCAL"
+      }, captureTime);
+
+      await closePossession(captureTime, "Pérdida - Falta en ataque", defendingTeam);
+
+      setRoleActionModal(null);
+    }
+  };
+
+  // Abrir modal para editar evento existente (asignar o cambiar committed_by / provoked_by)
+  const handleOpenEditEventModal = (event) => {
+    if (!event) return;
+    const is7m = is7mEvent(event);
+    const isOffFoul = isOffensiveFoulEvent(event);
+    if (!is7m && !isOffFoul) return;
+
+    const isHomeAttacking = event.team === "LOCAL" || !event.is_opponent_action;
+    const attackingTeam = isHomeAttacking ? "LOCAL" : "VISITANTE";
+    const defendingTeam = isHomeAttacking ? "VISITANTE" : "LOCAL";
+
+    let committed = event.committed_by || null;
+    let provoked = event.provoked_by || null;
+
+    if (!committed && !provoked) {
+      if (is7m) {
+        if (event.player_number || event.player_name) {
+          committed = { number: event.player_number, name: event.player_name || "", team: defendingTeam };
+        }
+        if (event.drawn_by_number || event.drawn_by_name || event.drawn_by_player) {
+          provoked = { number: event.drawn_by_number, name: event.drawn_by_name || event.drawn_by_player || "", team: attackingTeam };
+        }
+      } else {
+        if (event.player_number || event.player_name) {
+          committed = { number: event.player_number, name: event.player_name || "", team: attackingTeam };
+        }
+        if (event.defender_number || event.defender_name || event.defender_id) {
+          provoked = { number: event.defender_number, name: event.defender_name || event.defender_id || "", team: defendingTeam };
+        }
+      }
+    }
+
+    setEditingEventModal({
+      event,
+      is7m,
+      isOffFoul,
+      attackingTeam,
+      defendingTeam,
+      committed,
+      provoked,
+      errorMsg: null
+    });
+  };
+
+  // Guardar edición de evento existente y recalcular en tiempo real
+  const handleSaveEditedEvent = async () => {
+    if (!editingEventModal) return;
+    const { event, is7m, committed, provoked } = editingEventModal;
+
+    // Guard de consistencia: impedir mismo jugador en ambos roles
+    if (committed && provoked && isSamePlayer(committed, provoked)) {
+      setEditingEventModal((prev) => ({
+        ...prev,
+        errorMsg: t("mesa_control.error_same_player", "¡Regla de consistencia! El mismo jugador no puede cometer y provocar la misma acción.")
+      }));
+      return;
+    }
+
+    const eventId = event.event_id || event.id;
+    const payload = {
+      committed_by: committed || null,
+      provoked_by: provoked || null
+    };
+
+    if (is7m) {
+      payload.player_id = committed ? `${committed.number} - ${committed.name}` : "Equipo";
+      payload.player_number = committed?.number ?? null;
+      payload.player_name = committed?.name ?? null;
+      payload.drawn_by_player = provoked ? `${provoked.number} - ${provoked.name}` : "Equipo";
+      payload.drawn_by_number = provoked?.number ?? null;
+      payload.drawn_by_name = provoked?.name ?? null;
+    } else {
+      payload.player_id = committed ? `${committed.number} - ${committed.name}` : "Equipo";
+      payload.player_number = committed?.number ?? null;
+      payload.player_name = committed?.name ?? null;
+      payload.defender_id = provoked ? `${provoked.number} - ${provoked.name}` : null;
+      payload.defender_number = provoked?.number ?? null;
+      payload.defender_name = provoked?.name ?? null;
+    }
+
+    await updateMatchEvent(eventId, payload);
+    setEditingEventModal(null);
   };
 
   // Seleccionar acción desde el marcador de un equipo
@@ -2300,10 +2422,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       }
 
       // Etiqueta legible de la acción
+      const is7m = is7mEvent(e);
+      const isOffFoul = isOffensiveFoulEvent(e);
+
       let typeLabel = "ACCIÓN";
       let typeClass = "perdida"; // "gol" | "parada" | "perdida"
 
-      if (category === "goles") {
+      if (is7m) {
+        typeLabel = t("mesa_control.action_7m_penalti", "7M PENALTI");
+        typeClass = "perdida";
+      } else if (isOffFoul) {
+        typeLabel = t("mesa_control.action_falta_ataque", "FALTA ATAQUE");
+        typeClass = "perdida";
+      } else if (category === "goles") {
         if (isEmptyNetEvent(e)) {
           typeLabel = t("action_gol_porteria_vacia", "GOL P. VACÍA");
         } else {
@@ -2354,11 +2485,28 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         typeClass = "parada";
       }
 
-      const playerNum = e.player_number || e.shooter_number || e.player_id || "";
-      const playerName = e.player_name || e.shooter_name || "";
-      let playerStr = playerNum ? `#${playerNum} ${playerName}`.trim() : (playerName || e.team || "");
-      if (category === "cambios" && e.description) {
-        playerStr = e.description;
+      let playerStr = "";
+      if (is7m) {
+        const comm = e.committed_by ? `#${e.committed_by.number} ${e.committed_by.name || ""}`.trim() : (e.player_number || e.player_name ? `#${e.player_number || ""} ${e.player_name || ""}`.trim() : null);
+        const prov = e.provoked_by ? `#${e.provoked_by.number} ${e.provoked_by.name || ""}`.trim() : (e.drawn_by_number || e.drawn_by_name || e.drawn_by_player ? `#${e.drawn_by_number || ""} ${e.drawn_by_name || e.drawn_by_player || ""}`.trim() : null);
+        if (comm && prov) playerStr = `Comete ${comm} → Provoca ${prov}`;
+        else if (prov) playerStr = `Provoca ${prov} (comete: sin asignar)`;
+        else if (comm) playerStr = `Comete ${comm} (provoca: sin asignar)`;
+        else playerStr = `7m: sin jugadores asignados`;
+      } else if (isOffFoul) {
+        const comm = e.committed_by ? `#${e.committed_by.number} ${e.committed_by.name || ""}`.trim() : (e.player_number || e.player_name ? `#${e.player_number || ""} ${e.player_name || ""}`.trim() : null);
+        const prov = e.provoked_by ? `#${e.provoked_by.number} ${e.provoked_by.name || ""}`.trim() : (e.defender_number || e.defender_name ? `#${e.defender_number || ""} ${e.defender_name || ""}`.trim() : null);
+        if (comm && prov) playerStr = `Comete ${comm} → Provoca ${prov}`;
+        else if (comm) playerStr = `Comete ${comm} (provoca: sin asignar)`;
+        else if (prov) playerStr = `Provoca ${prov} (comete: sin asignar)`;
+        else playerStr = `Falta en ataque: sin asignar`;
+      } else {
+        const playerNum = e.player_number || e.shooter_number || e.player_id || "";
+        const playerName = e.player_name || e.shooter_name || "";
+        playerStr = playerNum ? `#${playerNum} ${playerName}`.trim() : (playerName || e.team || "");
+        if (category === "cambios" && e.description) {
+          playerStr = e.description;
+        }
       }
 
       const fromZoneRaw = e.shot_zone || e.court_zone || e.shot_position || "";
@@ -2384,6 +2532,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
       return {
         category,
+        rawEvent: e,
+        is7mOrOffFoul: is7m || isOffFoul,
         rawType: e.event_type,
         actionKey: e.action_key,
         rawResult: e.result,
@@ -2437,6 +2587,55 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         team: posTeam,
         is_opponent_action: posTeam !== "LOCAL"
       }, time);
+      return;
+    }
+
+    // 1b. 7M PENALTI y FALTA EN ATAQUE (Flujo en 2 pasos de asignación autor/provocador con Opción C)
+    if (actionKey === "penalti_7m" || actionKey === "falta_ataque") {
+      const attackingTeam = activePossession?.team || "LOCAL";
+      const defendingTeam = attackingTeam === "LOCAL" ? "VISITANTE" : "LOCAL";
+      const attackingTeamName = attackingTeam === "LOCAL" ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+      const actionInstantTime = time;
+
+      if (!selectedPlayer) {
+        alert(t("mesa_control.alert_select_attacker_first", `Por favor, selecciona primero al jugador atacante en pista (${attackingTeamName}) antes de marcar ${actionKey === "penalti_7m" ? "7M Penalti" : "Falta en Ataque"}.`));
+        return;
+      }
+
+      if (selectedPlayer.team !== attackingTeam) {
+        alert(t("mesa_control.alert_select_attacker_wrong_team", `El jugador seleccionado (#${selectedPlayer.number} ${selectedPlayer.name || ""}) pertenece al equipo defensor. Para registrar ${actionKey === "penalti_7m" ? "7M Penalti" : "Falta en Ataque"}, selecciona primero a un jugador del equipo atacante (${attackingTeamName}) en pista.`));
+        return;
+      }
+
+      if (selectedPlayer.isBench) {
+        alert(t("mesa_control.alert_select_attacker_court_only", "El jugador atacante debe ser un jugador en pista (no del banquillo)."));
+        return;
+      }
+
+      const attackerObj = {
+        id: selectedPlayer._id || selectedPlayer.id || selectedPlayer.number,
+        number: selectedPlayer.number,
+        name: selectedPlayer.name,
+        team: selectedPlayer.team
+      };
+
+      // Si es 7m: el atacante seleccionado es el que lo PROVOCA (+0.80)
+      // Si es falta en ataque: el atacante seleccionado es el que la COMETE (-0.80)
+      const provoked = actionKey === "penalti_7m" ? attackerObj : null;
+      const committed = actionKey === "falta_ataque" ? attackerObj : null;
+
+      setRoleActionModal({
+        actionType: actionKey,
+        attacker: attackerObj,
+        committed,
+        provoked,
+        captureTime: actionInstantTime,
+        attackingTeam,
+        defendingTeam,
+        errorMsg: null
+      });
+
+      setSelectedPlayer(null);
       return;
     }
 
@@ -3303,12 +3502,12 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                           {/* E. 9M CENTRAL (ESPECIFICACIÓN EXACTA: BORDEANDO AL 100% EL ARCO DE 9M SIN HUECOS) */}
                           <path
                             d="M 124 196 A 195 195 0 0 0 165 203 L 235 203 A 195 195 0 0 0 276 196 L 276 288 L 124 288 Z"
-                            fill="rgba(34, 197, 94, 0.40)"
-                            stroke="#22c55e"
+                            fill="rgba(26, 81, 56, 0.45)"
+                            stroke="#44D878"
                             strokeWidth="2.5"
                           />
-                          <text x="200" y="240" fill="#22c55e" fontSize="11" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.center_back_9m", "9M CENTRAL")}</text>
-                          <text x="200" y="254" fill="#86efac" fontSize="9" textAnchor="middle">{t("mesa_control.xg_exterior", "xG Exterior")}</text>
+                          <text x="200" y="240" fill="#44D878" fontSize="11" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.center_back_9m", "9M CENTRAL")}</text>
+                          <text x="200" y="254" fill="#74D888" fontSize="9" textAnchor="middle">{t("mesa_control.xg_exterior", "xG Exterior")}</text>
 
                           {/* F. 9M LATERAL DERECHO (SECTOR BLANCO ABAJO DER: X 69-100%) */}
                           <path
@@ -3461,8 +3660,6 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     <div className="mp-tile-icon"><IconSave7m size={26} /></div>
                     <span>{t("mesa_control.action_parada_7m")}</span>
                   </button>
-
-                  {/* FILA 2: POSTE, FUERA, GOLPE FRANCO Y TIEMPO MUERTO */}
                   <button className={`mp-action-tile poste ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("poste")}>
                     <div className="mp-tile-icon"><IconPost size={26} /></div>
                     <span>{t("mesa_control.action_poste")}</span>
@@ -3471,6 +3668,50 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     <div className="mp-tile-icon"><IconFuera size={26} /></div>
                     <span>{t("mesa_control.action_fuera")}</span>
                   </button>
+
+                  {/* FILA 2: INFRACCIONES, JUEGO Y PÉRDIDAS */}
+                  {(() => {
+                    const isAttackingPlayerSelected = Boolean(selectedPlayer && !selectedPlayer.isBench && selectedPlayer.team === (activePossession?.team || "LOCAL"));
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          className={`mp-action-tile penalti-7m ${!isAttackingPlayerSelected ? "requires-attacker" : "attacker-active"}`}
+                          onClick={() => handleQuickAction("penalti_7m")}
+                          title={
+                            !selectedPlayer
+                              ? t("mesa_control.7m_hint_select_first", "Selecciona primero un jugador atacante en pista para marcar 7M Penalti")
+                              : selectedPlayer.team !== (activePossession?.team || "LOCAL")
+                                ? t("mesa_control.7m_hint_wrong_team", "El jugador seleccionado no es del equipo con posesión atacante")
+                                : selectedPlayer.isBench
+                                  ? t("mesa_control.7m_hint_bench", "El jugador atacante debe estar en pista")
+                                  : t("mesa_control.7m_hint_ready", `Registrar 7M Penalti (provocado por #${selectedPlayer.number} ${selectedPlayer.name || ""})`)
+                          }
+                        >
+                          <div className="mp-tile-icon"><IconGoal7m size={26} /></div>
+                          <span>{t("mesa_control.action_7m_penalti", "7M PENALTI")}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`mp-action-tile falta-ataque ${!isAttackingPlayerSelected ? "requires-attacker" : "attacker-active"}`}
+                          onClick={() => handleQuickAction("falta_ataque")}
+                          title={
+                            !selectedPlayer
+                              ? t("mesa_control.off_foul_hint_select_first", "Selecciona primero un jugador atacante en pista para marcar Falta en Ataque")
+                              : selectedPlayer.team !== (activePossession?.team || "LOCAL")
+                                ? t("mesa_control.off_foul_hint_wrong_team", "El jugador seleccionado no es del equipo con posesión atacante")
+                                : selectedPlayer.isBench
+                                  ? t("mesa_control.off_foul_hint_bench", "El jugador atacante debe estar en pista")
+                                  : t("mesa_control.off_foul_hint_ready", `Registrar Falta en Ataque (cometida por #${selectedPlayer.number} ${selectedPlayer.name || ""})`)
+                          }
+                        >
+                          <div className="mp-tile-icon"><IconSwords size={26} /></div>
+                          <span>{t("mesa_control.action_falta_ataque", "FALTA ATAQUE")}</span>
+                        </button>
+                      </>
+                    );
+                  })()}
                   <button
                     type="button"
                     className={`mp-action-tile golpe-franco ${(!selectedPlayer || selectedPlayer.isBench || selectedPlayer.team === activePossession?.team) ? "disabled-bench" : ""}`}
@@ -3491,8 +3732,6 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     <div className="mp-tile-icon"><IconTimeout size={26} /></div>
                     <span>{t("mesa_control.action_tiempo_muerto")}</span>
                   </button>
-
-                  {/* FILA 3: PÉRDIDAS */}
                   <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pase")}>
                     <div className="mp-tile-icon"><IconBadPass size={26} /></div>
                     <span>{t("mesa_control.action_perdida_pase")}</span>
@@ -3501,6 +3740,8 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     <div className="mp-tile-icon"><IconDoubleDribble size={26} /></div>
                     <span>{t("mesa_control.action_perdida_dobles")}</span>
                   </button>
+
+                  {/* FILA 3: PÉRDIDAS RESTANTES Y SANCIONES */}
                   <button className={`mp-action-tile perdida ${selectedPlayer?.isBench ? "disabled-bench" : ""}`} disabled={selectedPlayer?.isBench} onClick={() => handleQuickAction("perdida_pasos")}>
                     <div className="mp-tile-icon"><IconFootsteps size={26} /></div>
                     <span>{t("mesa_control.action_perdida_pasos")}</span>
@@ -3509,8 +3750,6 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                     <div className="mp-tile-icon"><IconPassivePlay size={26} /></div>
                     <span>{t("mesa_control.action_perdida_pasivo")}</span>
                   </button>
-
-                  {/* FILA 4: SANCIONES */}
                   <button className="mp-action-tile sancion-2min" onClick={() => handleQuickAction("exclusion")}>
                     <div className="mp-tile-icon"><IconTimer2m size={26} /></div>
                     <span>{t("mesa_control.action_2min")}</span>
@@ -3603,7 +3842,19 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
                             </div>
                           ) : null}
                         </div>
-                        <span className="mp-item-score">{evt.score}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span className="mp-item-score">{evt.score}</span>
+                          {evt.is7mOrOffFoul && (
+                            <button
+                              type="button"
+                              className="mp-item-edit-btn"
+                              title={t("mesa_control.edit_assigned_players", "Editar asignación de jugadores")}
+                              onClick={() => handleOpenEditEventModal(evt.rawEvent)}
+                            >
+                              <IconEdit size={12} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -3814,7 +4065,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
         <div className="mp-initial-possession-backdrop">
           <div className="mp-initial-possession-card">
             <div className="mp-pos-modal-icon">
-              <IconBall size={28} color="#2DBE60" />
+              <IconBall size={28} color="#44D878" />
             </div>
             <h3>{t("mesa_control.initial_possession_title")}</h3>
             <p>{t("mesa_control.initial_possession_desc")}</p>
@@ -3992,6 +4243,324 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
           </div>
         </div>
       )}
+
+      {/* MODAL INTERACTIVO: SELECCIÓN DEL DEFENSOR EN PISTA PARA 7M Y FALTA EN ATAQUE */}
+      {roleActionModal && (() => {
+        const { actionType, attacker, errorMsg, attackingTeam, defendingTeam } = roleActionModal;
+        const is7m = actionType === "penalti_7m";
+
+        const attackingTeamName = attackingTeam === "LOCAL" ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+        const defendingTeamName = defendingTeam === "LOCAL" ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+
+        // Defensores de campo en pista (los que no están en el banquillo)
+        const defendingFieldStarters = defendingTeam === "LOCAL" ? homeFieldStarters : awayFieldStarters;
+        const defendingActiveGk = defendingTeam === "LOCAL" ? homeActiveGk : awayActiveGk;
+        const defendingRoster = defendingTeam === "LOCAL" ? homeRoster : awayRoster;
+
+        let onCourtDefenders = defendingFieldStarters && defendingFieldStarters.length > 0
+          ? [...defendingFieldStarters]
+          : (defendingRoster || []).filter(p => !p.isBench);
+
+        // Si es 7 metros, el portero también está en pista y puede haber cometido penalti
+        if (is7m && defendingActiveGk && defendingActiveGk.length > 0) {
+          defendingActiveGk.forEach(gk => {
+            if (!onCourtDefenders.some(p => p.number === gk.number)) {
+              onCourtDefenders.push(gk);
+            }
+          });
+        }
+
+        const sortedDefenders = [...onCourtDefenders].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+
+        const modalTitle = is7m
+          ? t("mesa_control.7m_committed_title", "¿Quién comete la infracción del 7 Metros?")
+          : t("mesa_control.off_foul_provoked_title", "¿Quién provoca / recibe la falta en ataque?");
+
+        const modalSubtitle = is7m
+          ? t("mesa_control.7m_committed_sub", "Selecciona al defensor en pista que comete el penalti")
+          : t("mesa_control.off_foul_provoked_sub", "Selecciona al defensor en pista que recibe la carga");
+
+        return (
+          <div className="mp-two-step-overlay" style={{ zIndex: 9999 }}>
+            <div className="mp-two-step-card">
+              <div className="mp-two-step-header">
+                <div className="mp-two-step-title-wrap">
+                  <span className={`mp-two-step-badge ${is7m ? "penalti-7m" : "falta-ataque"}`}>
+                    {is7m ? <IconGoal7m size={14} /> : <IconSwords size={14} />}
+                    {is7m ? t("mesa_control.action_7m_penalti", "7M PENALTI") : t("mesa_control.action_falta_ataque", "FALTA ATAQUE")}
+                  </span>
+                  <h3 className="mp-two-step-title">{modalTitle}</h3>
+                  <p className="mp-two-step-subtitle">
+                    {modalSubtitle} • <strong style={{ color: defendingTeam === "LOCAL" ? "var(--color-primary, #44D878)" : "#38bdf8" }}>{defendingTeamName}</strong>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="mp-two-step-close-btn"
+                  onClick={() => setRoleActionModal(null)}
+                  title={t("mesa_control.cancel_action", "Cancelar")}
+                >
+                  <IconX size={18} />
+                </button>
+              </div>
+
+              <div className="mp-two-step-body">
+                {errorMsg && (
+                  <div className="mp-two-step-error-banner">
+                    <IconAlertCircle size={16} />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
+                {/* TARJETA DEL ATACANTE PREVIAMENTE SELECCIONADO */}
+                {attacker && (
+                  <div className={`mp-action-attacker-card ${is7m ? "penalti-7m" : "falta-ataque"}`}>
+                    <div className="mp-action-attacker-tag">
+                      {is7m ? "⚡ PROVOCA EL 7 METROS (+0.80)" : "⚠️ COMETE LA FALTA EN ATAQUE (-0.80)"}
+                    </div>
+                    <div className="mp-action-attacker-info">
+                      <div className="mp-action-attacker-num">#{attacker.number}</div>
+                      <div className="mp-action-attacker-details">
+                        <span className="mp-action-attacker-name">{attacker.name || `Jugador #${attacker.number}`}</span>
+                        <span className="mp-action-attacker-team">Ataque • {attackingTeamName}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* DEFENSOR EN PISTA A SELECCIONAR */}
+                <div className="mp-two-step-roster-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>{t("mesa_control.defenders_on_court", "Jugadores de campo en pista (no banquillo)")}</span>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{defendingTeamName} ({sortedDefenders.length})</span>
+                </div>
+
+                <div className="mp-two-step-roster-grid">
+                  {sortedDefenders.map((player) => (
+                    <button
+                      key={player.id || player._id || player.number}
+                      type="button"
+                      className="mp-two-step-player-btn"
+                      onClick={() => handleSelectRolePlayer({ ...player, team: defendingTeam })}
+                    >
+                      <span className="mp-two-step-player-num">{player.number}</span>
+                      <span className="mp-two-step-player-name">{player.name || `#${player.number}`}</span>
+                      {isGk(player, defendingRoster) && <span className="mp-two-step-player-gk">POR</span>}
+                    </button>
+                  ))}
+                </div>
+
+                {/* BOTÓN PROMINENTE SALTAR / NO SÉ */}
+                <button
+                  type="button"
+                  className="mp-two-step-skip-btn"
+                  onClick={() => handleSelectRolePlayer(null)}
+                >
+                  <span>⏩ {is7m ? t("mesa_control.skip_defender_7m", "Saltar / No sé (defensor sin asignar)") : t("mesa_control.skip_defender_off_foul", "Saltar / No sé (defensor sin asignar)")}</span>
+                </button>
+              </div>
+
+              <div className="mp-two-step-footer">
+                <button
+                  type="button"
+                  className="mp-two-step-cancel-btn"
+                  onClick={() => setRoleActionModal(null)}
+                >
+                  {t("common.cancel", "Cancelar")}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MODAL DE EDICIÓN POSTERIOR PARA CRONOLOGÍA */}
+      {editingEventModal && (() => {
+        const { event, is7m, attackingTeam, defendingTeam, committed, provoked, errorMsg } = editingEventModal;
+        const attackingTeamName = attackingTeam === "LOCAL" ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+        const defendingTeamName = defendingTeam === "LOCAL" ? (currentMatch.home_team || "LOCAL") : (currentMatch.away_team || "VISITANTE");
+
+        const attackingRoster = (attackingTeam === "LOCAL" ? homeRoster : awayRoster) || [];
+        const defendingRoster = (defendingTeam === "LOCAL" ? homeRoster : awayRoster) || [];
+
+        const sortedAttacking = [...attackingRoster].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+        const sortedDefending = [...defendingRoster].sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
+
+        return (
+          <div className="mp-two-step-overlay" style={{ zIndex: 9999 }}>
+            <div className="mp-two-step-card" style={{ maxWidth: 480 }}>
+              <div className="mp-two-step-header">
+                <div className="mp-two-step-title-wrap">
+                  <span className={`mp-two-step-badge ${is7m ? "penalti-7m" : "falta-ataque"}`}>
+                    <IconEdit size={14} />
+                    {is7m ? t("mesa_control.action_7m_penalti", "7M PENALTI") : t("mesa_control.action_falta_ataque", "FALTA ATAQUE")}
+                  </span>
+                  <h3 className="mp-two-step-title">{t("mesa_control.edit_event_assignment", "Editar asignación de jugadores")}</h3>
+                  <p className="mp-two-step-subtitle">{event.time || event.match_time || ""}</p>
+                </div>
+                <button
+                  type="button"
+                  className="mp-two-step-close-btn"
+                  onClick={() => setEditingEventModal(null)}
+                >
+                  <IconX size={18} />
+                </button>
+              </div>
+
+              <div className="mp-two-step-body">
+                {errorMsg && (
+                  <div className="mp-two-step-error-banner">
+                    <IconAlertCircle size={16} />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
+                {is7m ? (
+                  <>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted, #94a3b8)" }}>
+                        {t("mesa_control.7m_provoked_by_label", `Provoca el 7m (Ataque - ${attackingTeamName}):`)}
+                      </label>
+                      <select
+                        className="mp-edit-select"
+                        value={provoked?.number !== undefined && provoked?.number !== null ? String(provoked.number) : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) {
+                            setEditingEventModal(prev => ({ ...prev, provoked: null, errorMsg: null }));
+                          } else {
+                            const p = sortedAttacking.find(x => String(x.number) === val);
+                            setEditingEventModal(prev => ({
+                              ...prev,
+                              provoked: p ? { id: p._id || p.id || p.number, number: p.number, name: p.name, team: attackingTeam } : null,
+                              errorMsg: null
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">{t("mesa_control.unassigned_option", "-- Sin asignar / No sé --")}</option>
+                        {sortedAttacking.map(p => (
+                          <option key={p.id || p._id || p.number} value={String(p.number)}>
+                            #{p.number} {p.name || ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted, #94a3b8)" }}>
+                        {t("mesa_control.7m_committed_by_label", `Comete la infracción (Defensa - ${defendingTeamName}):`)}
+                      </label>
+                      <select
+                        className="mp-edit-select"
+                        value={committed?.number !== undefined && committed?.number !== null ? String(committed.number) : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) {
+                            setEditingEventModal(prev => ({ ...prev, committed: null, errorMsg: null }));
+                          } else {
+                            const p = sortedDefending.find(x => String(x.number) === val);
+                            setEditingEventModal(prev => ({
+                              ...prev,
+                              committed: p ? { id: p._id || p.id || p.number, number: p.number, name: p.name, team: defendingTeam } : null,
+                              errorMsg: null
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">{t("mesa_control.unassigned_option", "-- Sin asignar / No sé --")}</option>
+                        {sortedDefending.map(p => (
+                          <option key={p.id || p._id || p.number} value={String(p.number)}>
+                            #{p.number} {p.name || ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted, #94a3b8)" }}>
+                        {t("mesa_control.off_foul_committed_by_label", `Comete falta en ataque (Ataque - ${attackingTeamName}):`)}
+                      </label>
+                      <select
+                        className="mp-edit-select"
+                        value={committed?.number !== undefined && committed?.number !== null ? String(committed.number) : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) {
+                            setEditingEventModal(prev => ({ ...prev, committed: null, errorMsg: null }));
+                          } else {
+                            const p = sortedAttacking.find(x => String(x.number) === val);
+                            setEditingEventModal(prev => ({
+                              ...prev,
+                              committed: p ? { id: p._id || p.id || p.number, number: p.number, name: p.name, team: attackingTeam } : null,
+                              errorMsg: null
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">{t("mesa_control.unassigned_option", "-- Sin asignar / No sé --")}</option>
+                        {sortedAttacking.map(p => (
+                          <option key={p.id || p._id || p.number} value={String(p.number)}>
+                            #{p.number} {p.name || ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted, #94a3b8)" }}>
+                        {t("mesa_control.off_foul_provoked_by_label", `Provoca / Recibe la falta (Defensa - ${defendingTeamName}):`)}
+                      </label>
+                      <select
+                        className="mp-edit-select"
+                        value={provoked?.number !== undefined && provoked?.number !== null ? String(provoked.number) : ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) {
+                            setEditingEventModal(prev => ({ ...prev, provoked: null, errorMsg: null }));
+                          } else {
+                            const p = sortedDefending.find(x => String(x.number) === val);
+                            setEditingEventModal(prev => ({
+                              ...prev,
+                              provoked: p ? { id: p._id || p.id || p.number, number: p.number, name: p.name, team: defendingTeam } : null,
+                              errorMsg: null
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">{t("mesa_control.unassigned_option", "-- Sin asignar / No sé --")}</option>
+                        {sortedDefending.map(p => (
+                          <option key={p.id || p._id || p.number} value={String(p.number)}>
+                            #{p.number} {p.name || ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="mp-two-step-footer" style={{ justifyContent: "space-between" }}>
+                <button
+                  type="button"
+                  className="mp-two-step-cancel-btn"
+                  onClick={() => setEditingEventModal(null)}
+                >
+                  {t("common.cancel", "Cancelar")}
+                </button>
+                <button
+                  type="button"
+                  className="mp-edit-save-btn"
+                  onClick={handleSaveEditedEvent}
+                >
+                  {t("common.save_changes", "Guardar cambios")}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

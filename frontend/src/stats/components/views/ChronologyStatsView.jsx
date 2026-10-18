@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getEventCategory, ACTION_CATEGORIES, formatCourtZoneName, formatGoalZoneName } from "../../engine/types";
-import { isEmptyNetEvent } from "../../engine/metricsEngine";
+import { isEmptyNetEvent, is7mEvent, isOffensiveFoulEvent } from "../../engine/metricsEngine";
 
 export function ChronologyStatsView({ match }) {
   const { t } = useTranslation();
@@ -121,13 +121,37 @@ export function ChronologyStatsView({ match }) {
               const formattedTo = formatGoalZoneName(toZoneRaw, t);
               const trajectory = (formattedFrom && formattedTo) ? `${formattedFrom} -> ${formattedTo}` : (formattedFrom || formattedTo || "");
 
+              const is7m = is7mEvent(ev);
+              const isOffFoul = isOffensiveFoulEvent(ev);
+
+              let playerDisplay = ev.player_name ? `#${ev.player_number || ''} ${ev.player_name}` : ev.player_id || "Equipo";
+              if (is7m) {
+                const comm = ev.committed_by ? `#${ev.committed_by.number} ${ev.committed_by.name || ""}`.trim() : (ev.player_number || ev.player_name ? `#${ev.player_number || ""} ${ev.player_name || ""}`.trim() : null);
+                const prov = ev.provoked_by ? `#${ev.provoked_by.number} ${ev.provoked_by.name || ""}`.trim() : (ev.drawn_by_number || ev.drawn_by_name || ev.drawn_by_player ? `#${ev.drawn_by_number || ""} ${ev.drawn_by_name || ev.drawn_by_player || ""}`.trim() : null);
+                if (comm && prov) playerDisplay = `Comete ${comm} → Provoca ${prov}`;
+                else if (prov) playerDisplay = `Provoca ${prov} (comete: sin asignar)`;
+                else if (comm) playerDisplay = `Comete ${comm} (provoca: sin asignar)`;
+                else playerDisplay = "7m: sin asignar";
+              } else if (isOffFoul) {
+                const comm = ev.committed_by ? `#${ev.committed_by.number} ${ev.committed_by.name || ""}`.trim() : (ev.player_number || ev.player_name ? `#${ev.player_number || ""} ${ev.player_name || ""}`.trim() : null);
+                const prov = ev.provoked_by ? `#${ev.provoked_by.number} ${ev.provoked_by.name || ""}`.trim() : (ev.defender_number || ev.defender_name ? `#${ev.defender_number || ""} ${ev.defender_name || ""}`.trim() : null);
+                if (comm && prov) playerDisplay = `Comete ${comm} → Provoca ${prov}`;
+                else if (comm) playerDisplay = `Comete ${comm} (provoca: sin asignar)`;
+                else if (prov) playerDisplay = `Provoca ${prov} (comete: sin asignar)`;
+                else playerDisplay = "Falta en ataque: sin asignar";
+              }
+
               return (
                 <div key={idx} className={`hs-timeline-item ${ev.is_opponent_action ? "away-item" : "home-item"}`}>
                   <span className="hs-timeline-time">{formatMinSec(ev.match_time_seconds)}</span>
                   <span className="hs-timeline-team">{teamName}</span>
-                  <span className="hs-timeline-player">{ev.player_name ? `#${ev.player_number || ''} ${ev.player_name}` : ev.player_id || "Equipo"}</span>
+                  <span className="hs-timeline-player">{playerDisplay}</span>
                   <span className="hs-timeline-desc">
-                    {cat === ACTION_CATEGORIES.GOLES && (
+                    {is7m ? (
+                      <strong>{t("chronology.action_7m", "7M PENALTI")}</strong>
+                    ) : isOffFoul ? (
+                      <strong>{t("chronology.action_falta_ataque", "FALTA EN ATAQUE")}</strong>
+                    ) : cat === ACTION_CATEGORIES.GOLES ? (
                       <>
                         <strong>{t("chronology.action_gol", "GOL")}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
                         {isEmptyNetEvent(ev) ? (
@@ -140,8 +164,7 @@ export function ChronologyStatsView({ match }) {
                           </span>
                         ) : null}
                       </>
-                    )}
-                    {cat === ACTION_CATEGORIES.PARADAS && (
+                    ) : cat === ACTION_CATEGORIES.PARADAS ? (
                       <>
                         <strong>{t("chronology.action_parada", "PARADA")}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
                         {ev.goalkeeper_name && (
@@ -150,24 +173,19 @@ export function ChronologyStatsView({ match }) {
                           </span>
                         )}
                       </>
-                    )}
-                    {cat === ACTION_CATEGORIES.FALLO_LANZAMIENTO && (
+                    ) : cat === ACTION_CATEGORIES.FALLO_LANZAMIENTO ? (
                       <>
                         <strong>{(ev.result || t("chronology.action_fallo", "FALLO")).toUpperCase()}</strong> {trajectory ? <span style={{ color: "var(--text-secondary)", fontWeight: "500", marginLeft: 4 }}>({trajectory})</span> : `(${ev.shot_type || "Tiro"})`}
                       </>
-                    )}
-                    {cat === ACTION_CATEGORIES.PERDIDAS && (
+                    ) : cat === ACTION_CATEGORIES.PERDIDAS ? (
                       t("chronology.turnover_desc", { type: ev.turnover_type || ev.end_reason || "Acción", defaultValue: `Pérdida de balón (${ev.turnover_type || ev.end_reason || "Acción"})` })
-                    )}
-                    {cat === ACTION_CATEGORIES.TIEMPO_MUERTO && (
+                    ) : cat === ACTION_CATEGORIES.TIEMPO_MUERTO ? (
                       t("chronology.timeout_desc", "Tiempo Muerto solicitado")
-                    )}
-                    {cat === ACTION_CATEGORIES.GOLPE_FRANCO && (
+                    ) : cat === ACTION_CATEGORIES.GOLPE_FRANCO ? (
                       t("chronology.free_throw_desc", "Golpe Franco cometido")
-                    )}
-                    {cat === ACTION_CATEGORIES.SANCIONES && (
+                    ) : cat === ACTION_CATEGORIES.SANCIONES ? (
                       t("chronology.sanction_desc", { type: ev.sanction_type || "Sanción", defaultValue: `Sanción disciplinaria: ${ev.sanction_type || "Sanción"}` })
-                    )}
+                    ) : null}
                   </span>
                 </div>
               );

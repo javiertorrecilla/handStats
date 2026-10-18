@@ -182,6 +182,31 @@ export const MatchProvider = ({ children }) => {
     }
   };
 
+  // Actualizar un evento existente (por ejemplo corregir quién comete o quién provoca)
+  const updateMatchEvent = async (eventId, updatedEventData) => {
+    if (!currentMatch) return;
+
+    setCurrentMatch(prev => {
+      if (!prev) return prev;
+      const updatedEvents = (prev.events || []).map(ev => {
+        if (ev.event_id === eventId || ev.id === eventId) {
+          return { ...ev, ...updatedEventData };
+        }
+        return ev;
+      });
+      return {
+        ...prev,
+        events: updatedEvents
+      };
+    });
+
+    try {
+      await matchService.updateEvent(currentMatch._id, eventId, updatedEventData);
+    } catch (error) {
+      console.error("Error al actualizar evento en el servidor:", error);
+    }
+  };
+
   // Actualizar jugadores del partido (plantilla / minutos manuales)
   const updatePlayers = async (homePlayers, awayPlayers) => {
     if (!currentMatch) return;
@@ -203,6 +228,7 @@ export const MatchProvider = ({ children }) => {
       setActivePossession,
       loadMatch,
       sendMatchEvent,
+      updateMatchEvent,
       closePossession,
       undoLastEvent,
       updatePlayers,

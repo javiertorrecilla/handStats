@@ -4,6 +4,8 @@
    Con soporte de autocalibración empírica por tiros, paradas y modificador zonal de portería 3x3
    ========================================================== */
 
+import { RATING_WEIGHTS } from "../stats/engine/ratingWeights.js";
+
 export const DEFAULT_SETTINGS = {
   // Modo de calibración empírica automática (activado por defecto al alcanzar 500 tiros)
   autoEmpiricalMode: true,
@@ -36,37 +38,7 @@ export const DEFAULT_SETTINGS = {
   targetPossessionsPerMatch: 50,
 
   // 5. Acciones y Valoraciones para Rating (Modelo xG + NPS + Normalización Logística centrada en 5.0)
-  sigmoidK: 0.35,
-  neutralRating: 5.0,
-
-  // Pesos de Lanzamientos de Ataque
-  w_goal: 1.50,
-  w_miss_saved: 1.20,
-  w_miss_off: 1.40,
-
-  // Pesos de Acciones Favorables en Ataque
-  w_drawn_7m: 1.10,
-
-  // Pesos de Pérdidas de Balón
-  w_turnover_bad_pass: 1.00,
-  w_turnover_double: 0.80,
-  w_turnover_travel: 0.80,
-  w_turnover_passive: 0.90,
-  w_turnover_offensive_foul: 1.10,
-
-  // Pesos de Acciones Defensivas
-  w_def_free_throw: 0.30,
-  w_def_drawn_off_foul: 1.10,
-  w_def_committed_7m: 1.10,
-
-  // Pesos de Portería
-  w_gk_save: 1.50,
-  w_gk_conceded: 1.00,
-
-  // Pesos Disciplinarios
-  w_yellow_card: 0.40,
-  w_two_min: 1.20,
-  w_red_card: 2.50,
+  ...RATING_WEIGHTS,
 
   // Campos legacy para retrocompatibilidad
   ratingBase: 5.0,

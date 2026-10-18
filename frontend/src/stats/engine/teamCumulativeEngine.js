@@ -216,6 +216,10 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
             saves: 0,
             shotsFaced: 0,
             goalkeeperXSaves: 0,
+            drawn7mCount: 0,
+            penaltiesCommitted: 0,
+            offensiveFouls: 0,
+            offFoulsDrawn: 0,
             ratings: [],
             is_goalkeeper: isGk
           };
@@ -228,6 +232,10 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
         playerStatsMap[key].turnovers += p.turnovers || 0;
         playerStatsMap[key].steals += p.steals || 0;
         playerStatsMap[key].sanctions += p.sanctions || 0;
+        playerStatsMap[key].drawn7mCount = (playerStatsMap[key].drawn7mCount || 0) + (p.drawn7mCount || 0);
+        playerStatsMap[key].penaltiesCommitted = (playerStatsMap[key].penaltiesCommitted || 0) + (p.penaltiesCommitted || 0);
+        playerStatsMap[key].offensiveFouls = (playerStatsMap[key].offensiveFouls || 0) + (p.offensiveFouls || 0);
+        playerStatsMap[key].offFoulsDrawn = (playerStatsMap[key].offFoulsDrawn || 0) + (p.offFoulsDrawn || 0);
         if (isGk) playerStatsMap[key].is_goalkeeper = true;
         if (p.rating) playerStatsMap[key].ratings.push(p.rating);
       });

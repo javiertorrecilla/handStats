@@ -5,7 +5,7 @@
 /* ---- Matches Page ---- */
 
 .matches-page {
-    max-width: 900px;
+    max-width: 1160px;
     margin: 0 auto;
     width: 100%;
     animation: slideUp var(--duration-slow) var(--easing);
@@ -97,115 +97,517 @@
 .matches-list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-10);
+    gap: var(--space-20);
 }
 
 /* ==========================================================
-   MATCH CARD (Placar / Scoreboard Tile)
+   MATCH CARD (BROADCAST SCOREBOARD TILE)
    ========================================================== */
 
 .match-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: var(--space-14) var(--space-20);
+    background: #0d1527;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 20px 24px;
     cursor: pointer;
-    transition: all 0.15s var(--easing);
-    box-shadow: var(--shadow-sm);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45);
     position: relative;
-}
-
-.match-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--color-primary);
-    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
-    opacity: 0.7;
-    transition: opacity 0.15s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .match-card:hover {
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    border-color: rgba(68, 216, 120, 0.4);
+    box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.6), 0 0 20px rgba(68, 216, 120, 0.08);
+    transform: translateY(-2px);
 }
 
-.match-card:hover::before {
-    opacity: 1;
-}
-
-.match-card-teams {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: var(--space-16);
-    margin-bottom: var(--space-10);
-}
-
-.match-team {
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--text-primary);
-}
-
-.match-team.home {
-    text-align: right;
-}
-
-.match-team.away {
-    text-align: left;
-}
-
-.match-score {
-    font-family: var(--font-data);
-    font-size: 1.35rem;
-    font-weight: 900;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.06em;
-    padding: var(--space-6) var(--space-16);
-    background: var(--bg-inset);
-    color: var(--color-primary);
-    border-radius: var(--radius);
-    min-width: 84px;
-    text-align: center;
-    border: 1px solid var(--border-color);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-    transition: all 0.15s var(--easing);
-}
-
-.match-card:hover .match-score {
-    border-color: var(--color-primary-border);
-    background: var(--color-primary-subtle);
-}
-
-.match-card-meta {
+/* 1. Header Bar: Solo la fecha y botón eliminar en la esquina superior derecha */
+.match-card-header-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid var(--border-subtle);
-    padding-top: var(--space-10);
-    margin-top: var(--space-6);
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.match-date {
-    font-family: var(--font-data);
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 700;
-    letter-spacing: 0.05em;
+.match-card-header-date {
+    color: #94a3b8;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    font-size: 0.78rem;
     text-transform: uppercase;
 }
 
-.match-card-actions {
+.btn-match-delete-top {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: all 0.15s ease;
+    margin-right: -4px;
+}
+
+.btn-match-delete-top:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.btn-match-delete-top svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 2. Main Row: Teams, Score & Actions */
+.match-card-main-row {
     display: flex;
-    gap: var(--space-6);
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    width: 100%;
+}
+
+.match-team-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1 1 240px;
+    min-width: 200px;
+}
+
+.match-team-logo-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1b263b 0%, #0e172a 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.06), 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.match-team-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+}
+
+.match-team-logo-text {
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #60a5fa;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.match-team-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.match-team-status-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.match-team-status-tag.winner {
+    color: #44d878;
+}
+
+.match-team-name {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.25;
+    color: #ffffff; /* Nombres de equipos en blanco por defecto */
+    letter-spacing: 0.02em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.15s ease;
+}
+
+.match-team-name.winner {
+    color: #44d878; /* El que gana en verde */
+}
+
+.match-team-eff {
+    font-size: 0.78rem;
+    color: #8fa0ba;
+    font-weight: 500;
+}
+
+/* Score Box */
+.match-card-score-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.match-card-score-box {
+    background: #060b16;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 24px;
+    min-width: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.score-num {
+    font-size: 2.1rem;
+    font-weight: 900;
+    font-family: var(--font-data, sans-serif);
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.score-num.winner {
+    color: #44d878;
+    text-shadow: 0 0 12px rgba(68, 216, 120, 0.35);
+}
+
+.score-colon {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #475569;
+    margin: 0 10px;
+    line-height: 1;
+}
+
+.match-card-time-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+/* Action Buttons: Registro encima de Estadísticas */
+.match-card-actions-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+    width: 145px;
+}
+
+.btn-match-view {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.btn-match-view:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-match-stats {
+    background: #44d878;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: #05140a;
+    font-size: 0.82rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(68, 216, 120, 0.25);
+    white-space: nowrap;
+    width: 100%;
+}
+
+.btn-match-stats:hover {
+    background: #38c46c;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(68, 216, 120, 0.35);
+}
+
+/* 3. Bottom Row: Las 3 estadísticas más destacadas del encuentro */
+.match-card-bottom-row {
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.match-card-highlights-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 28px;
+    font-size: 0.8rem;
+}
+
+.match-highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.match-highlight-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8fa0ba;
+}
+
+.match-highlight-vals {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.match-highlight-vs {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: lowercase;
+    margin: 0 2px;
+}
+
+.val-better {
+    color: #44d878 !important;
+    font-weight: 800;
+}
+
+.match-card-footer-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.match-acta-code {
+    font-family: monospace;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.match-acta-link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #44d878;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: color 0.15s ease;
+}
+
+.match-acta-link-btn:hover {
+    color: #74d888;
+}
+
+/* ==========================================================
+   ADAPTACIÓN A MODO CLARO [data-theme="light"] — TARJETAS DE PARTIDO
+   ========================================================== */
+
+[data-theme="light"] .match-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="light"] .match-card:hover {
+    border-color: #2E7D4F;
+    box-shadow: 0 14px 30px -4px rgba(15, 23, 42, 0.12), 0 0 16px rgba(46, 125, 79, 0.10);
+}
+
+[data-theme="light"] .match-card-header-bar {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+[data-theme="light"] .match-card-header-date {
+    color: #64748b;
+}
+
+[data-theme="light"] .btn-match-delete-top {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .btn-match-delete-top:hover {
+    background: rgba(239, 68, 68, 0.10);
+    color: #dc2626;
+}
+
+[data-theme="light"] .match-team-logo-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1.5px solid #cbd5e1;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .match-team-logo-text {
+    color: #2563eb;
+}
+
+[data-theme="light"] .match-team-status-tag {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .match-team-status-tag.winner {
+    color: #15803d;
+}
+
+[data-theme="light"] .match-team-name {
+    color: #0f172a;
+}
+
+[data-theme="light"] .match-team-name.winner {
+    color: #15803d;
+}
+
+[data-theme="light"] .match-team-eff {
+    color: #64748b;
+}
+
+[data-theme="light"] .match-card-score-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .score-num {
+    color: #0f172a;
+}
+
+[data-theme="light"] .score-num.winner {
+    color: #15803d;
+    text-shadow: none;
+}
+
+[data-theme="light"] .score-colon {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .match-card-time-label {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .btn-match-view {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #1e293b;
+}
+
+[data-theme="light"] .btn-match-view:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+[data-theme="light"] .btn-match-stats {
+    background: #2E7D4F;
+    border: 1px solid #246640;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(46, 125, 79, 0.20);
+}
+
+[data-theme="light"] .btn-match-stats:hover {
+    background: #246640;
+    box-shadow: 0 6px 18px rgba(46, 125, 79, 0.30);
+}
+
+[data-theme="light"] .match-card-bottom-row {
+    border-top: 1px solid #f1f5f9;
+}
+
+[data-theme="light"] .match-highlight-label {
+    color: #64748b;
+}
+
+[data-theme="light"] .match-highlight-vals {
+    color: #0f172a;
+}
+
+[data-theme="light"] .match-card-highlights-row .val-better {
+    color: #15803d !important;
+}
+
+[data-theme="light"] .match-highlight-vs {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .match-card-footer-meta {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .match-acta-code {
+    color: #64748b;
+}
+
+[data-theme="light"] .match-acta-link-btn {
+    color: #15803d;
+}
+
+[data-theme="light"] .match-acta-link-btn:hover {
+    color: #166534;
+}
+
+@media (max-width: 768px) {
+    .match-card-main-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .match-card-actions-group {
+        justify-content: flex-end;
+        width: 100%;
+        margin-top: 8px;
+    }
 }
 
 /* ==========================================================

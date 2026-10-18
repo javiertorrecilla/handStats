@@ -159,11 +159,12 @@
 }
 
 .auth-form .btn-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+    background: linear-gradient(135deg, var(--btn-primary-bg, var(--color-primary)) 0%, var(--btn-primary-hover, var(--color-primary-hover)) 100%);
     border: none;
     font-weight: 700;
     padding: var(--space-12) var(--space-24);
     letter-spacing: 0.3px;
+    color: var(--btn-primary-text, var(--text-contrast));
 }
 
 .auth-form .btn-primary:hover:not(:disabled) {

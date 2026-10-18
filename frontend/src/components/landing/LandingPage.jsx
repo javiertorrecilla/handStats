@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../common/LanguageSelector";
 import logoHorizontal from "../../assets/logoHorizontal.png";
@@ -205,7 +205,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTabId, setActiveTabId] = useState("dashboard");
-  const [selectedDevice, setSelectedDevice] = useState("desktop"); // "desktop" | "tablet"
+  const [selectedDevice, setSelectedDevice] = useState("all"); // "all" | "desktop" | "tablet"
 
   useEffect(() => {
     const handleScroll = () => setNavScrolled(window.scrollY > 40);
@@ -224,6 +224,21 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
 
   const marqueeItems1 = t("stats_marquee.items", { returnObjects: true }) || [];
   const marqueeItems2 = t("stats_marquee.motto", { returnObjects: true }) || [];
+
+  // Helper para generar bucles infinitos continuos que cubran cualquier resolución (incluyendo monitores 4K / Ultrawide)
+  // Genera dos mitades idénticas suficientemente amplias para que el translate de -50% a 0% sea continuo y sin huecos
+  const buildInfiniteLoop = (items, targetMinPerHalf = 28) => {
+    if (!items || !Array.isArray(items) || items.length === 0) return [];
+    const repeatCount = Math.max(2, Math.ceil(targetMinPerHalf / items.length));
+    const oneHalf = [];
+    for (let i = 0; i < repeatCount; i++) {
+      oneHalf.push(...items);
+    }
+    return [...oneHalf, ...oneHalf];
+  };
+
+  const marqueeLoop1 = useMemo(() => buildInfiniteLoop(marqueeItems1, 24), [marqueeItems1]);
+  const marqueeLoop2 = useMemo(() => buildInfiniteLoop(marqueeItems2, 36), [marqueeItems2]);
 
   const statsData = [
     { value: 8, suffix: "+", label: t("landing_stats.stat1_label") },
@@ -244,7 +259,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         t("product.dashboard_check2"),
         t("product.dashboard_check3")
       ],
-      image: "/dashboard-mockup.jpg"
+      image: "/dashboard.png"
     },
     {
       id: "shots",
@@ -257,7 +272,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         t("product.shots_check2"),
         t("product.shots_check3")
       ],
-      image: "/laptop-mockup.jpg"
+      image: "/campograma.png"
     },
     {
       id: "players",
@@ -270,7 +285,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         t("product.players_check2"),
         t("product.players_check3")
       ],
-      image: "/tablet-mockup.jpg"
+      image: "/rating.png"
     },
     {
       id: "reports",
@@ -283,34 +298,90 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         t("product.reports_check2"),
         t("product.reports_check3")
       ],
-      image: "/dashboard-mockup.jpg"
+      image: "/report.png"
     }
   ];
 
-  const deviceDetails = {
+  const deviceComparisonData = {
     desktop: {
-      badge: t("product.device_desktop_badge"),
-      title: t("product.device_desktop_title"),
-      desc: t("product.device_desktop_desc"),
-      points: [
-        { bold: t("product.device_desktop_p1_bold"), text: t("product.device_desktop_p1_text") },
-        { bold: t("product.device_desktop_p2_bold"), text: t("product.device_desktop_p2_text") },
-        { bold: t("product.device_desktop_p3_bold"), text: t("product.device_desktop_p3_text") }
+      id: "desktop",
+      badge: t("product.device_desktop_badge", "Escritorio / Portátil"),
+      tag: t("product.device_desktop_tag", "Despacho & Vídeo"),
+      title: t("product.device_desktop_title", "Suite de Análisis Táctico en Pantalla Completa"),
+      desc: t("product.device_desktop_desc", "Diseñado para analistas, entrenadores principales y sesiones de vídeo post-partido con un entorno multiventana de máxima productividad."),
+      role: t("product.device_desktop_role", "Ideal para: 1º Entrenador, Analista Táctico & Staff Técnico"),
+      specs: [
+        { label: "Entorno", val: "Despacho & Vídeo" },
+        { label: "Control", val: "Teclado + Ratón de Precisión" },
+        { label: "Vista", val: "Panorámica Multiventana" },
+        { label: "Salida", val: "Dossiers PDF & Informes Pro" }
       ],
-      image: "/laptop-mockup.jpg"
+      points: [
+        { bold: t("product.device_desktop_p1_bold", "Visualización Multivariable:"), text: t("product.device_desktop_p1_text", "Campograma interactivo, cronología al segundo y tabla de valoraciones en una sola vista panorámica.") },
+        { bold: t("product.device_desktop_p2_bold", "Informes y Exportación Inmediata:"), text: t("product.device_desktop_p2_text", "Generación de dossiers completos en PDF listos para imprimir o proyectar en el vestuario.") },
+        { bold: t("product.device_desktop_p3_bold", "Comparativa Histórica:"), text: t("product.device_desktop_p3_text", "Filtros acumulados de temporada para estudiar tendencias del equipo y rivales.") },
+        { bold: t("product.device_desktop_p4_bold", "Auditoría de Acciones:"), text: t("product.device_desktop_p4_text", "Edición fina de autores y provocadores en 7m y faltas en ataque, y calibración de métricas.") }
+      ]
     },
     tablet: {
-      badge: t("product.device_tablet_badge"),
-      title: t("product.device_tablet_title"),
-      desc: t("product.device_tablet_desc"),
-      points: [
-        { bold: t("product.device_tablet_p1_bold"), text: t("product.device_tablet_p1_text") },
-        { bold: t("product.device_tablet_p2_bold"), text: t("product.device_tablet_p2_text") },
-        { bold: t("product.device_tablet_p3_bold"), text: t("product.device_tablet_p3_text") }
+      id: "tablet",
+      badge: t("product.device_tablet_badge", "Tablet / Banquillo"),
+      tag: t("product.device_tablet_tag", "Pie de Pista & Directo"),
+      title: t("product.device_tablet_title", "Toma de Datos Táctil a Pie de Pista"),
+      desc: t("product.device_tablet_desc", "Optimizada para registrar cada acción del partido en directo desde el banquillo sin apartar la mirada del juego ni un segundo."),
+      role: t("product.device_tablet_role", "Ideal para: 2º Entrenador, Delegado de Campo & Estadístico en Pista"),
+      specs: [
+        { label: "Entorno", val: "Banquillo & Mesa de Control" },
+        { label: "Control", val: "Pantalla Táctil a 2 Toques" },
+        { label: "Latencia", val: "Tiempo Real Ultrarrápido" },
+        { label: "Salida", val: "Sincronización Cloud Automática" }
       ],
-      image: "/tablet-mockup.jpg"
+      points: [
+        { bold: t("product.device_tablet_p1_bold", "Registro Ultra Rápido en 2 Toques:"), text: t("product.device_tablet_p1_text", "Toca el punto de lanzamiento en pista y el cuadrante de portería con respuesta instantánea.") },
+        { bold: t("product.device_tablet_p2_bold", "Control Táctil de Posesiones:"), text: t("product.device_tablet_p2_text", "Cambio de posesión, exclusiones y tiempos muertos con botones ergonómicos de gran tamaño.") },
+        { bold: t("product.device_tablet_p3_bold", "Sincronización Cloud Automática:"), text: t("product.device_tablet_p3_text", "Tus datos se transmiten en tiempo real para que el cuerpo técnico los consulte al instante.") },
+        { bold: t("product.device_tablet_p4_bold", "Ergonomía de Pista:"), text: t("product.device_tablet_p4_text", "Optimizado para operar con pulsaciones directas mientras sigues el desarrollo del partido.") }
+      ]
     }
   };
+
+  const comparisonMatrix = [
+    {
+      feature: "Objetivo Principal",
+      desktop: "Análisis táctico profundo, scouting y preparación de partido",
+      tablet: "Toma de datos rápida en directo durante los 60 minutos"
+    },
+    {
+      feature: "Método de Entrada",
+      desktop: "Teclado, ratón con atajos y multiventana fluida",
+      tablet: "Pulsaciones táctiles directas en 2 toques ergonómicos"
+    },
+    {
+      feature: "Campograma Interactivo",
+      desktop: "Vista panorámica con filtros multivariables, xG y zonas",
+      tablet: "Cancha y cuadrantes táctiles optimizados para velocidad"
+    },
+    {
+      feature: "Informes y Exportación",
+      desktop: "Dossiers PDF completos listos para imprimir o proyectar",
+      tablet: "Consulta instantánea de estadísticas y parciales de banquillo"
+    },
+    {
+      feature: "Control de Sanciones y 7m",
+      desktop: "Edición y auditoría de autor y provocador con histórico",
+      tablet: "Botones rápidos de exclusión (2 min), 7m y tiempos muertos"
+    },
+    {
+      feature: "Sincronización Cloud",
+      desktop: "Recepción en tiempo real y persistencia en base de datos",
+      tablet: "Envío ultrarrápido con respaldo seguro en memoria local"
+    },
+    {
+      feature: "Dispositivos Recomendados",
+      desktop: "Portátiles (Windows/Mac) y pantallas de despacho",
+      tablet: "iPad o tabletas Android (10 pulgadas o superior)"
+    }
+  ];
 
   const featuresList = [
     {
@@ -364,7 +435,6 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
   ];
 
   const currentTab = productTabs.find(t => t.id === activeTabId) || productTabs[0];
-  const activeDeviceData = deviceDetails[selectedDevice] || deviceDetails.desktop;
 
   return (
     <div className="landing-page">
@@ -376,8 +446,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
           </a>
 
           <nav className="landing-nav-menu">
-            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
             <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
             <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
           </nav>
 
@@ -385,7 +455,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             <LanguageSelector compact />
 
             {toggleTheme && (
-              <button 
+              <button
                 type="button"
                 className="btn-theme-toggle-lp"
                 onClick={toggleTheme}
@@ -401,8 +471,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
               <IconArrowRight />
             </button>
 
-            <button 
-              className="landing-nav-toggle" 
+            <button
+              className="landing-nav-toggle"
               onClick={() => setMobileMenuOpen(true)}
               aria-label={t("nav.open_menu")}
             >
@@ -414,8 +484,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
 
       {/* Mobile Drawer */}
       <div className={`landing-nav-mobile ${mobileMenuOpen ? "open" : ""}`}>
-        <button 
-          className="landing-nav-mobile-close" 
+        <button
+          className="landing-nav-mobile-close"
           onClick={() => setMobileMenuOpen(false)}
           aria-label={t("nav.close_menu")}
         >
@@ -425,13 +495,13 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
         <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
         <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
-        
+
         <div style={{ padding: "6px 0", display: "flex", justifyContent: "center" }}>
           <LanguageSelector />
         </div>
 
         {toggleTheme && (
-          <button 
+          <button
             type="button"
             className="btn-hero-secondary"
             onClick={toggleTheme}
@@ -495,7 +565,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
                 <span className="scoreboard-team-pts">28</span>
               </div>
               <div className="scoreboard-team-row">
-                <span className="scoreboard-team-name">CD BADAJOZ</span>
+                <span className="scoreboard-team-name">ADEMAR DE LEÓN</span>
                 <span className="scoreboard-team-pts">24</span>
               </div>
             </div>
@@ -640,7 +710,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       {/* ======== 3. MARQUEE BARS ======== */}
       <div className="landing-marquee">
         <div className="marquee-content">
-          {[...marqueeItems1, ...marqueeItems1].map((item, i) => (
+          {marqueeLoop1.map((item, i) => (
             <div key={i} className="marquee-item">
               <span>{item}</span>
               <span className="marquee-dot">◆</span>
@@ -662,7 +732,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
 
       <div className="landing-marquee green-accent reverse">
         <div className="marquee-content">
-          {[...marqueeItems2, ...marqueeItems2].map((item, i) => (
+          {marqueeLoop2.map((item, i) => (
             <div key={i} className="marquee-item">
               <span>{item}</span>
               <span className="marquee-dot">●</span>
@@ -719,8 +789,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
 
             <div className="product-frame-body">
               <div className="product-visual-slot">
-                <img 
-                  src={currentTab.image} 
+                <img
+                  src={currentTab.image}
                   alt={currentTab.title}
                   loading="lazy"
                 />
@@ -742,15 +812,27 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             </div>
           </div>
 
-          {/* ---- DEDICATED DEVICE SELECTOR SUB-SECTION ---- */}
+          {/* ---- DEDICATED DEVICE COMPARISON SUB-SECTION ---- */}
           <div className="device-selector-section">
             <div className="device-selector-header">
+              <div className="section-broadcast-kicker">
+                <span className="section-kicker-num">02</span>
+                <span className="section-kicker-title">ECOSISTEMA MULTIPLATAFORMA</span>
+              </div>
               <h3 className="device-selector-title">{t("product.device_title")}</h3>
               <p className="device-selector-subtitle">{t("product.device_subtitle")}</p>
             </div>
 
-            {/* Toggle Buttons: Desktop/Laptop vs Tablet */}
+            {/* Toggle Buttons: Comparativa vs Solo PC vs Solo Tablet */}
             <div className="device-buttons-group">
+              <button
+                type="button"
+                className={`btn-device-toggle ${selectedDevice === "all" ? "active" : ""}`}
+                onClick={() => setSelectedDevice("all")}
+              >
+                <span>{t("product.device_view_all", "Comparativa Completa")}</span>
+              </button>
+
               <button
                 type="button"
                 className={`btn-device-toggle ${selectedDevice === "desktop" ? "active" : ""}`}
@@ -770,31 +852,135 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
               </button>
             </div>
 
-            {/* Active Device Showcase Panel */}
-            <div className="device-active-display-box" key={selectedDevice}>
-              <div className="device-mockup-wrapper">
-                <img 
-                  src={activeDeviceData.image} 
-                  alt={activeDeviceData.title}
-                  loading="lazy"
-                />
+            {/* Comparison Cards: Side by Side (or filtered) */}
+            <div className={`device-comparison-grid view-${selectedDevice}`}>
+              {/* DESKTOP CARD */}
+              {(selectedDevice === "all" || selectedDevice === "desktop") && (
+                <div className={`device-compare-card desktop ${selectedDevice === "desktop" ? "focused" : ""}`}>
+                  <div className="device-card-header">
+                    <div className="device-card-icon-wrap desktop">
+                      <IconLaptop />
+                    </div>
+                    <div className="device-card-header-meta">
+                      <span className="device-badge-tag desktop">{deviceComparisonData.desktop.tag}</span>
+                      <h4 className="device-card-title">{deviceComparisonData.desktop.badge}</h4>
+                    </div>
+                  </div>
+
+                  <p className="device-card-role-title">{deviceComparisonData.desktop.title}</p>
+                  <p className="device-card-desc">{deviceComparisonData.desktop.desc}</p>
+
+                  <div className="device-specs-strip">
+                    {deviceComparisonData.desktop.specs.map((sp, i) => (
+                      <div key={i} className="device-spec-pill">
+                        <span className="device-spec-label">{sp.label}</span>
+                        <span className="device-spec-val">{sp.val}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <ul className="device-points-list">
+                    {deviceComparisonData.desktop.points.map((p, i) => (
+                      <li key={i}>
+                        <span className="product-check-icon"><IconCheck /></span>
+                        <div>
+                          <strong>{p.bold}</strong> {p.text}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="device-card-role-footer desktop">
+                    <span>{deviceComparisonData.desktop.role}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* TABLET CARD */}
+              {(selectedDevice === "all" || selectedDevice === "tablet") && (
+                <div className={`device-compare-card tablet ${selectedDevice === "tablet" ? "focused" : ""}`}>
+                  <div className="device-card-header">
+                    <div className="device-card-icon-wrap tablet">
+                      <IconTablet />
+                    </div>
+                    <div className="device-card-header-meta">
+                      <span className="device-badge-tag tablet">{deviceComparisonData.tablet.tag}</span>
+                      <h4 className="device-card-title">{deviceComparisonData.tablet.badge}</h4>
+                    </div>
+                  </div>
+
+                  <p className="device-card-role-title">{deviceComparisonData.tablet.title}</p>
+                  <p className="device-card-desc">{deviceComparisonData.tablet.desc}</p>
+
+                  <div className="device-specs-strip">
+                    {deviceComparisonData.tablet.specs.map((sp, i) => (
+                      <div key={i} className="device-spec-pill">
+                        <span className="device-spec-label">{sp.label}</span>
+                        <span className="device-spec-val">{sp.val}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <ul className="device-points-list">
+                    {deviceComparisonData.tablet.points.map((p, i) => (
+                      <li key={i}>
+                        <span className="product-check-icon"><IconCheck /></span>
+                        <div>
+                          <strong>{p.bold}</strong> {p.text}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="device-card-role-footer tablet">
+                    <span>{deviceComparisonData.tablet.role}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Feature Comparison Matrix Table */}
+            <div className="device-matrix-container">
+              <div className="device-matrix-header">
+                <h4 className="device-matrix-title">{t("product.matrix_title", "Matriz Comparativa de Capacidades")}</h4>
+                <p className="device-matrix-subtitle">{t("product.matrix_subtitle", "Diferencias técnicas y operativas entre ambas interfaces de HandStats")}</p>
               </div>
 
-              <div className="device-details-column">
-                <span className="device-badge-tag">{activeDeviceData.badge}</span>
-                <h4 className="device-title-text">{activeDeviceData.title}</h4>
-                <p className="device-desc-text">{activeDeviceData.desc}</p>
-
-                <ul className="device-points-list">
-                  {activeDeviceData.points.map((p, i) => (
-                    <li key={i}>
-                      <span className="product-check-icon"><IconCheck /></span>
-                      <div>
-                        <strong>{p.bold}</strong> {p.text}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+              <div className="device-matrix-table-wrap">
+                <table className="device-matrix-table">
+                  <thead>
+                    <tr>
+                      <th className="th-feature">{t("product.matrix_col_feature", "Capacidad / Característica")}</th>
+                      <th className={`th-device ${selectedDevice === "desktop" ? "highlight" : ""}`}>
+                        <div className="th-device-content">
+                          <IconLaptop />
+                          <span>{t("product.matrix_col_desktop", "Versión Escritorio / PC")}</span>
+                        </div>
+                      </th>
+                      <th className={`th-device ${selectedDevice === "tablet" ? "highlight" : ""}`}>
+                        <div className="th-device-content">
+                          <IconTablet />
+                          <span>{t("product.matrix_col_tablet", "Versión Tablet / Banquillo")}</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparisonMatrix.map((row, idx) => (
+                      <tr key={idx} className={idx % 2 === 0 ? "even" : "odd"}>
+                        <td className="td-feature">
+                          <strong>{row.feature}</strong>
+                        </td>
+                        <td className={`td-desktop ${selectedDevice === "desktop" ? "highlight" : ""}`}>
+                          {row.desktop}
+                        </td>
+                        <td className={`td-tablet ${selectedDevice === "tablet" ? "highlight" : ""}`}>
+                          {row.tablet}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

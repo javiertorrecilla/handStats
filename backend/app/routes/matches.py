@@ -124,6 +124,38 @@ async def add_match_event(match_id: str, event: MatchEvent):
     return {"status": "Evento registrado con éxito"}
 
 # ==========================================================
+# ACTUALIZAR EVENTO EXISTENTE
+# ==========================================================
+
+@router.put("/{match_id}/events/{event_id}", response_description="Actualizar un evento existente")
+async def update_match_event(match_id: str, event_id: str, event_data: dict):
+    if not ObjectId.is_valid(match_id):
+        raise HTTPException(status_code=400, detail="ID de partido inválido")
+
+    match = await match_collection.find_one({"_id": ObjectId(match_id)})
+    if not match:
+        raise HTTPException(status_code=404, detail="Partido no encontrado")
+
+    events = match.get("events", [])
+    target_idx = None
+    for idx, ev in enumerate(events):
+        if str(ev.get("event_id")) == str(event_id) or str(ev.get("id")) == str(event_id):
+            target_idx = idx
+            break
+
+    if target_idx is None:
+        raise HTTPException(status_code=404, detail="Evento no encontrado en el partido")
+
+    events[target_idx].update(event_data)
+
+    await match_collection.update_one(
+        {"_id": ObjectId(match_id)},
+        {"$set": {"events": events}}
+    )
+
+    return {"status": "Evento actualizado con éxito", "event": events[target_idx]}
+
+# ==========================================================
 # REGISTRAR POSESIÓN
 # ==========================================================
 

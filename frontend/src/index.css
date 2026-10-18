@@ -2,9 +2,12 @@
    HANDSTATS — SPORTS ANALYTICS DESIGN SYSTEM v3.0
    Plataforma profesional de análisis de balonmano (Opta / InStat / Wyscout tone)
    Paleta: 
-     - Base Neutro: Acero/Estadio (Light #F0F4F2, Dark #07100B)
-     - Primario Pista: Verde Césped Pro (#0D7A36 / #16A34A)
-     - Secundario Acento: Resina / Cuero Balón Ámbar (#E05305 / #F97316)
+     - Base Neutro: Acero/Estadio (Light #F0F4F2, Dark #090E19)
+     - Primario Pista: Verde HandStats (#2E7D4F / Dark #44D878)
+     - Acento Highlights: Verde Claro (#4ADE80 / Dark #74D888)
+     - Verde Oscuro / Transparente: Dark #1A5138
+     - Verde de Éxito: Dark #143D32
+     - Secundario Acento: Resina / Cuero Balón Ámbar (#F59E0B)
      - Táctico: Azul Pista / Marcador (#0284C7 / #38BDF8)
    Tipografía: Barlow Condensed (Marcador/Broadcast) · Inter (Datos técnicos) · Exo 2 (Tabular)
    ========================================================== */
@@ -29,6 +32,13 @@
     --color-primary-subtle: rgba(46, 125, 79, 0.10);
     --color-primary-ring:   rgba(46, 125, 79, 0.25);
     --color-primary-border: rgba(46, 125, 79, 0.35);
+
+    /* ---- Primary Action Buttons (Modo Claro) ---- */
+    --btn-primary-bg:           #2E7D4F;
+    --btn-primary-hover:        #246640;
+    --btn-primary-border:       #246640;
+    --btn-primary-hover-border: #1F5435;
+    --btn-primary-text:         #EDEFEE;
 
     /* ---- Accent Highlights (Verde Acento #4ADE80) ---- */
     --color-accent:         #4ADE80;
@@ -60,6 +70,9 @@
     --color-danger-border:  rgba(239, 68, 68, 0.30);
 
     --color-success:        #2E7D4F;
+    --color-success-bg:     rgba(46, 125, 79, 0.12);
+    --color-success-border: rgba(46, 125, 79, 0.35);
+    --color-success-text:   #2E7D4F;
     --color-success-subtle: rgba(46, 125, 79, 0.10);
 
     /* ---- Superficies (Modo Claro Técnico) ---- */
@@ -200,6 +213,13 @@
         --color-primary-ring:   rgba(68, 216, 120, 0.35);
         --color-primary-border: rgba(68, 216, 120, 0.40);
 
+        /* ---- Primary Action Buttons (Modo Oscuro Suave) ---- */
+        --btn-primary-bg:           #247A46;
+        --btn-primary-hover:        #2B8E53;
+        --btn-primary-border:       #2F995A;
+        --btn-primary-hover-border: #38C26A;
+        --btn-primary-text:         #EDEFEE;
+
         /* ---- Accent Highlights (Verde Claro #74D888) ---- */
         --color-accent:         #74D888;
         --color-accent-hover:   #8FE8A0;
@@ -229,7 +249,10 @@
         --color-danger-border:  rgba(239, 68, 68, 0.35);
 
         --color-success:        #143D32; /* Verde de éxito */
-        --color-success-subtle: rgba(20, 61, 50, 0.65);
+        --color-success-bg:     #143D32; /* Verde de éxito */
+        --color-success-border: #1A5138; /* Verde oscuro/transparente */
+        --color-success-text:   #74D888; /* Verde claro */
+        --color-success-subtle: #1A5138; /* Verde oscuro/transparente */
     }
 }
 
@@ -284,6 +307,13 @@
     --color-primary-ring:   rgba(68, 216, 120, 0.35);
     --color-primary-border: rgba(68, 216, 120, 0.40);
 
+    /* ---- Primary Action Buttons (Modo Oscuro Suave) ---- */
+    --btn-primary-bg:           #247A46;
+    --btn-primary-hover:        #2B8E53;
+    --btn-primary-border:       #2F995A;
+    --btn-primary-hover-border: #38C26A;
+    --btn-primary-text:         #EDEFEE;
+
     /* ---- Accent Highlights (Verde Claro #74D888) ---- */
     --color-accent:         #74D888;
     --color-accent-hover:   #8FE8A0;
@@ -313,7 +343,10 @@
     --color-danger-border:  rgba(239, 68, 68, 0.35);
 
     --color-success:        #143D32; /* Verde de éxito */
-    --color-success-subtle: rgba(20, 61, 50, 0.65);
+    --color-success-bg:     #143D32; /* Verde de éxito */
+    --color-success-border: #1A5138; /* Verde oscuro/transparente */
+    --color-success-text:   #74D888; /* Verde claro */
+    --color-success-subtle: #1A5138; /* Verde oscuro/transparente */
 }
 
 /* ==========================================================
@@ -441,16 +474,17 @@ button:disabled {
 
 /* Primary — Verde Pista Pro (Sin Glow Difuso) */
 .btn-primary {
-    background: var(--color-primary);
-    color: var(--text-contrast);
-    border-color: var(--color-primary-hover);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    background: var(--btn-primary-bg, var(--color-primary));
+    color: var(--btn-primary-text, var(--text-contrast));
+    border-color: var(--btn-primary-border, var(--color-primary-hover));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+    background: var(--btn-primary-hover, var(--color-primary-hover));
+    border-color: var(--btn-primary-hover-border, var(--color-primary-hover));
+    color: var(--btn-primary-text, var(--text-contrast));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
 }
 
 /* Accent — Ámbar Balón / Resina */
@@ -725,4 +759,76 @@ select.input-field {
 @keyframes ma-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
+}
+
+/* ==========================================================
+   15. TECHNICAL METRIC BADGE TIERS (RATING ESCALAS 0 A 10)
+   - < 5        -> Rojo
+   - 5 a < 6    -> Naranja
+   - 6 a < 7    -> Amarillo
+   - 7 a < 8    -> Verde Lima
+   - 8 a < 9    -> Verde HandStats
+   - 9 a 10     -> Púrpura MVP
+   ========================================================== */
+
+.badge-rating-tier-danger {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.40) !important;
+}
+.badge-rating-tier-orange {
+    background: rgba(249, 115, 22, 0.16) !important;
+    color: #f97316 !important;
+    border: 1px solid rgba(249, 115, 22, 0.45) !important;
+}
+.badge-rating-tier-amber {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #f59e0b !important;
+    border: 1px solid rgba(245, 158, 11, 0.40) !important;
+}
+.badge-rating-tier-lime {
+    background: rgba(163, 230, 53, 0.15) !important;
+    color: #a3e635 !important;
+    border: 1px solid rgba(163, 230, 53, 0.40) !important;
+}
+.badge-rating-tier-success {
+    background: rgba(68, 216, 120, 0.18) !important;
+    color: #44d878 !important;
+    border: 1px solid rgba(68, 216, 120, 0.45) !important;
+}
+.badge-rating-tier-mvp {
+    background: rgba(168, 85, 247, 0.18) !important;
+    color: #a855f7 !important;
+    border: 1px solid rgba(168, 85, 247, 0.45) !important;
+}
+
+[data-theme="light"] .badge-rating-tier-danger {
+    background: rgba(239, 68, 68, 0.10) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+[data-theme="light"] .badge-rating-tier-orange {
+    background: rgba(234, 88, 12, 0.12) !important;
+    color: #c2410c !important;
+    border: 1px solid rgba(234, 88, 12, 0.35) !important;
+}
+[data-theme="light"] .badge-rating-tier-amber {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+[data-theme="light"] .badge-rating-tier-lime {
+    background: rgba(132, 204, 22, 0.12) !important;
+    color: #65a30d !important;
+    border: 1px solid rgba(132, 204, 22, 0.38) !important;
+}
+[data-theme="light"] .badge-rating-tier-success {
+    background: rgba(46, 125, 79, 0.14) !important;
+    color: #15803d !important;
+    border: 1px solid rgba(46, 125, 79, 0.45) !important;
+}
+[data-theme="light"] .badge-rating-tier-mvp {
+    background: rgba(168, 85, 247, 0.12) !important;
+    color: #7e22ce !important;
+    border: 1px solid rgba(168, 85, 247, 0.38) !important;
 }

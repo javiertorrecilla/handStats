@@ -78,8 +78,8 @@ export function HandballCourtGraphic({
           <text x="66" y="245" fill="#f472b6" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.left_back_9m", "9M LAT IZQ")}</text>
 
           {/* 9M Central */}
-          <path d="M 124 196 A 195 195 0 0 0 165 203 L 235 203 A 195 195 0 0 0 276 196 L 276 288 L 124 288 Z" fill="rgba(34, 197, 94, 0.35)" stroke="#22c55e" strokeWidth="2" />
-          <text x="200" y="245" fill="#86efac" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.center_back_9m", "9M CENTRAL")}</text>
+          <path d="M 124 196 A 195 195 0 0 0 165 203 L 235 203 A 195 195 0 0 0 276 196 L 276 288 L 124 288 Z" fill="rgba(26, 81, 56, 0.45)" stroke="#44D878" strokeWidth="2" />
+          <text x="200" y="245" fill="#74D888" fontSize="10" fontWeight="bold" textAnchor="middle">{t("mesa_control.court_zones.center_back_9m", "9M CENTRAL")}</text>
 
           {/* 9M Lateral Derecho */}
           <path d="M 276 196 A 195 195 0 0 0 392 63 L 392 288 L 276 288 Z" fill="rgba(255, 255, 255, 0.30)" stroke="#ffffff" strokeWidth="2" />

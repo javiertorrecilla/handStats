@@ -52,10 +52,10 @@ export function ShotMarkerPin({ pt, isSelected = false, isDimmed = false, onClic
   let label = pt.result || "Fallo";
 
   if (isGoal) {
-    bg = "linear-gradient(135deg, #10b981 0%, #047857 100%)";
+    bg = "linear-gradient(135deg, #44D878 0%, #1A5138 100%)";
     shadow = isSelected
-      ? "0 0 18px #10b981, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
-      : "0 0 12px rgba(16, 185, 129, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
+      ? "0 0 18px #44D878, 0 0 0 3px #ffffff, 0 4px 10px rgba(0,0,0,0.95)"
+      : "0 0 12px rgba(68, 216, 120, 0.95), 0 2px 6px rgba(0, 0, 0, 0.9)";
     iconSvg = <IconBall size={12} color="#ffffff" />;
     label = t("heatmaps.goals", "Gol");
   } else if (isSave) {
@@ -301,7 +301,7 @@ export function GoalHeatmapGrid({
               <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
                 {t("dashboard.charts.metric_saves_pct", "% Efectividad Paradas")}
               </span>
-              <span style={{ fontSize: "22px", fontWeight: 900, fontFamily: "var(--font-mono)", color: savePct >= 35 ? "#10b981" : savePct >= 28 ? "#f59e0b" : "#ef4444" }}>
+              <span style={{ fontSize: "22px", fontWeight: 900, fontFamily: "var(--font-mono)", color: savePct >= 35 ? "#44D878" : savePct >= 28 ? "#f59e0b" : "#ef4444" }}>
                 {savePct}%
               </span>
             </div>
@@ -310,7 +310,7 @@ export function GoalHeatmapGrid({
               <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--text-muted)", textTransform: "uppercase", display: "block" }}>
                 {t("heatmaps.saves_made", "Paradas Realizadas")}
               </span>
-              <span style={{ fontSize: "20px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "#10b981" }}>
+              <span style={{ fontSize: "20px", fontWeight: 900, fontFamily: "var(--font-mono)", color: "#44D878" }}>
                 {countSaves}
               </span>
             </div>
@@ -639,7 +639,7 @@ export function TacticalHeatmapGrid({
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
-            <span>{t("heatmaps.court_eff", "Efectividad en Pista:")} <strong style={{ color: effPct >= 60 ? "#10b981" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
+            <span>{t("heatmaps.court_eff", "Efectividad en Pista:")} <strong style={{ color: effPct >= 60 ? "#44D878" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
             <span>{t("attack.turnovers_title", "Pérdidas de Balón")}: <strong style={{ color: "#ef4444" }}>{countTurnovers}</strong></span>
           </div>
         </div>
@@ -686,7 +686,7 @@ export function TacticalHeatmapGrid({
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
-            <span>{t("heatmaps.goal_goals", "Goles en Portería:")} <strong style={{ color: "#10b981" }}>{countGoals}</strong></span>
+            <span>{t("heatmaps.goal_goals", "Goles en Portería:")} <strong style={{ color: "#44D878" }}>{countGoals}</strong></span>
             <span>{t("heatmaps.gk_saves", "Paradas del Portero:")} <strong style={{ color: "#f59e0b" }}>{countSaves}</strong></span>
           </div>
         </div>
@@ -700,7 +700,7 @@ export function TacticalHeatmapGrid({
           </span>
           <div style={{ display: "flex", gap: "14px", alignItems: "center", flexWrap: "wrap", fontSize: "11px", fontWeight: 800 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#10b981", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(16, 185, 129, 0.6)" }}>
+              <span style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#44D878", border: "1.5px solid #fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 6px rgba(68, 216, 120, 0.6)" }}>
                 <IconBall size={10} color="#ffffff" />
               </span>
               <span>{t("heatmaps.goals", "Gol")}</span>

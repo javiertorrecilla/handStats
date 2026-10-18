@@ -73,6 +73,406 @@ const IconArrowLeft = () => (
   </svg>
 );
 
+const IconArrowRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 14, height: 14 }}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+const IconSearch = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const IconEdit = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+);
+
+const IconX = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const IconCheck = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const IconInfoCircle = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+  </svg>
+);
+
+const IconChevronDown = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const IconUpload = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: "inline-block", verticalAlign: "middle" }}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+);
+
+function getTeamBadgeText(name = "") {
+  if (!name) return "HS";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 5).toUpperCase();
+  }
+  if (parts[0].length >= 3 && parts[0].length <= 6) {
+    return parts[0].toUpperCase();
+  }
+  if (parts.length >= 2 && parts[0].length <= 2 && parts[1].length >= 3 && parts[1].length <= 6) {
+    return parts[1].toUpperCase();
+  }
+  return parts.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+}
+
+/**
+ * Escala técnica para el porcentaje de paradas de porteros en balonmano:
+ * - Menos de 25% (< 25): Rojo (danger)
+ * - Entre 25% y 34.9% [25, 35): Ámbar/Naranja (warning)
+ * - Entre 35% y 39.9% [35, 40): Verde Lima Claro #A3E635 / #65A30D (accent)
+ * - 40% o más (>= 40): Verde principal HandStats #44D878 / #15803D (success)
+ */
+function getGkSavePctBadge(savePct) {
+  const val = Number(savePct);
+  if (isNaN(val) || val < 25) {
+    return { variant: "danger", className: "badge-save-tier-danger" };
+  }
+  if (val < 35) {
+    return { variant: "warning", className: "badge-save-tier-warning" };
+  }
+  if (val < 40) {
+    return { variant: "accent", className: "badge-save-tier-accent" };
+  }
+  return { variant: "success", className: "badge-save-tier-success" };
+}
+
+/**
+ * Escala técnica para el porcentaje de lanzamientos / eficacia de tiro en balonmano:
+ * - Menos de 50% (< 50%): Rojo
+ * - 51% – 57%: Naranja
+ * - 58% – 64%: Amarillo/Ámbar
+ * - 65% – 75%: Verde Lima Claro #A3E635 / #65A30D
+ * - > 75%: Verde principal HandStats #44D878 / #15803D
+ */
+function getShotEffBadge(efficiency) {
+  const val = Number(efficiency);
+  if (isNaN(val) || val < 50.5) {
+    return { variant: "danger", className: "badge-shot-tier-danger" };
+  }
+  if (val <= 57.5) {
+    return { variant: "warning", className: "badge-shot-tier-orange" };
+  }
+  if (val <= 64.5) {
+    return { variant: "warning", className: "badge-shot-tier-amber" };
+  }
+  if (val <= 75.5) {
+    return { variant: "accent", className: "badge-shot-tier-light-green" };
+  }
+  return { variant: "success", className: "badge-shot-tier-success" };
+}
+
+/**
+ * Escala técnica para el rating de jugadores (0 a 10):
+ * - < 5: Rojo (badge-rating-tier-danger)
+ * - 5 a < 6: Naranja (badge-rating-tier-orange)
+ * - 6 a < 7: Amarillo (badge-rating-tier-amber)
+ * - 7 a < 8: Verde lima #A3E635 / #65A30D (badge-rating-tier-lime)
+ * - 8 a < 9: Verde HandStats #44D878 / #15803D (badge-rating-tier-success)
+ * - 9 a 10: Púrpura MVP #A855F7 / #7E22CE (badge-rating-tier-mvp)
+ */
+function getRatingBadge(rating) {
+  const val = parseFloat(rating);
+  if (isNaN(val) || val < 5.0) {
+    return { variant: "danger", className: "badge-rating-tier-danger" };
+  }
+  if (val < 6.0) {
+    return { variant: "orange", className: "badge-rating-tier-orange" };
+  }
+  if (val < 7.0) {
+    return { variant: "amber", className: "badge-rating-tier-amber" };
+  }
+  if (val < 8.0) {
+    return { variant: "lime", className: "badge-rating-tier-lime" };
+  }
+  if (val < 9.0) {
+    return { variant: "success", className: "badge-rating-tier-success" };
+  }
+  return { variant: "mvp", className: "badge-rating-tier-mvp" };
+}
+
+function computeTopNotableStats(team, stats, teamMatches = []) {
+  if (!stats || teamMatches.length === 0) {
+    const players = team.players || [];
+    const gkCount = players.filter((p) => p.is_goalkeeper).length;
+    const fieldCount = players.length - gkCount;
+    return [
+      {
+        key: "roster",
+        label: "PLANTILLA",
+        value: `${players.length}`,
+        detail: "jugadores",
+        color: "#60A5FA",
+      },
+      {
+        key: "gk",
+        label: "PORTEROS",
+        value: `${gkCount}`,
+        detail: "en meta",
+        color: "#34D399",
+      },
+      {
+        key: "field",
+        label: "JUG. CAMPO",
+        value: `${fieldCount}`,
+        detail: "primera/2ª línea",
+        color: "#F59E0B",
+      },
+    ];
+  }
+
+  const candidates = [];
+
+  // 1. Eficacia de Tiro
+  const shotEff = stats.totalShots > 0 ? ((stats.goalsFor / stats.totalShots) * 100).toFixed(1) : "0.0";
+  const shotEffNum = parseFloat(shotEff);
+  if (stats.totalShots > 0) {
+    const diff = shotEffNum - 56;
+    candidates.push({
+      key: "shot_eff",
+      label: "EFICACIA TIRO",
+      value: `${shotEff}%`,
+      detail: `↑ ${stats.goalsFor}/${stats.totalShots}`,
+      tone: shotEffNum > 75 ? "success" : shotEffNum >= 65 ? "accent" : shotEffNum >= 58 ? "warning" : shotEffNum >= 51 ? "warning" : "danger",
+      prominence: diff > 0 ? diff * 2.2 : Math.abs(diff) * 1.0,
+    });
+  }
+
+  // 2. Eficacia Portería
+  const savePct = stats.totalShotsFaced > 0 ? ((stats.totalSaves / stats.totalShotsFaced) * 100).toFixed(1) : "0.0";
+  const savePctNum = parseFloat(savePct);
+  if (stats.totalShotsFaced > 0) {
+    const diff = savePctNum - 28;
+    candidates.push({
+      key: "save_pct",
+      label: "EFICACIA PORTERÍA",
+      value: `${savePct}%`,
+      detail: `${stats.totalSaves} ${stats.totalSaves === 1 ? "parada" : "paradas"}`,
+      tone: savePctNum >= 40 ? "success" : savePctNum >= 35 ? "accent" : savePctNum >= 25 ? "warning" : "danger",
+      prominence: diff > 0 ? diff * 3.2 : Math.abs(diff) * 0.9,
+    });
+  }
+
+  // 3. Goles por Partido
+  const avgGf = parseFloat(stats.avgGoalsFor) || 0;
+  if (avgGf > 0) {
+    const diff = avgGf - 26;
+    candidates.push({
+      key: "avg_goals",
+      label: "GOLES / PARTIDO",
+      value: `${avgGf}`,
+      detail: `${stats.goalsFor} en total`,
+      tone: avgGf >= 28 ? "success" : "neutral",
+      prominence: Math.abs(diff) * 2.6,
+    });
+  }
+
+  // 4. Contraataques / Transiciones
+  const fbShots = (stats.allTeamShotsEvents || []).filter((e) => {
+    const st = (e.shot_type || "").toLowerCase();
+    return (
+      st.includes("contraataque") ||
+      st.includes("1ª") ||
+      st.includes("oleada1") ||
+      st.includes("transicion")
+    );
+  });
+  const fbGoals = fbShots.filter((e) => e.result === "Gol").length;
+  if (fbGoals >= 1) {
+    const fbAvg = (fbGoals / stats.totalMatches).toFixed(1);
+    const fbEff = fbShots.length > 0 ? Math.round((fbGoals / fbShots.length) * 100) : 0;
+    candidates.push({
+      key: "fast_break",
+      label: "CONTRAATAQUE",
+      value: `${fbGoals} goles`,
+      detail: `↑ ${fbEff}% (${fbAvg}/p.)`,
+      tone: "success",
+      prominence: (fbGoals / stats.totalMatches) * 7.5 + (fbEff >= 70 ? 12 : 0),
+    });
+  }
+
+  // 5. Eficacia 7 Metros
+  const penShots = (stats.allTeamShotsEvents || []).filter((e) => {
+    const st = (e.shot_type || "").toLowerCase();
+    return st.includes("7m") || st.includes("penalti");
+  });
+  const penGoals = penShots.filter((e) => e.result === "Gol").length;
+  if (penShots.length >= 2) {
+    const penPct = Math.round((penGoals / penShots.length) * 100);
+    candidates.push({
+      key: "penalties",
+      label: "EFICACIA 7M",
+      value: `${penPct}%`,
+      detail: `${penGoals}/${penShots.length} anotados`,
+      tone: penPct >= 75 ? "success" : "warning",
+      prominence: (penPct - 68) * 2.0 + penGoals * 2.2,
+    });
+  }
+
+  // 6. Solidez Defensiva (Goles recibidos)
+  const avgGa = parseFloat(stats.avgGoalsAgainst) || 0;
+  if (avgGa > 0) {
+    const diffGa = 27 - avgGa;
+    if (diffGa > 0) {
+      candidates.push({
+        key: "defense",
+        label: "DEFENSA (ENC.)",
+        value: `${avgGa}`,
+        detail: "goles encajados/p.",
+        tone: avgGa <= 24 ? "success" : "info",
+        prominence: diffGa * 4.2,
+      });
+    }
+  }
+
+  // 7. Recuperaciones / Robos
+  const avgSteals = parseFloat(stats.avgSteals) || 0;
+  if (avgSteals >= 2) {
+    candidates.push({
+      key: "steals",
+      label: "RECUPERACIONES",
+      value: `${avgSteals}`,
+      detail: `${stats.totalSteals} robos totales`,
+      tone: "accent",
+      prominence: avgSteals * 3.8,
+    });
+  }
+
+  // 8. Lanzamiento 9 Metros
+  const shots9m = (stats.allTeamShotsEvents || []).filter((e) => {
+    const st = (e.shot_type || "").toLowerCase();
+    return st.includes("9m") || st.includes("exterior");
+  });
+  const goals9m = shots9m.filter((e) => e.result === "Gol").length;
+  if (shots9m.length >= 3) {
+    const pct9m = Math.round((goals9m / shots9m.length) * 100);
+    candidates.push({
+      key: "shots_9m",
+      label: "LANZAMIENTO 9M",
+      value: `${pct9m}%`,
+      detail: `${goals9m}/${shots9m.length} goles`,
+      tone: pct9m >= 50 ? "success" : "info",
+      prominence: (pct9m - 40) * 2.2 + goals9m * 1.5,
+    });
+  }
+
+  // 9. Clínica de Tiro / Sobre-rendimiento xG
+  const totalXG = parseFloat(stats.totalXG) || 0;
+  const xgDiff = stats.goalsFor - totalXG;
+  if (Math.abs(xgDiff) >= 1.5) {
+    candidates.push({
+      key: "xg_diff",
+      label: xgDiff > 0 ? "CLÍNICA TIRO" : "REND. XG",
+      value: `${xgDiff > 0 ? "+" : ""}${xgDiff.toFixed(1)} xG`,
+      detail: xgDiff > 0 ? "sobre lo esperado" : "bajo xG",
+      tone: xgDiff > 0 ? "success" : "warning",
+      prominence: Math.abs(xgDiff) * 3.6,
+    });
+  }
+
+  // 10. Cuidado de Balón (Pérdidas bajas)
+  const avgTo = parseFloat(stats.avgTurnovers) || 0;
+  if (avgTo > 0 && avgTo <= 8) {
+    candidates.push({
+      key: "turnovers",
+      label: "CUIDADO BALÓN",
+      value: `${avgTo}`,
+      detail: "pérdidas/partido",
+      tone: "success",
+      prominence: (9.5 - avgTo) * 3.2,
+    });
+  }
+
+  // 11. Diferencial de Goles
+  const goalDiff = stats.goalDiff || 0;
+  if (Math.abs(goalDiff) >= 4) {
+    candidates.push({
+      key: "goal_diff",
+      label: "DIF. GOLES",
+      value: `${goalDiff > 0 ? "+" : ""}${goalDiff}`,
+      detail: `${stats.goalsFor}F - ${stats.goalsAgainst}C`,
+      tone: goalDiff > 0 ? "success" : "danger",
+      prominence: Math.abs(goalDiff) * 1.8,
+    });
+  }
+
+  // Ordenar por prominencia descendente
+  candidates.sort((a, b) => b.prominence - a.prominence);
+
+  const selected = candidates.slice(0, 3);
+
+  // Fallbacks si hay menos de 3 métricas prominentes
+  if (selected.length < 3) {
+    const fallbackList = [
+      {
+        key: "shot_eff_fb",
+        label: "EFICACIA TIRO",
+        value: `${shotEff}%`,
+        detail: `↑ ${stats.goalsFor}/${stats.totalShots}`,
+        tone: "success",
+      },
+      {
+        key: "save_pct_fb",
+        label: "EFICACIA PORTERÍA",
+        value: `${savePct}%`,
+        detail: `${stats.totalSaves} paradas`,
+        tone: "info",
+      },
+      {
+        key: "avg_goals_fb",
+        label: "GOLES / PARTIDO",
+        value: `${avgGf}`,
+        detail: `${stats.goalsFor} en total`,
+        tone: "neutral",
+      },
+      {
+        key: "total_matches_fb",
+        label: "PARTIDOS JUGADOS",
+        value: `${stats.totalMatches}`,
+        detail: `${stats.wins}V ${stats.draws}E ${stats.losses}D`,
+        tone: "success",
+      },
+    ];
+
+    for (const fb of fallbackList) {
+      if (selected.length >= 3) break;
+      if (!selected.some((s) => s.label === fb.label)) {
+        selected.push(fb);
+      }
+    }
+  }
+
+  return selected.slice(0, 3);
+}
+
 export default function TeamsPage({ user, matchesList = [] }) {
   const { t } = useTranslation();
   const [teams, setTeams] = useState([]);
@@ -107,9 +507,15 @@ export default function TeamsPage({ user, matchesList = [] }) {
     reader.readAsDataURL(file);
   };
 
-  // Formulario nuevo jugador
+  // Formulario nuevo jugador y edición
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerNumber, setNewPlayerNumber] = useState("");
+  const [newPlayerRole, setNewPlayerRole] = useState("field"); // "field" | "gk"
+  const [rosterSearch, setRosterSearch] = useState("");
+  const [editingPlayerIndex, setEditingPlayerIndex] = useState(null);
+  const [editingNumber, setEditingNumber] = useState("");
+  const [editingName, setEditingName] = useState("");
+  const [editingRole, setEditingRole] = useState("field");
 
   const loadTeams = async () => {
     if (!user?._id) return;
@@ -140,12 +546,17 @@ export default function TeamsPage({ user, matchesList = [] }) {
     setEditPlayers([...(team.players || [])]);
     setNewPlayerName("");
     setNewPlayerNumber("");
+    setNewPlayerRole("field");
+    setRosterSearch("");
+    setEditingPlayerIndex(null);
   };
 
   // Volver al catálogo de equipos
   const handleBackToList = () => {
     setSelectedTeam(null);
     setIsCreating(false);
+    setEditingPlayerIndex(null);
+    setRosterSearch("");
   };
 
   // Al hacer clic en crear equipo
@@ -160,27 +571,35 @@ export default function TeamsPage({ user, matchesList = [] }) {
     setEditPlayers([]);
     setNewPlayerName("");
     setNewPlayerNumber("");
+    setNewPlayerRole("field");
+    setRosterSearch("");
+    setEditingPlayerIndex(null);
   };
 
   // Añadir jugador a la lista temporal
   const handleAddPlayer = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!newPlayerName.trim() || newPlayerNumber === "") return;
 
     const numberVal = parseInt(newPlayerNumber, 10);
+    if (isNaN(numberVal) || numberVal < 0 || numberVal > 99) {
+      alert("Introduce un dorsal válido entre 0 y 99.");
+      return;
+    }
     if (editPlayers.some((p) => p.number === numberVal)) {
-      alert(t("create_match.dorsal_exists"));
+      alert(t("create_match.dorsal_exists", "Este dorsal ya está asignado a otro jugador."));
       return;
     }
 
-    const isGk = [1, 12, 16].includes(numberVal);
+    const isGk = newPlayerRole === "gk";
 
     setEditPlayers((prev) => [
       ...prev,
-      { name: newPlayerName.trim(), number: numberVal, is_goalkeeper: isGk },
+      { name: newPlayerName.trim().toUpperCase(), number: numberVal, is_goalkeeper: isGk },
     ]);
     setNewPlayerName("");
     setNewPlayerNumber("");
+    setNewPlayerRole("field");
   };
 
   const handleToggleGoalkeeper = (index) => {
@@ -193,6 +612,45 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
   const handleRemovePlayer = (index) => {
     setEditPlayers((prev) => prev.filter((_, i) => i !== index));
+    if (editingPlayerIndex === index) setEditingPlayerIndex(null);
+  };
+
+  const handleStartEditPlayer = (index, player) => {
+    setEditingPlayerIndex(index);
+    setEditingNumber(String(player.number));
+    setEditingName(player.name);
+    setEditingRole(player.is_goalkeeper === true || player.is_goalkeeper === "true" ? "gk" : "field");
+  };
+
+  const handleSaveEditPlayer = (index) => {
+    if (!editingName.trim() || editingNumber === "") return;
+    const numberVal = parseInt(editingNumber, 10);
+    if (isNaN(numberVal) || numberVal < 0 || numberVal > 99) {
+      alert("Introduce un dorsal válido entre 0 y 99.");
+      return;
+    }
+    if (editPlayers.some((p, i) => i !== index && p.number === numberVal)) {
+      alert(t("create_match.dorsal_exists", "Este dorsal ya está asignado a otro jugador."));
+      return;
+    }
+
+    setEditPlayers((prev) =>
+      prev.map((p, i) =>
+        i === index
+          ? {
+              ...p,
+              name: editingName.trim().toUpperCase(),
+              number: numberVal,
+              is_goalkeeper: editingRole === "gk",
+            }
+          : p
+      )
+    );
+    setEditingPlayerIndex(null);
+  };
+
+  const handleCancelEditPlayer = () => {
+    setEditingPlayerIndex(null);
   };
 
   const handleSaveTeam = async (e) => {
@@ -259,6 +717,34 @@ export default function TeamsPage({ user, matchesList = [] }) {
     if (!selectedTeam?.name) return null;
     return calculateTeamCumulativeStats(selectedTeam.name, matchesList);
   }, [selectedTeam?.name, matchesList]);
+
+  const goalkeepersCount = useMemo(() => {
+    return editPlayers.filter((p) => p.is_goalkeeper === true || p.is_goalkeeper === "true").length;
+  }, [editPlayers]);
+
+  const fieldPlayersCount = useMemo(() => {
+    return editPlayers.filter((p) => !p.is_goalkeeper || p.is_goalkeeper === "false").length;
+  }, [editPlayers]);
+
+  const filteredEditPlayers = useMemo(() => {
+    if (!rosterSearch.trim()) return editPlayers;
+    const q = rosterSearch.trim().toLowerCase();
+    return editPlayers.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        String(p.number).includes(q)
+    );
+  }, [editPlayers, rosterSearch]);
+
+  const getPlayerPJ = (player) => {
+    if (!cumulativeStats?.playerStats) return 1;
+    const pStat = cumulativeStats.playerStats.find(
+      (ps) =>
+        Number(ps.number) === Number(player.number) ||
+        ps.name?.trim().toLowerCase() === player.name?.trim().toLowerCase()
+    );
+    return pStat ? (pStat.matchesPlayed ?? 0) : 0;
+  };
 
   // ORDENACIÓN Y FILTRADO DE LA TABLA DE JUGADORES (POR DEFECTO POR DORSAL/NÚMERO)
   const handlePlayerSort = (key) => {
@@ -370,6 +856,73 @@ export default function TeamsPage({ user, matchesList = [] }) {
     t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Resumen y estadísticas destacadas calculadas para cada equipo del catálogo
+  const teamSummaries = useMemo(() => {
+    const map = {};
+    filteredTeams.forEach((team) => {
+      const teamNameLower = (team.name || "").trim().toLowerCase();
+      const teamMatches = matchesList.filter((m) => {
+        const h = (m.home_team || "").trim().toLowerCase();
+        const a = (m.away_team || "").trim().toLowerCase();
+        return h === teamNameLower || a === teamNameLower;
+      });
+
+      const stats = calculateTeamCumulativeStats(team.name, teamMatches);
+
+      // Obtener el partido más reciente
+      const sorted = [...teamMatches].sort((a, b) => {
+        const timeA = a.date ? new Date(a.date).getTime() : 0;
+        const timeB = b.date ? new Date(b.date).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      const lastMatch = sorted[0] || null;
+      let lastMatchData = null;
+      if (lastMatch) {
+        const isHome = (lastMatch.home_team || "").trim().toLowerCase() === teamNameLower;
+        const teamScore = isHome ? (lastMatch.goals_home ?? 0) : (lastMatch.goals_away ?? 0);
+        const oppScore = isHome ? (lastMatch.goals_away ?? 0) : (lastMatch.goals_home ?? 0);
+        let outcome = "draw";
+        let code = "E";
+        let color = "#F59E0B";
+        if (teamScore > oppScore) {
+          outcome = "win";
+          code = "V";
+          color = "#44D878";
+        } else if (teamScore < oppScore) {
+          outcome = "loss";
+          code = "D";
+          color = "#EF4444";
+        }
+        lastMatchData = {
+          outcome,
+          code,
+          color,
+          text: `Último: ${code} ${teamScore} - ${oppScore}`,
+        };
+      } else {
+        lastMatchData = {
+          outcome: "none",
+          code: "-",
+          color: "#64748B",
+          text: "Sin partidos",
+        };
+      }
+
+      const topStats = computeTopNotableStats(team, stats, teamMatches);
+
+      map[team.name] = {
+        teamMatchesCount: teamMatches.length,
+        wins: stats?.wins || 0,
+        draws: stats?.draws || 0,
+        losses: stats?.losses || 0,
+        lastMatchData,
+        topStats,
+      };
+    });
+    return map;
+  }, [filteredTeams, matchesList]);
+
   // Porteros del equipo para el filtro de mapas
   const teamGoalkeepers = useMemo(() => {
     if (!cumulativeStats?.playerStats) return [];
@@ -424,12 +977,17 @@ export default function TeamsPage({ user, matchesList = [] }) {
           ) : (
             <div className="teams-gallery-grid">
               {filteredTeams.map((team, idx) => {
-                const teamMatchesCount = matchesList.filter((m) => {
-                  const h = (m.home_team || "").trim().toLowerCase();
-                  const a = (m.away_team || "").trim().toLowerCase();
-                  const name = team.name.trim().toLowerCase();
-                  return h === name || a === name;
-                }).length;
+                const summary = teamSummaries[team.name] || {};
+                const teamMatchesCount = summary.teamMatchesCount || 0;
+                const wins = summary.wins || 0;
+                const draws = summary.draws || 0;
+                const losses = summary.losses || 0;
+                const lastMatch = summary.lastMatchData || {
+                  outcome: "none",
+                  text: "Sin partidos",
+                };
+                const topStats = summary.topStats || [];
+                const rosterCount = team.players?.length || 0;
 
                 return (
                   <div
@@ -437,23 +995,42 @@ export default function TeamsPage({ user, matchesList = [] }) {
                     className="teams-gallery-card"
                     onClick={() => handleSelectTeam(team)}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {team.logo_url ? (
-                          <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(0, 0, 0, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, border: "1px solid var(--border-color)" }}>
-                            <img src={team.logo_url} alt={team.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                    {/* CABECERA: LOGO, NOMBRE, METADATOS Y PAPELERA */}
+                    <div className="team-card-header">
+                      <div className="team-card-identity">
+                        <div className="team-card-logo">
+                          {team.logo_url ? (
+                            <img
+                              src={team.logo_url}
+                              alt={team.name}
+                              className="team-card-logo-img"
+                            />
+                          ) : (
+                            <span className="team-card-logo-text">
+                              {getTeamBadgeText(team.name)}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="team-card-titles">
+                          <h3 className="team-card-name" title={team.name}>
+                            {team.name}
+                          </h3>
+                          <div className="team-card-meta">
+                            <span className="team-card-roster">
+                              {rosterCount} {rosterCount === 1 ? "Jugador" : "Jugadores"} en plantilla
+                            </span>
+                            <span className="team-card-bullet">•</span>
+                            <span className="team-card-record">
+                              {teamMatchesCount} {teamMatchesCount === 1 ? "Partido" : "Partidos"}
+                              {teamMatchesCount > 0 && ` (${wins}V ${draws}E ${losses}D)`}
+                            </span>
                           </div>
-                        ) : (
-                          <IconHandball />
-                        )}
-                        <div>
-                          <h3 style={{ margin: 0, fontSize: "var(--text-base)", fontWeight: 800 }}>{team.name}</h3>
-                          <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                            {t("teams.players_in_roster", { count: team.players?.length || 0 })}
-                          </span>
                         </div>
                       </div>
+
                       <button
+                        type="button"
                         className="btn-delete-team"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -465,15 +1042,51 @@ export default function TeamsPage({ user, matchesList = [] }) {
                       </button>
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "var(--space-12)", borderTop: "1px solid var(--border-color)", gap: "8px" }}>
-                      <span style={{ fontSize: "var(--text-xs)", color: "var(--brand-primary)", fontWeight: 700 }}>
-                        {t("teams.matches_count", { count: teamMatchesCount })}
-                      </span>
-                      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                        <button className="btn btn-sm btn-ghost" style={{ fontSize: "var(--text-xs)", fontWeight: 700, color: "var(--brand-primary)" }}>
-                          {t("teams.view_arrow")}
-                        </button>
+                    {/* CAJA CENTRAL: LAS 3 ESTADÍSTICAS MÁS LLAMATIVAS DEL EQUIPO */}
+                    <div className="team-card-stats-box">
+                      {topStats.map((stat, sIdx) => (
+                        <div key={sIdx} className="team-stat-item">
+                          <span className="team-stat-label" title={stat.label}>
+                            {stat.label}
+                          </span>
+                          <div className="team-stat-val-row">
+                            <span className="team-stat-val">{stat.value}</span>
+                            {stat.detail && (
+                              <span
+                                className={`team-stat-detail tone-${stat.tone || "neutral"}`}
+                              >
+                                {stat.detail}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* PIE DE TARJETA: RESULTADO ÚLTIMO PARTIDO Y BOTÓN ACCIÓN */}
+                    <div className="team-card-footer">
+                      <div className="team-card-last-match">
+                        <span
+                          className={`team-match-indicator-dot outcome-${lastMatch.outcome || "none"}`}
+                        />
+                        <span
+                          className={`team-match-result-text outcome-${lastMatch.outcome || "none"}`}
+                        >
+                          {lastMatch.text}
+                        </span>
                       </div>
+
+                      <button
+                        type="button"
+                        className="btn-view-dashboard"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTeam(team);
+                        }}
+                      >
+                        <span>Ver Dashboard</span>
+                        <IconArrowRight />
+                      </button>
                     </div>
                   </div>
                 );
@@ -653,7 +1266,16 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>{p.goals}</strong></td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
                                     {p.shotsCount > 0 ? (
-                                      <MetricBadge value={`${p.efficiency}%`} variant={p.efficiency >= 60 ? "success" : p.efficiency >= 40 ? "info" : "danger"} />
+                                      (() => {
+                                        const badge = getShotEffBadge(p.efficiency);
+                                        return (
+                                          <MetricBadge
+                                            value={`${p.efficiency}%`}
+                                            variant={badge.variant}
+                                            className={badge.className}
+                                          />
+                                        );
+                                      })()
                                     ) : (
                                       <span style={{ color: "var(--text-muted)" }}>—</span>
                                     )}
@@ -661,7 +1283,16 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsCount > 0 ? p.xg : "—"}</td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.turnovers}</td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    <MetricBadge value={p.avgRating} variant={p.avgRating >= 7.5 ? "success" : p.avgRating >= 6.0 ? "info" : "warning"} />
+                                    {(() => {
+                                      const badge = getRatingBadge(p.avgRating);
+                                      return (
+                                        <MetricBadge
+                                          value={p.avgRating}
+                                          variant={badge.variant}
+                                          className={badge.className}
+                                        />
+                                      );
+                                    })()}
                                   </td>
                                 </>
                               ) : playerTableFilter === "goalkeepers" ? (
@@ -670,7 +1301,16 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>{p.saves}/{p.shotsFaced}</strong></td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
                                     {p.shotsFaced > 0 ? (
-                                      <MetricBadge value={`${p.savePct}%`} variant={p.savePct >= 33 ? "success" : p.savePct >= 25 ? "info" : "danger"} />
+                                      (() => {
+                                        const badge = getGkSavePctBadge(p.savePct);
+                                        return (
+                                          <MetricBadge
+                                            value={`${p.savePct}%`}
+                                            variant={badge.variant}
+                                            className={badge.className}
+                                          />
+                                        );
+                                      })()
                                     ) : (
                                       <span style={{ color: "var(--text-muted)" }}>—</span>
                                     )}
@@ -678,7 +1318,16 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsFaced > 0 ? p.goalkeeperXSaves : "—"}</td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.goals > 0 ? <strong>{p.goals}</strong> : "0"}</td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    <MetricBadge value={p.avgRating} variant={p.avgRating >= 7.5 ? "success" : p.avgRating >= 6.0 ? "info" : "warning"} />
+                                    {(() => {
+                                      const badge = getRatingBadge(p.avgRating);
+                                      return (
+                                        <MetricBadge
+                                          value={p.avgRating}
+                                          variant={badge.variant}
+                                          className={badge.className}
+                                        />
+                                      );
+                                    })()}
                                   </td>
                                 </>
                               ) : (
@@ -704,7 +1353,16 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   </td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
                                     {p.shotsCount > 0 ? (
-                                      <MetricBadge value={`${p.efficiency}%`} variant={p.efficiency >= 60 ? "success" : p.efficiency >= 40 ? "info" : "danger"} />
+                                      (() => {
+                                        const badge = getShotEffBadge(p.efficiency);
+                                        return (
+                                          <MetricBadge
+                                            value={`${p.efficiency}%`}
+                                            variant={badge.variant}
+                                            className={badge.className}
+                                          />
+                                        );
+                                      })()
                                     ) : (
                                       <span style={{ color: "var(--text-muted)" }}>—</span>
                                     )}
@@ -714,13 +1372,31 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   </td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
                                     {isGk && p.shotsFaced > 0 ? (
-                                      <MetricBadge value={`${p.savePct}%`} variant={p.savePct >= 33 ? "success" : p.savePct >= 25 ? "info" : "danger"} />
+                                      (() => {
+                                        const badge = getGkSavePctBadge(p.savePct);
+                                        return (
+                                          <MetricBadge
+                                            value={`${p.savePct}%`}
+                                            variant={badge.variant}
+                                            className={badge.className}
+                                          />
+                                        );
+                                      })()
                                     ) : (
                                       <span style={{ color: "var(--text-muted)" }}>—</span>
                                     )}
                                   </td>
                                   <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    <MetricBadge value={p.avgRating} variant={p.avgRating >= 7.5 ? "success" : p.avgRating >= 6.0 ? "info" : "warning"} />
+                                    {(() => {
+                                      const badge = getRatingBadge(p.avgRating);
+                                      return (
+                                        <MetricBadge
+                                          value={p.avgRating}
+                                          variant={badge.variant}
+                                          className={badge.className}
+                                        />
+                                      );
+                                    })()}
                                   </td>
                                 </>
                               )}
@@ -772,193 +1448,371 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
           {/* SUB-VISTA 2: EDICIÓN DE PLANTILLA A PANTALLA COMPLETA */}
           {(isCreating || rightPanelTab === "roster") && (
-            <form onSubmit={handleSaveTeam} className="team-editor-form">
-              <div className="form-group">
-                <label htmlFor="team-name">{t("teams.team_name_label")}</label>
-                <input
-                  id="team-name"
-                  type="text"
-                  className="input-field"
-                  placeholder={t("teams.team_name_placeholder")}
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  required
-                />
-              </div>
+            <form onSubmit={handleSaveTeam} className="team-editor-form-custom">
+              {/* 1. SECCIÓN: DATOS GENERALES DEL EQUIPO */}
+              <div className="team-general-card">
+                <div className="team-section-header">
+                  <IconInfoCircle />
+                  <span>DATOS GENERALES DEL EQUIPO</span>
+                </div>
 
-              <div className="form-group" style={{ marginBottom: "24px" }}>
-                <label className="form-label" style={{ display: "block", marginBottom: "8px", fontWeight: 700, fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  {t("teams.badge_label")}
-                </label>
-
-                <div
-                  className={`pdf-dropzone ${isDraggingLogo ? "dragging" : ""} ${editLogoUrl ? "success" : ""}`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDraggingLogo(true);
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDraggingLogo(false);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDraggingLogo(false);
-                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                      processLogoFile(e.dataTransfer.files[0]);
-                    }
-                  }}
-                  onClick={() => logoInputRef.current?.click()}
-                  style={{ minHeight: "86px" }}
-                >
+                <div className="form-group-custom">
+                  <label className="custom-label">NOMBRE DEL EQUIPO</label>
                   <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="pdf-input-hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        processLogoFile(e.target.files[0]);
+                    id="team-name"
+                    type="text"
+                    className="custom-team-name-input"
+                    placeholder="NOMBRE DEL EQUIPO"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group-custom" style={{ marginBottom: 0 }}>
+                  <label className="custom-label">ESCUDO DEL EQUIPO (FOTO / IMAGEN)</label>
+
+                  <div
+                    className={`team-shield-box ${editLogoUrl ? "assigned" : "empty"} ${isDraggingLogo ? "dragging" : ""}`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingLogo(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingLogo(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsDraggingLogo(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        processLogoFile(e.dataTransfer.files[0]);
                       }
                     }}
-                  />
+                  >
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          processLogoFile(e.target.files[0]);
+                        }
+                      }}
+                    />
 
-                  {editLogoUrl ? (
-                    <div className="pdf-status-idle" style={{ justifyContent: "space-between", width: "100%" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                        <div style={{ width: 52, height: 52, borderRadius: 10, background: "rgba(0,0,0,0.3)", border: "1px solid var(--brand-primary)", padding: 4, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
-                          <img src={editLogoUrl} alt="Escudo preview" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                    {editLogoUrl ? (
+                      <div className="shield-assigned-content">
+                        <div className="shield-thumb-wrapper">
+                          <img src={editLogoUrl} alt="Escudo" className="shield-thumb-img" />
                         </div>
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: "var(--text-sm)", color: "var(--brand-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-                            {t("teams.badge_assigned")}
+
+                        <div className="shield-text-info">
+                          <div className="shield-status-title">
+                            <IconCheck />
+                            <span>Escudo asignado correctamente</span>
                           </div>
-                          <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                            {t("teams.badge_change_hint")}
-                          </span>
+                          <p className="shield-status-sub">
+                            Haz clic para cambiar la imagen o arrastra un nuevo archivo PNG/SVG transparente (Recomendado 256×256 px)
+                          </p>
+                        </div>
+
+                        <div className="shield-action-buttons">
+                          <button
+                            type="button"
+                            className="btn-shield-browse"
+                            onClick={() => logoInputRef.current?.click()}
+                          >
+                            Examinar...
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-shield-remove"
+                            onClick={() => setEditLogoUrl("")}
+                          >
+                            Quitar Foto
+                          </button>
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditLogoUrl("");
-                        }}
-                        style={{ color: "var(--color-danger)", fontSize: "11px", fontWeight: 700 }}
-                      >
-                        {t("teams.remove_photo")}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="pdf-status-idle">
-                      <div className="pdf-upload-icon-container">
-                        <IconUploadCloud />
+                    ) : (
+                      <div className="shield-empty-content" onClick={() => logoInputRef.current?.click()}>
+                        <div className="shield-empty-icon">
+                          <IconUploadCloud />
+                        </div>
+                        <div className="shield-empty-texts">
+                          <p className="shield-empty-main">
+                            Arrastra el escudo aquí o haz clic para <span className="highlight-browse">Examinar archivos</span>
+                          </p>
+                          <p className="shield-empty-sub">
+                            Formatos soportados: PNG, SVG, JPG (Recomendado PNG/SVG transparente 256×256 px)
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-shield-browse"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            logoInputRef.current?.click();
+                          }}
+                        >
+                          Examinar...
+                        </button>
                       </div>
-                      <div className="pdf-dropzone-text">
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--text-primary)" }}>
-                          {t("teams.drag_badge")} <span style={{ color: "var(--brand-primary)", textDecoration: "underline" }}>{t("teams.browse_files")}</span>
-                        </p>
-                        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", marginTop: "2px", display: "block" }}>
-                          {t("teams.badge_formats")}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="team-roster-section">
-                <h4>{t("teams.roster_tab", { count: editPlayers.length })}</h4>
-
-                {editPlayers.length === 0 ? (
-                  <p className="no-players-text">
-                    {t("teams.no_players")}
-                  </p>
-                ) : (
-                  <div className="roster-table">
-                    <div className="roster-header">
-                      <span className="col-num">#</span>
-                      <span className="col-name" style={{ width: "50%" }}>{t("players_table.col_name")}</span>
-                      <span className="col-role" style={{ width: "30%", textAlign: "center" }}>{t("players_table.col_role")}</span>
-                      <span className="col-action"></span>
-                    </div>
-                    <div className="roster-rows">
-                      {editPlayers.map((player, index) => {
-                        const isGk = player.is_goalkeeper === true || player.is_goalkeeper === "true";
-                        return (
-                          <div key={index} className="roster-row">
-                            <span className="col-num">#{player.number}</span>
-                            <span className="col-name" style={{ width: "50%" }}>{player.name}</span>
-                            <span className="col-role" style={{ width: "30%", textAlign: "center" }}>
-                              <button
-                                type="button"
-                                className={`role-badge-btn ${isGk ? "gk" : "field"}`}
-                                onClick={() => handleToggleGoalkeeper(index)}
-                              >
-                                {isGk ? t("players_table.role_gk") : t("players_table.role_player")}
-                              </button>
-                            </span>
-                            <span className="col-action">
-                              <button
-                                type="button"
-                                className="btn-remove-player"
-                                onClick={() => handleRemovePlayer(index)}
-                                title={t("common.delete")}
-                              >
-                                &times;
-                              </button>
-                            </span>
-                          </div>
-                        );
-                      })}
+              {/* 2. SECCIÓN: PLANTILLA DEL EQUIPO */}
+              <div className="team-roster-card">
+                {/* BARRA SUPERIOR DE LA PLANTILLA: TÍTULO, PASTILLAS RESUMEN Y BUSCADOR */}
+                <div className="roster-top-bar">
+                  <div className="roster-top-left">
+                    <h3 className="roster-card-title">
+                      PLANTILLA DEL EQUIPO <span className="roster-count-num">({editPlayers.length})</span>
+                    </h3>
+                    <div className="roster-pills-summary">
+                      <span>Porteros: <strong className="summary-bold">{goalkeepersCount}</strong></span>
+                      <span className="summary-divider">|</span>
+                      <span>Jugadores: <strong className="summary-bold">{fieldPlayersCount}</strong></span>
                     </div>
                   </div>
-                )}
 
-                {/* FORMULARIO AGREGAR JUGADOR */}
-                <div className="add-player-form-inline">
-                  <input
-                    type="number"
-                    className="input-field player-num-input"
-                    placeholder={t("create_match.dorsal_placeholder")}
-                    min="0"
-                    max="99"
-                    value={newPlayerNumber}
-                    onChange={(e) => setNewPlayerNumber(e.target.value)}
-                  />
-                  <input
-                    type="text"
-                    className="input-field player-name-input"
-                    placeholder={t("create_match.player_name_placeholder")}
-                    value={newPlayerName}
-                    onChange={(e) => setNewPlayerName(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={handleAddPlayer}
-                  >
-                    {t("create_match.add_player_btn")}
-                  </button>
+                  <div className="roster-search-box">
+                    <IconSearch />
+                    <input
+                      type="text"
+                      className="roster-search-input"
+                      placeholder="Buscar dorsal o nombre..."
+                      value={rosterSearch}
+                      onChange={(e) => setRosterSearch(e.target.value)}
+                    />
+                    {rosterSearch && (
+                      <button
+                        type="button"
+                        className="roster-search-clear"
+                        onClick={() => setRosterSearch("")}
+                        title="Limpiar búsqueda"
+                      >
+                        <IconX />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* TABLA DE JUGADORES */}
+                <div className="roster-table-container">
+                  <table className="custom-roster-table">
+                    <thead>
+                      <tr>
+                        <th className="th-num">#</th>
+                        <th className="th-name">NOMBRE Y APELLIDOS DEL JUGADOR</th>
+                        <th className="th-role">ROL TÁCTICO</th>
+                        <th className="th-pj">PJ</th>
+                        <th className="th-actions">ACCIONES</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredEditPlayers.map((player) => {
+                        const originalIndex = editPlayers.findIndex(
+                          (p) => p.number === player.number && p.name === player.name
+                        );
+                        const isEditing = editingPlayerIndex === originalIndex;
+                        const isGk = player.is_goalkeeper === true || player.is_goalkeeper === "true";
+                        const pj = getPlayerPJ(player);
+
+                        if (isEditing) {
+                          return (
+                            <tr key={`edit_${player.number}`} className="tr-player-row tr-editing">
+                              <td className="td-num">
+                                <input
+                                  type="number"
+                                  className="inline-edit-num"
+                                  value={editingNumber}
+                                  onChange={(e) => setEditingNumber(e.target.value)}
+                                  min="0"
+                                  max="99"
+                                />
+                              </td>
+                              <td className="td-name">
+                                <input
+                                  type="text"
+                                  className="inline-edit-name"
+                                  value={editingName}
+                                  onChange={(e) => setEditingName(e.target.value)}
+                                />
+                              </td>
+                              <td className="td-role">
+                                <select
+                                  className="inline-edit-role-select"
+                                  value={editingRole}
+                                  onChange={(e) => setEditingRole(e.target.value)}
+                                >
+                                  <option value="field">Jugador</option>
+                                  <option value="gk">Portero</option>
+                                </select>
+                              </td>
+                              <td className="td-pj">{pj}</td>
+                              <td className="td-actions">
+                                <button
+                                  type="button"
+                                  className="btn-action-save"
+                                  onClick={() => handleSaveEditPlayer(originalIndex)}
+                                  title="Guardar"
+                                >
+                                  <IconCheck />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-action-cancel"
+                                  onClick={handleCancelEditPlayer}
+                                  title="Cancelar"
+                                >
+                                  <IconX />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return (
+                          <tr key={`${player.number}_${player.name}`} className="tr-player-row">
+                            <td className="td-num">#{player.number}</td>
+                            <td className="td-name">{player.name}</td>
+                            <td className="td-role">
+                              <button
+                                type="button"
+                                className={`btn-role-pill ${isGk ? "role-gk" : "role-field"}`}
+                                onClick={() => handleToggleGoalkeeper(originalIndex)}
+                                title="Haz clic para alternar entre Portero y Jugador"
+                              >
+                                {isGk ? "Portero" : "Jugador"}
+                              </button>
+                            </td>
+                            <td className="td-pj">{pj}</td>
+                            <td className="td-actions">
+                              <button
+                                type="button"
+                                className="btn-table-action btn-action-edit"
+                                onClick={() => handleStartEditPlayer(originalIndex, player)}
+                                title="Editar jugador"
+                              >
+                                <IconEdit />
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-table-action btn-action-delete"
+                                onClick={() => handleRemovePlayer(originalIndex)}
+                                title="Eliminar jugador"
+                              >
+                                <IconX />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {filteredEditPlayers.length === 0 && (
+                        <tr>
+                          <td colSpan="5" className="td-empty-roster">
+                            {rosterSearch
+                              ? `No se encontraron jugadores que coincidan con "${rosterSearch}"`
+                              : "No hay jugadores en la plantilla todavía."}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+
+                  {/* FILA INFERIOR PARA AÑADIR JUGADOR A LA PLANTILLA */}
+                  <div className="add-player-row-box">
+                    <div className="add-player-num-col">
+                      <input
+                        type="number"
+                        className="add-input-num"
+                        placeholder="#"
+                        min="0"
+                        max="99"
+                        value={newPlayerNumber}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewPlayerNumber(val);
+                          if (val && [1, 12, 16].includes(parseInt(val, 10))) {
+                            setNewPlayerRole("gk");
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddPlayer();
+                          }
+                        }}
+                      />
+                    </div>
+
+                    <div className="add-player-name-col">
+                      <input
+                        type="text"
+                        className="add-input-name"
+                        placeholder="Nombre completo y apellidos del jugador..."
+                        value={newPlayerName}
+                        onChange={(e) => setNewPlayerName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddPlayer();
+                          }
+                        }}
+                      />
+                    </div>
+
+                    <div className="add-player-role-col">
+                      <div className="custom-role-select-wrapper">
+                        <select
+                          className="add-select-role"
+                          value={newPlayerRole}
+                          onChange={(e) => setNewPlayerRole(e.target.value)}
+                        >
+                          <option value="field">Jugador de Campo</option>
+                          <option value="gk">Portero</option>
+                        </select>
+                        <IconChevronDown />
+                      </div>
+                    </div>
+
+                    <div className="add-player-btn-col">
+                      <button
+                        type="button"
+                        className="btn-add-to-roster"
+                        onClick={handleAddPlayer}
+                      >
+                        <IconPlus />
+                        <span>AÑADIR A LA PLANTILLA</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="editor-actions">
+              {/* BOTONES INFERIORES DE ACCIÓN */}
+              <div className="roster-form-footer">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn-footer-cancel"
                   onClick={handleBackToList}
                 >
-                  {t("common.cancel")}
+                  Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center" }}>
-                  <IconSave />
-                  <span>{t("teams.save_team")}</span>
+                <button
+                  type="submit"
+                  className="btn-footer-save"
+                >
+                  <IconUpload />
+                  <span>GUARDAR CAMBIOS DEL EQUIPO</span>
                 </button>
               </div>
             </form>

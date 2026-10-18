@@ -26,6 +26,9 @@ export const matchService = {
   addEvent: async (id, eventData) =>
     (await api.post(`/matches/${id}/events`, eventData)).data,
 
+  updateEvent: async (id, eventId, eventData) =>
+    (await api.put(`/matches/${id}/events/${eventId}`, eventData)).data,
+
   addPossession: async (id, possessionData) =>
     (await api.post(`/matches/${id}/possessions`, possessionData)).data,
 

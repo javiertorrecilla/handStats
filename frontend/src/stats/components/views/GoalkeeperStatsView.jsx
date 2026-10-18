@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { KPICard } from "../common/KPICard";
+import { MetricBadge, getRatingBadge } from "../common/MetricBadge";
 import { GoalHeatmapGrid } from "../charts/TacticalHeatmapGrid";
 
 export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, teamFilter = "home" }) {
@@ -124,7 +125,12 @@ export function GoalkeeperStatsView({ metrics, match, homeHeatmaps, awayHeatmaps
                       </td>
                       <td>{gk.expectedSaves}</td>
                       <td>{gk.goalsConceded}</td>
-                      <td><strong>{gk.rating}</strong></td>
+                      <td>
+                        {(() => {
+                          const badge = getRatingBadge(gk.rating);
+                          return <MetricBadge value={gk.rating} variant={badge.variant} className={badge.className} />;
+                        })()}
+                      </td>
                     </tr>
                   );
                 })

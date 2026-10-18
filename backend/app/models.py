@@ -157,8 +157,11 @@ class MatchEvent(BaseModel):
     player_out_id: Optional[Any] = None
     player_out_number: Optional[Any] = None
     player_out_name: Optional[str] = None
-    action_key: Optional[str] = None
-    description: Optional[str] = None
+    # Jugadores implicados en 7m y faltas en ataque (quién comete y quién provoca)
+    committed_by: Optional[Dict[str, Any]] = None
+    provoked_by: Optional[Dict[str, Any]] = None
+    drawn_by_player: Optional[Any] = None
+    defender_id: Optional[Any] = None
 
     class Config:
         extra = "allow"

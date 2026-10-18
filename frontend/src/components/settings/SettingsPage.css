@@ -96,10 +96,10 @@
 }
 
 .settings-tab-btn.active {
-  background: var(--brand-primary);
-  color: var(--text-contrast);
-  border-color: var(--brand-primary);
-  box-shadow: 0 2px 6px rgba(46, 125, 79, 0.2);
+  background: var(--btn-primary-bg, var(--brand-primary));
+  color: var(--btn-primary-text, var(--text-contrast));
+  border-color: var(--btn-primary-border, var(--brand-primary));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* CONTENEDOR DE FORMULARIO */
@@ -238,7 +238,7 @@
 
 .empirical-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(90deg, #44D878 0%, #1A5138 100%);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
@@ -277,13 +277,64 @@
 }
 
 .empirical-breakdown-card {
-  background: var(--bg-inset);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-lg, 12px);
   padding: var(--space-16);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+
+.empirical-breakdown-card .xsaves-goal-header {
+  margin-bottom: var(--space-12);
+  gap: 8px;
+}
+
+.empirical-breakdown-card .xsaves-goal-title {
+  font-size: 15px;
+  gap: 8px;
+}
+
+.empirical-breakdown-card .xsaves-goal-dimensions {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.empirical-breakdown-card .xsaves-goal-frame-wrapper {
+  padding: 24px 8px 8px 8px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.empirical-breakdown-card .xsaves-goal-grid-3x3 {
+  gap: 8px;
+}
+
+.empirical-breakdown-card .xsaves-quadrant-cell {
+  min-height: 92px;
+  padding: 10px 4px;
+  gap: 3px;
+}
+
+.empirical-breakdown-card .xsaves-quadrant-title {
+  font-size: 9.5px;
+  margin-bottom: 1px;
+}
+
+.empirical-breakdown-card .xsaves-quadrant-saves {
+  font-size: 15px;
+}
+
+.empirical-breakdown-card .xsaves-quadrant-pct {
+  font-size: 11px;
+}
+
+.empirical-breakdown-card .xsaves-quadrant-badge {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  margin-top: 2px;
 }
 
 .empirical-table-card-expanded {

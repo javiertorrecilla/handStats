@@ -1,4 +1,6 @@
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import userService from "../../services/userService";
 import "./Matches.css";
 
 import MatchCard from "./MatchCard";
@@ -23,6 +25,7 @@ const IconStadium = () => (
 );
 
 export default function MatchesPage({
+  user,
   matchesList,
   loadMatch,
   onCreateNew,
@@ -32,6 +35,29 @@ export default function MatchesPage({
 }) {
   const { t } = useTranslation();
   const canCreate = !isGuest || guestMatches < 3;
+
+  // Carga y mapeo de escudos de los equipos guardados
+  const [savedTeams, setSavedTeams] = useState(user?.saved_teams || []);
+
+  useEffect(() => {
+    if (user?._id) {
+      userService.getSavedTeams(user._id)
+        .then((res) => {
+          if (Array.isArray(res)) setSavedTeams(res);
+        })
+        .catch((err) => console.log("Error loading teams for match logos:", err));
+    }
+  }, [user?._id]);
+
+  const teamsLogoMap = useMemo(() => {
+    const map = {};
+    (savedTeams || []).forEach((tItem) => {
+      if (tItem?.name && tItem?.logo_url) {
+        map[tItem.name.trim().toLowerCase()] = tItem.logo_url;
+      }
+    });
+    return map;
+  }, [savedTeams]);
 
   return (
     <div className="matches-page">
@@ -85,6 +111,7 @@ export default function MatchesPage({
               match={match}
               loadMatch={loadMatch}
               onDelete={onDeleteMatch}
+              teamsLogoMap={teamsLogoMap}
             />
           ))
 

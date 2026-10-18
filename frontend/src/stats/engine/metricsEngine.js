@@ -563,6 +563,82 @@ function matchesPlayer(fieldStr, fieldNum, player) {
 }
 
 /**
+ * Coincidencia flexible para referencias de jugador en formato objeto ({ id, number, name, team })
+ * o en formato escalar (ID, dorsal, string), garantizando compatibilidad total.
+ */
+export function matchesPlayerRef(playerRef, player) {
+  if (!playerRef || !player) return false;
+  const pNum = String(player.number);
+  const pName = player.name ? String(player.name).trim().toLowerCase() : "";
+  const pId = player._id ? String(player._id) : (player.id ? String(player.id) : null);
+
+  if (typeof playerRef === "object") {
+    if (playerRef.id !== undefined && playerRef.id !== null && pId && String(playerRef.id) === pId) return true;
+    if (playerRef.number !== undefined && playerRef.number !== null && String(playerRef.number) === pNum) return true;
+    if (playerRef.name && pName && String(playerRef.name).trim().toLowerCase() === pName) return true;
+    return false;
+  }
+
+  return matchesPlayer(playerRef, null, player);
+}
+
+/**
+ * Verifica si dos referencias de jugador apuntan al mismo jugador físico.
+ */
+export function isSamePlayer(refA, refB) {
+  if (!refA || !refB) return false;
+  if (typeof refA === "object" && typeof refB === "object") {
+    if (refA.id && refB.id && String(refA.id) === String(refB.id)) return true;
+    if (refA.number !== undefined && refA.number !== null && refB.number !== undefined && refB.number !== null && String(refA.number) === String(refB.number)) {
+      if (refA.name && refB.name && String(refA.name).trim().toLowerCase() === String(refB.name).trim().toLowerCase()) return true;
+      if (!refA.name || !refB.name) return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/**
+ * Helper para identificar eventos de 7 metros (penalti provocado / cometido).
+ */
+export function is7mEvent(e) {
+  if (!e) return false;
+  const st = String(e.sanction_type || "").toLowerCase();
+  const ak = String(e.action_key || "").toLowerCase();
+  const et = String(e.event_type || "").toLowerCase();
+  return (
+    st.includes("7m provocado") ||
+    st === "7m" ||
+    st.includes("7 metros") ||
+    st.includes("penalti 7m") ||
+    ak === "penalti_7m" ||
+    ak === "7m_provocado" ||
+    et === "seven_meter" ||
+    (et === "sanction" && (st.includes("7m") || ak.includes("7m")))
+  );
+}
+
+/**
+ * Helper para identificar eventos de Falta en Ataque (cometida / provocada).
+ */
+export function isOffensiveFoulEvent(e) {
+  if (!e) return false;
+  const er = String(e.end_reason || "").toLowerCase();
+  const ak = String(e.action_key || "").toLowerCase();
+  const tt = String(e.turnover_type || "").toLowerCase();
+  return (
+    er === "falta ataque" ||
+    er === "falta en ataque" ||
+    er.includes("falta en ataque") ||
+    er.includes("falta ataque") ||
+    ak === "falta_en_ataque" ||
+    ak === "falta_ataque" ||
+    tt.includes("falta ataque") ||
+    tt.includes("falta en ataque")
+  );
+}
+
+/**
  * Filtra y calcula únicamente los porteros configurados explícitamente en el equipo (is_goalkeeper === true).
  */
 function calculateGoalkeeperStatsList(players, shotsFacedByTeam) {
@@ -1012,28 +1088,144 @@ function calculatePlayerStatsList(
     const xg = isGk ? 0 : Math.round(shots.reduce((acc, e) => acc + calculateShotXG(e), 0) * 100) / 100;
 
     // Pérdidas segmentadas
-    const turnoverEvents = playerEvents.filter((e) => e.event_type === "turnover");
-    const badPass = turnoverEvents.filter((e) => e.end_reason === "Mal Pase").length;
-    const double = turnoverEvents.filter((e) => e.end_reason === "Dobles" || e.end_reason === "Dobles / Pasos").length;
-    const travel = turnoverEvents.filter((e) => e.end_reason === "Pasos").length;
-    const passive = turnoverEvents.filter((e) => e.end_reason === "Pasivo").length;
-    const offensiveFoul = turnoverEvents.filter((e) => e.end_reason === "Falta Ataque" || e.end_reason === "Falta en ataque").length;
-    const turnovers = turnoverEvents.length;
+    // 1. Pérdidas que no son falta en ataque (pase, dobles, pasos, pasivo)
+    const nonOffensiveTurnovers = playerEvents.filter((e) => e.event_type === "turnover" && !isOffensiveFoulEvent(e));
+    const badPass = nonOffensiveTurnovers.filter((e) => e.end_reason === "Mal Pase").length;
+    const double = nonOffensiveTurnovers.filter((e) => e.end_reason === "Dobles" || e.end_reason === "Dobles / Pasos").length;
+    const travel = nonOffensiveTurnovers.filter((e) => e.end_reason === "Pasos").length;
+    const passive = nonOffensiveTurnovers.filter((e) => e.end_reason === "Pasivo").length;
+
+    // 2. Falta en ataque cometida (atacante, pérdida -0.80):
+    // Compatible con nuevo esquema (committed_by) y legacy (player_id en teamEvents)
+    const offensiveFoul = allMatchEvents.filter((e) => {
+      if (!isOffensiveFoulEvent(e)) return false;
+      if (e.committed_by) {
+        if (!matchesPlayerRef(e.committed_by, player)) return false;
+        // Guard: el mismo jugador no puede cometer y provocar la misma acción
+        if (e.provoked_by && matchesPlayerRef(e.provoked_by, player)) return false;
+        return true;
+      }
+      if (!e.provoked_by && teamEvents.includes(e)) {
+        return matchesPlayer(e.player_id, e.player_number, player);
+      }
+      return false;
+    }).length;
+
+    const turnovers = nonOffensiveTurnovers.length + offensiveFoul;
 
     const steals = playerEvents.filter((e) => e.event_type === "steal").length;
+
+    // Sanciones y disciplina segmentadas
     const sanctions = playerEvents.filter((e) => e.event_type === "sanction");
-    const yellowCards = sanctions.filter((e) => e.sanction_type === "Tarjeta Amarilla").length;
-    const twoMins = sanctions.filter((e) => e.sanction_type === "2 Minutos").length;
-    const redCards = sanctions.filter((e) => e.sanction_type === "Tarjeta Roja" || e.sanction_type === "Tarjeta Azul").length;
+    const yellowCards = sanctions.filter((e) => {
+      const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+      return st.includes("amarill") || st.includes("yellow");
+    }).length;
+
+    // Conteo de exclusiones de 2 minutos
+    const twoMinEvents = sanctions.filter((e) => {
+      const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+      return (
+        st === "2 minutos" ||
+        st.includes("2 min") ||
+        st.includes("exclusion") ||
+        st.includes("exclusión") ||
+        st.includes("2min") ||
+        st.includes("dos minutos")
+      ) && !st.includes("roja") && !st.includes("acumulaci");
+    });
+    const totalTwoMins = twoMinEvents.length;
+
+    // Roja por acumulación (3ª exclusión de 2 min)
+    const explicitAccumRedEvents = sanctions.filter((e) => {
+      const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+      return st.includes("acumulaci") || st.includes("por exclusion") || st.includes("por exclusión");
+    });
+
+    let twoMinNormal = 0;
+    let redCardsAccumulation = 0;
+
+    if (explicitAccumRedEvents.length > 0) {
+      twoMinNormal = totalTwoMins;
+      redCardsAccumulation = explicitAccumRedEvents.length;
+    } else {
+      twoMinNormal = Math.min(2, totalTwoMins);
+      redCardsAccumulation = Math.max(0, totalTwoMins - 2);
+    }
+
+    // Tarjeta azul (informe arbitral)
+    const blueCards = sanctions.filter((e) => {
+      const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+      return st.includes("azul") || st.includes("blue");
+    }).length;
+
+    // Tarjeta roja directa (no por acumulación ni azul)
+    const rawRedCardEvents = sanctions.filter((e) => {
+      const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+      return (
+        (st.includes("roja") || st.includes("red") || st.includes("descalific")) &&
+        !st.includes("acumulaci") &&
+        !st.includes("por exclusion") &&
+        !st.includes("por exclusión") &&
+        !st.includes("azul") &&
+        !st.includes("blue")
+      );
+    });
+
+    let directRedCards = rawRedCardEvents.length;
+    // Si la 3ª exclusión ya fue detectada por acumulación y el operador registró ADEMÁS una Tarjeta Roja,
+    // esa roja refleja la 3ª exclusión y no debe sumarse como roja directa adicional (-2.50).
+    if (redCardsAccumulation > 0 && directRedCards > 0 && explicitAccumRedEvents.length === 0) {
+      directRedCards = Math.max(0, directRedCards - redCardsAccumulation);
+    }
 
     // Acciones defensivas y de provocación
     const freeThrowsDrawn = teamEvents.filter((e) => e.event_type === "free_throw" && matchesPlayer(e.player_id, e.player_number, player)).length;
 
-    const offFoulsDrawn = opposingEvents.filter((e) => e.event_type === "turnover" && (e.end_reason === "Falta Ataque" || e.end_reason === "Falta en ataque") && matchesPlayer(e.defender_id, e.defender_number, player)).length;
+    // Falta en ataque provocada (defensor, acción defensiva +0.60):
+    // Compatible con nuevo esquema (provoked_by) y legacy (defender_id en opposingEvents)
+    const offFoulsDrawn = allMatchEvents.filter((e) => {
+      if (!isOffensiveFoulEvent(e)) return false;
+      if (e.provoked_by) {
+        if (!matchesPlayerRef(e.provoked_by, player)) return false;
+        if (e.committed_by && matchesPlayerRef(e.committed_by, player)) return false;
+        return true;
+      }
+      if (!e.committed_by && opposingEvents.includes(e)) {
+        return matchesPlayer(e.defender_id, e.defender_number, player);
+      }
+      return false;
+    }).length;
 
-    const penaltiesCommitted = opposingEvents.filter((e) => e.event_type === "sanction" && e.sanction_type === "7m Provocado" && matchesPlayer(e.player_id, e.player_number, player)).length;
+    // Penalti de 7m cometido (defensor, penalización -0.90):
+    // Compatible con nuevo esquema (committed_by) y legacy (player_id en opposingEvents)
+    const penaltiesCommitted = allMatchEvents.filter((e) => {
+      if (!is7mEvent(e)) return false;
+      if (e.committed_by) {
+        if (!matchesPlayerRef(e.committed_by, player)) return false;
+        if (e.provoked_by && matchesPlayerRef(e.provoked_by, player)) return false;
+        return true;
+      }
+      if (!e.provoked_by && opposingEvents.includes(e)) {
+        return matchesPlayer(e.player_id, e.player_number, player);
+      }
+      return false;
+    }).length;
 
-    const drawn7mCount = teamEvents.filter((e) => e.event_type === "sanction" && e.sanction_type === "7m Provocado" && matchesPlayer(e.drawn_by_player, e.drawn_by_number, player)).length;
+    // Provocar 7m en ataque (atacante, acción favorable +0.80):
+    // Compatible con nuevo esquema (provoked_by) y legacy (drawn_by_player en teamEvents)
+    const drawn7mCount = allMatchEvents.filter((e) => {
+      if (!is7mEvent(e)) return false;
+      if (e.provoked_by) {
+        if (!matchesPlayerRef(e.provoked_by, player)) return false;
+        if (e.committed_by && matchesPlayerRef(e.committed_by, player)) return false;
+        return true;
+      }
+      if (!e.committed_by && teamEvents.includes(e)) {
+        return matchesPlayer(e.drawn_by_player, e.drawn_by_number, player);
+      }
+      return false;
+    }).length;
 
     const gksInTeam = (players || []).filter((p) => isPlayerGk(p, players));
 
@@ -1093,8 +1285,11 @@ function calculatePlayerStatsList(
         gkShotsFaced: isGk ? gkShots : [],
         discipline: {
           yellowCards,
-          twoMinSuspensions: twoMins,
-          redCards
+          twoMinSuspensions: twoMinNormal,
+          redCardsAccumulation,
+          directRedCards,
+          blueCards,
+          redCards: directRedCards + redCardsAccumulation
         }
       },
       isGk
@@ -1115,13 +1310,23 @@ function calculatePlayerStatsList(
       efficiency,
       turnovers,
       steals,
-      twoMins,
+      drawn7mCount,
+      penaltiesCommitted,
+      offensiveFouls: offensiveFoul,
+      offFoulsDrawn,
+      twoMins: totalTwoMins,
+      yellowCards,
+      redCardsAccumulation,
+      directRedCards,
+      blueCards,
+      redCards: directRedCards + redCardsAccumulation,
       goalkeeperSaves,
       goalkeeperShotsFaced,
       goalkeeperSavePct,
       goalkeeperXSaves,
       rating: ratingResult.rating,
-      nps: ratingResult.nps
+      nps: ratingResult.nps,
+      ratingBreakdown: ratingResult.breakdown
     };
   });
 }

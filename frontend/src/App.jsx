@@ -390,6 +390,7 @@ function App() {
             path="/matches"
             element={
               <MatchesPage
+                user={user}
                 matchesList={matchesList}
                 loadMatch={handleLoadMatch}
                 currentMatch={currentMatch}

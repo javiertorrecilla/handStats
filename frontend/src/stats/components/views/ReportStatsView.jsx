@@ -1696,15 +1696,24 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
     let badgeColor = "#12843A";
     let bg = "rgba(18, 132, 58, 0.10)";
 
-    if (rVal >= 7.5) {
-      badgeColor = "#12843A";
-      bg = "rgba(18, 132, 58, 0.12)";
-    } else if (rVal >= 6.0) {
-      badgeColor = "#2563EB";
-      bg = "rgba(37, 99, 235, 0.12)";
+    if (rVal < 5.0) {
+      badgeColor = "#DC2626";
+      bg = "rgba(239, 68, 68, 0.12)";
+    } else if (rVal < 6.0) {
+      badgeColor = "#C2410C";
+      bg = "rgba(234, 88, 12, 0.12)";
+    } else if (rVal < 7.0) {
+      badgeColor = "#B45309";
+      bg = "rgba(245, 158, 11, 0.12)";
+    } else if (rVal < 8.0) {
+      badgeColor = "#65A30D";
+      bg = "rgba(132, 204, 22, 0.14)";
+    } else if (rVal < 9.0) {
+      badgeColor = "#15803D";
+      bg = "rgba(46, 125, 79, 0.14)";
     } else {
-      badgeColor = "#D97706";
-      bg = "rgba(217, 119, 6, 0.12)";
+      badgeColor = "#7E22CE";
+      bg = "rgba(168, 85, 247, 0.14)";
     }
 
     return (

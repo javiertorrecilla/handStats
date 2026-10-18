@@ -176,7 +176,7 @@
 
 [data-theme="dark"] .hs-lang-btn:hover {
   background: var(--bg-inset, #080C1C);
-  border-color: var(--color-accent-border, rgba(74, 222, 128, 0.35));
+  border-color: var(--color-accent-border, rgba(116, 216, 136, 0.40));
 }
 
 [data-theme="dark"] .hs-lang-dropdown {
@@ -196,10 +196,10 @@
 
 [data-theme="dark"] .hs-lang-option:hover,
 [data-theme="dark"] .hs-lang-option.selected {
-  background: rgba(74, 222, 128, 0.15);
-  color: var(--brand-accent, #4ADE80);
+  background: var(--color-primary-subtle, #1A5138);
+  color: var(--brand-accent, #74D888);
 }
 
 [data-theme="dark"] .hs-lang-check {
-  stroke: var(--brand-accent, #4ADE80);
+  stroke: var(--brand-accent, #74D888);
 }

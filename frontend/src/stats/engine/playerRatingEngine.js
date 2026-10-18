@@ -7,50 +7,18 @@
  * - Probabilidad esperada de gol (xG) y parada (xSaves)
  * - Acciones defensivas (Golpe Franco, Falta en ataque provocada, 7m cometido)
  * - Pérdidas segmentadas (Mal Pase, Dobles, Pasos, Pasivo, Falta en ataque)
- * - Disciplina (Tarjeta Amarilla, 2 Minutos, Tarjeta Roja)
+ * - Disciplina (Tarjeta Amarilla, 2 Minutos 1ª/2ª, Roja por acumulación 3ª, Roja directa, Tarjeta Azul)
  * - Normalización Logística (Sigmoide) centrada en 5.0 para partidos neutros
  */
 
 import { calculateShotXG } from "./xgModel.js";
+import { RATING_WEIGHTS, DEFAULT_RATING_CONFIG } from "./ratingWeights.js";
 
-export const DEFAULT_RATING_CONFIG = {
-  // Parámetros de Escala y Normalización
-  sigmoidK: 0.35,
-  neutralRating: 5.0,
-
-  // Pesos de Lanzamientos de Ataque
-  w_goal: 1.50,
-  w_miss_saved: 1.20,
-  w_miss_off: 1.40,
-
-  // Pesos de Acciones Favorables en Ataque
-  w_drawn_7m: 1.10,
-
-  // Pesos de Pérdidas de Balón
-  w_turnover_bad_pass: 1.00,
-  w_turnover_double: 0.80,
-  w_turnover_travel: 0.80,
-  w_turnover_passive: 0.90,
-  w_turnover_offensive_foul: 1.10,
-
-  // Pesos de Acciones Defensivas
-  w_def_free_throw: 0.30,
-  w_def_drawn_off_foul: 1.10,
-  w_def_committed_7m: 1.10,
-
-  // Pesos de Portería
-  w_gk_save: 1.50,
-  w_gk_conceded: 1.00,
-
-  // Pesos Disciplinarios
-  w_yellow_card: 0.40,
-  w_two_min: 1.20,
-  w_red_card: 2.50,
-};
+export { RATING_WEIGHTS, DEFAULT_RATING_CONFIG };
 
 export class PlayerRatingCalculator {
   constructor(customConfig = {}) {
-    this.config = { ...DEFAULT_RATING_CONFIG, ...customConfig };
+    this.config = { ...RATING_WEIGHTS, ...customConfig };
   }
 
   /**
@@ -62,7 +30,7 @@ export class PlayerRatingCalculator {
    * @param {Object} data.turnovers - Pérdidas { badPass, double, travel, passive, offensiveFoul }
    * @param {Object} data.defense - Acciones defensivas { freeThrowsDrawn, offFoulsDrawn, penaltiesCommitted }
    * @param {Array} data.gkShotsFaced - Lanzamientos recibidos en portería [{ result: "Gol"|"Parada", xg: 0.45 }]
-   * @param {Object} data.discipline - Sanciones { yellowCards, twoMinSuspensions, redCards }
+   * @param {Object} data.discipline - Sanciones { yellowCards, twoMinSuspensions, redCardsAccumulation, thirdTwoMin, directRedCards, redCards, blueCards }
    * @param {boolean} isGoalkeeper - Si actúa como portero principal
    * @returns {Object} { nps, rating, breakdown }
    */
@@ -78,6 +46,9 @@ export class PlayerRatingCalculator {
       defenseImpact: 0,
       gkImpact: 0,
       disciplineImpact: 0,
+      penaltiesCommittedImpact: 0,
+      offFoulsDrawnImpact: 0,
+      offensiveFoulsImpact: 0,
     };
 
     // 1. LANZAMIENTOS DE ATAQUE
@@ -86,7 +57,7 @@ export class PlayerRatingCalculator {
       shots.forEach((shot) => {
         const xG = typeof shot.xg === "number" ? shot.xg : calculateShotXG(shot);
         if (shot.result === "Gol") {
-          const val = cfg.w_goal * (1 - xG);
+          const val = (cfg.w_goal_base ?? 0.50) + (cfg.w_goal_xg ?? 1.00) * (1 - xG);
           posNPS += val;
           breakdown.shotsImpact += val;
         } else if (shot.result === "Parada") {
@@ -121,6 +92,7 @@ export class PlayerRatingCalculator {
     const totalTurnoverPen = badPassPen + doublePen + travelPen + passivePen + offFoulPen;
     negNPS += totalTurnoverPen;
     breakdown.turnoversImpact -= totalTurnoverPen;
+    breakdown.offensiveFoulsImpact -= offFoulPen;
 
     // 4. ACCIONES DEFENSIVAS
     const def = data.defense || {};
@@ -131,6 +103,8 @@ export class PlayerRatingCalculator {
     posNPS += freeThrowsVal + offFoulsDrawnVal;
     negNPS += penaltiesCommittedPen;
     breakdown.defenseImpact += (freeThrowsVal + offFoulsDrawnVal - penaltiesCommittedPen);
+    breakdown.penaltiesCommittedImpact -= penaltiesCommittedPen;
+    breakdown.offFoulsDrawnImpact += offFoulsDrawnVal;
 
     // 5. ACTUACIÓN DE PORTERÍA
     if (isGoalkeeper || (data.gkShotsFaced && data.gkShotsFaced.length > 0)) {
@@ -138,24 +112,49 @@ export class PlayerRatingCalculator {
       gkShots.forEach((shot) => {
         const xG = typeof shot.xg === "number" ? shot.xg : calculateShotXG(shot);
         if (shot.result === "Parada") {
-          const val = cfg.w_gk_save * xG;
+          const val = (cfg.w_gk_save_base ?? 0.25) + (cfg.w_gk_save_xg ?? 1.20) * xG;
           posNPS += val;
           breakdown.gkImpact += val;
         } else if (shot.result === "Gol") {
-          const pen = cfg.w_gk_conceded * (1 - xG);
+          const pen = (cfg.w_gk_conceded_base ?? 0.20) + (cfg.w_gk_conceded_xg ?? 0.80) * (1 - xG);
           negNPS += pen;
           breakdown.gkImpact -= pen;
         }
       });
     }
 
-    // 6. DISCIPLINA Y SANCIÓNES
+    // 6. DISCIPLINA Y SANCIONES
     const disc = data.discipline || {};
-    const yellowPen = (disc.yellowCards || 0) * cfg.w_yellow_card;
-    const twoMinPen = (disc.twoMinSuspensions || 0) * cfg.w_two_min;
-    const redPen = (disc.redCards || 0) * cfg.w_red_card;
+    const yellowCount = disc.yellowCards || 0;
 
-    const totalDiscPen = yellowPen + twoMinPen + redPen;
+    // Distinción de exclusiones:
+    // 1ª y 2ª exclusión: w_two_min (-0.90) cada una.
+    // 3ª exclusión (roja por acumulación): w_red_card_accumulation (-1.40). Ya incluye la 3ª exclusión.
+    let twoMinNormal = 0;
+    let twoMinAccum = 0;
+
+    if (disc.redCardsAccumulation !== undefined || disc.thirdTwoMin !== undefined) {
+      twoMinNormal = disc.twoMinSuspensions || 0;
+      twoMinAccum = (disc.redCardsAccumulation || 0) + (disc.thirdTwoMin || 0);
+    } else {
+      const rawTwoMins = disc.twoMinSuspensions || 0;
+      twoMinNormal = Math.min(2, rawTwoMins);
+      twoMinAccum = Math.max(0, rawTwoMins - 2);
+    }
+
+    const directRedCount = disc.directRedCards !== undefined
+      ? disc.directRedCards
+      : (disc.redCards || 0);
+
+    const blueCount = disc.blueCards || 0;
+
+    const yellowPen = yellowCount * cfg.w_yellow_card;
+    const twoMinPen = twoMinNormal * cfg.w_two_min;
+    const redAccumPen = twoMinAccum * cfg.w_red_card_accumulation;
+    const directRedPen = directRedCount * (cfg.w_red_card_direct ?? cfg.w_red_card ?? 2.50);
+    const bluePen = blueCount * cfg.w_blue_card;
+
+    const totalDiscPen = yellowPen + twoMinPen + redAccumPen + directRedPen + bluePen;
     negNPS += totalDiscPen;
     breakdown.disciplineImpact -= totalDiscPen;
 
@@ -169,13 +168,23 @@ export class PlayerRatingCalculator {
       (t.badPass || 0) + (t.double || 0) + (t.travel || 0) + (t.passive || 0) + (t.offensiveFoul || 0) +
       (def.freeThrowsDrawn || 0) + (def.offFoulsDrawn || 0) + (def.penaltiesCommitted || 0) +
       (data.gkShotsFaced?.length || 0) +
-      (disc.yellowCards || 0) + (disc.twoMinSuspensions || 0) + (disc.redCards || 0);
+      yellowCount + twoMinNormal + twoMinAccum + directRedCount + blueCount;
 
     if (totalActions === 0) {
       return {
         nps: 0,
         rating: cfg.neutralRating,
-        breakdown
+        breakdown: {
+          shotsImpact: 0,
+          drawn7mImpact: 0,
+          turnoversImpact: 0,
+          defenseImpact: 0,
+          gkImpact: 0,
+          disciplineImpact: 0,
+          penaltiesCommittedImpact: 0,
+          offFoulsDrawnImpact: 0,
+          offensiveFoulsImpact: 0,
+        }
       };
     }
 
@@ -185,7 +194,17 @@ export class PlayerRatingCalculator {
     return {
       nps: Math.round(nps * 100) / 100,
       rating: finalRating,
-      breakdown
+      breakdown: {
+        shotsImpact: Math.round(breakdown.shotsImpact * 100) / 100,
+        drawn7mImpact: Math.round(breakdown.drawn7mImpact * 100) / 100,
+        turnoversImpact: Math.round(breakdown.turnoversImpact * 100) / 100,
+        defenseImpact: Math.round(breakdown.defenseImpact * 100) / 100,
+        gkImpact: Math.round(breakdown.gkImpact * 100) / 100,
+        disciplineImpact: Math.round(breakdown.disciplineImpact * 100) / 100,
+        penaltiesCommittedImpact: Math.round(breakdown.penaltiesCommittedImpact * 100) / 100,
+        offFoulsDrawnImpact: Math.round(breakdown.offFoulsDrawnImpact * 100) / 100,
+        offensiveFoulsImpact: Math.round(breakdown.offensiveFoulsImpact * 100) / 100,
+      }
     };
   }
 }

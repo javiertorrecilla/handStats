@@ -130,7 +130,7 @@ export function AttackStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, te
                   const tacData = isAway ? metrics.tacticalSituations.away : metrics.tacticalSituations.home;
                   if (!tacData) return null;
                   const list = [
-                    { key: "equality", label: "Igualdad Numérica (6vs6 con portero)", tag: "6vs6", color: "#12843A", item: tacData.equality },
+                    { key: "equality", label: "Igualdad Numérica (6vs6 con portero)", tag: "6vs6", color: "var(--color-primary, #44D878)", item: tacData.equality },
                     { key: "superiority", label: "Superioridad Numérica (+1 o más)", tag: "SUPERIORIDAD", color: "#2563EB", item: tacData.superiority },
                     { key: "inferiority", label: "Inferioridad Numérica (-1 o más)", tag: "INFERIORIDAD", color: "#DC2626", item: tacData.inferiority },
                     { key: "sevenVsSix", label: "Ataque 7 vs 6 (Portero Jugador)", tag: "7vs6 (PJ)", color: "#7C3AED", item: tacData.sevenVsSix },
@@ -163,7 +163,7 @@ export function AttackStatsView({ metrics, match, homeHeatmaps, awayHeatmaps, te
                           {item.emptyNetGoalsConceded}
                         </td>
                         <td>
-                          <strong style={{ color: balance > 0 ? "#12843A" : balance < 0 ? "#DC2626" : "#6B7280" }}>
+                          <strong style={{ color: balance > 0 ? "var(--color-primary, #44D878)" : balance < 0 ? "#DC2626" : "#6B7280" }}>
                             {balance > 0 ? `+${balance}` : balance}
                           </strong>
                         </td>
