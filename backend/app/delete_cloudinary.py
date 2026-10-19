@@ -1,7 +1,10 @@
 import os
 
-import cloudinary
-import cloudinary.uploader
+try:
+    import cloudinary
+    import cloudinary.uploader
+except ImportError:
+    cloudinary = None
 from dotenv import load_dotenv
 
 load_dotenv()

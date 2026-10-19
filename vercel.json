@@ -1,10 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd frontend && npm install && npm run build && rm -rf node_modules",
+  "buildCommand": "cd frontend && npm install && npm run build && rm -rf node_modules && cd .. && rm -rf node_modules",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/**/*.py": {
-      "excludeFiles": "{frontend/**,.venv/**,backend/static/uploads/**}"
+      "excludeFiles": "{frontend,node_modules,.venv,backend/static/uploads}/**"
     }
   },
   "rewrites": [

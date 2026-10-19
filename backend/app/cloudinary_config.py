@@ -2,8 +2,11 @@ import os
 
 from dotenv import load_dotenv
 
-import cloudinary
-import cloudinary.uploader
+try:
+    import cloudinary
+    import cloudinary.uploader
+except ImportError:
+    cloudinary = None
 
 load_dotenv()
 
