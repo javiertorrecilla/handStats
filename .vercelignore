@@ -1,0 +1,41 @@
+# ==========================================================
+# VERCEL IGNORE CONFIGURATION
+# Prevents uploading heavy local assets and virtual envs to Vercel
+# ==========================================================
+
+# Python virtual environments & caches
+.venv
+.venv/
+venv
+venv/
+ENV
+env
+__pycache__
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+
+# Node.js local modules & build artifacts (built in cloud instead)
+node_modules
+node_modules/
+frontend/node_modules
+frontend/node_modules/
+
+# Local Git & IDE settings
+.git
+.git/
+.vscode
+.vscode/
+.DS_Store
+
+# Heavy test files not required in serverless function runtime
+backend/static/uploads/debug.pdf
+
+# Root documentation
+README.md
+README_PROYECTO.md
+README_TECNICO.md
+README_USUARIO.md
+LICENSE
