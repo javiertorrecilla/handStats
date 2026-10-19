@@ -1802,14 +1802,14 @@
 }
 
 /* ==========================================================
-   4. RESPONSIVE BREAKPOINTS (TABLET & MOBILE)
+   4. RESPONSIVE BREAKPOINTS (TABLET & MOBILE — VERTICAL & HORIZONTAL)
    ========================================================== */
 
 /* ---- TABLET LANDSCAPE & MEDIUM SCREENS (1024px – 1280px) ---- */
 @media screen and (max-width: 1280px) {
   .mp-main-container {
-    grid-template-columns: 220px 1fr 220px;
-    gap: 10px;
+    grid-template-columns: 210px 1fr 210px;
+    gap: 8px;
   }
 
   .mp-scoreboard-banner {
@@ -1872,21 +1872,26 @@
 
   .mp-team-column.home-column {
     order: 2;
-    max-height: 380px;
+    max-height: 400px;
   }
 
   .mp-team-column.away-column {
     order: 3;
-    max-height: 380px;
+    max-height: 400px;
   }
 
   .mp-bottom-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.25fr 0.75fr;
     gap: 10px;
   }
 
+  .mp-actions-4x4-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+  }
+
   .mp-pitch-court {
-    height: 200px;
+    height: 190px;
   }
 
   .mp-bottom-nav {
@@ -1896,10 +1901,15 @@
   }
 }
 
-/* ---- MOBILE DEVICES (< 768px) ---- */
+/* ---- MOBILE LIVE TRACKING TABS (<= 767px) ---- */
+.mp-mobile-nav-tabs {
+  display: none;
+}
+
+/* ---- MOBILE PORTRAIT & SMALL PHONES (<= 767px) ---- */
 @media screen and (max-width: 767px) {
   .match-dashboard-wrapper {
-    padding: 6px;
+    padding: 4px 6px;
     gap: 8px;
   }
 
@@ -1907,7 +1917,7 @@
   .mp-scoreboard-bar {
     flex-direction: column;
     align-items: stretch;
-    padding: 10px;
+    padding: 8px;
     gap: 8px;
     border-radius: var(--radius, 8px);
   }
@@ -1918,7 +1928,7 @@
   }
 
   .mp-main-clock {
-    font-size: 17px;
+    font-size: 16px;
   }
 
   .mp-top-right-actions {
@@ -1928,50 +1938,236 @@
   }
 
   .mp-action-pill-btn {
-    padding: 5px 8px;
+    padding: 4px 8px;
     font-size: 10px;
   }
 
   .mp-scoreboard-banner {
+    display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 6px;
+    justify-content: space-between;
+    gap: 4px;
+    width: 100%;
   }
 
   .mp-team-banner {
-    padding: 6px 8px;
+    padding: 4px 6px;
+    gap: 4px;
+    max-width: 95px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mp-team-logo-wrap {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   }
 
   .mp-team-name {
-    font-size: 10.5px;
-    max-width: none;
+    font-size: 9.5px;
+    max-width: 65px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .mp-team-score {
+  .mp-possession-indicator {
+    font-size: 7.5px;
+    padding: 1px 3px;
+  }
+
+  .mp-possession-indicator .mp-pos-text {
+    display: none;
+  }
+
+  .mp-scoreboard-grouped {
+    padding: 4px 6px;
+    gap: 4px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .mp-score-box {
+    min-width: 32px;
+    height: 36px;
+    padding: 2px 4px;
+    border-radius: 6px;
+  }
+
+  .mp-score-digit {
     font-size: 22px;
   }
 
-  .mp-center-time {
-    font-size: 14px;
+  .mp-scoreboard-center-content {
+    padding: 0 2px;
   }
 
-  /* Layout principal 1 sola columna */
+  .mp-center-period {
+    font-size: 8.5px;
+    margin-bottom: 1px;
+  }
+
+  .mp-center-time {
+    font-size: 15px;
+  }
+
+  .mp-time-display-wrap {
+    gap: 4px;
+  }
+
+  .mp-time-adjust-group {
+    gap: 2px;
+  }
+
+  .mp-time-adjust-btn {
+    padding: 2px 3px;
+    font-size: 8px;
+    border-radius: 4px;
+  }
+
+  .mp-center-controls {
+    gap: 4px;
+    margin-top: 3px;
+  }
+
+  .mp-timer-toggle-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+  }
+
+  .mp-period-end-btn {
+    padding: 3px 6px;
+    font-size: 8.5px;
+  }
+
+  .mp-period-end-btn span {
+    display: none;
+  }
+
+  /* BARRA DE TABS MÓVILES PARA ACCEDER RÁPIDO A PLANTILLA LOCAL / RIVAL */
+  .mp-mobile-nav-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 4px 0 8px 0;
+    padding: 3px;
+    background: var(--bg-surface, #12261a);
+    border: 1px solid var(--border-color, #1d3b2e);
+    border-radius: 10px;
+  }
+
+  .mp-mobile-nav-tab {
+    flex: 1;
+    padding: 8px 6px;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: var(--text-muted, #94a3b8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mp-mobile-nav-tab.active {
+    background: var(--color-primary-subtle, #1a5138);
+    color: var(--color-primary, #44D878);
+    border-color: var(--color-primary, #44D878);
+  }
+
+  .mp-mobile-nav-tab.home.active {
+    background: rgba(34, 197, 94, 0.18);
+    color: #22c55e;
+    border-color: #22c55e;
+  }
+
+  .mp-mobile-nav-tab.away.active {
+    background: rgba(59, 130, 246, 0.18);
+    color: #60a5fa;
+    border-color: #3b82f6;
+  }
+
+  /* Control de visibilidad según tab seleccionado en móvil vertical */
   .mp-main-container {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .mp-center-column {
+  .mp-main-container.mobile-tab-court .mp-team-column {
+    display: none;
+  }
+
+  .mp-main-container.mobile-tab-court .mp-center-column {
+    display: flex;
     order: 1;
+  }
+
+  .mp-main-container.mobile-tab-home .mp-center-column,
+  .mp-main-container.mobile-tab-home .mp-team-column.away-column {
+    display: none;
+  }
+
+  .mp-main-container.mobile-tab-home .mp-team-column.home-column {
+    display: flex;
+    order: 1;
+    max-height: none;
+  }
+
+  .mp-main-container.mobile-tab-away .mp-center-column,
+  .mp-main-container.mobile-tab-away .mp-team-column.home-column {
+    display: none;
+  }
+
+  .mp-main-container.mobile-tab-away .mp-team-column.away-column {
+    display: flex;
+    order: 1;
+    max-height: none;
+  }
+
+  /* Barra de selección de pasos en móvil */
+  .mp-selection-bar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .mp-step-item {
+    font-size: 8px;
+    gap: 3px;
+  }
+
+  .mp-step-divider {
+    font-size: 7px;
+  }
+
+  .mp-cancel-flow-btn,
+  .mp-empty-net-toggle-btn {
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+
+  /* Media pista y portería interactivas en móvil vertical */
+  .mp-court-goal-grid {
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .mp-pitch-card {
-    padding: 8px;
+  .mp-half-court {
+    height: 185px;
   }
 
-  .mp-pitch-court {
-    height: 170px;
+  .mp-goal-frame {
+    height: 155px;
   }
 
   .mp-token {
@@ -1999,13 +2195,13 @@
 
   .mp-action-tile {
     aspect-ratio: auto;
-    min-height: 52px;
-    padding: 3px 2px;
+    min-height: 48px;
+    padding: 4px 2px;
   }
 
   .mp-tile-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
   }
 
   .mp-action-tile span {
@@ -2015,39 +2211,35 @@
 
   /* Roster Columns en Móvil */
   .mp-team-column {
-    max-height: 320px;
+    max-height: none;
     padding: 10px;
     border-radius: var(--radius, 8px);
   }
 
-  .mp-team-column.home-column {
-    order: 2;
-  }
-
-  .mp-team-column.away-column {
-    order: 3;
-  }
-
   .mp-player-row {
-    padding: 4px 6px;
-    gap: 6px;
+    padding: 6px 8px;
+    gap: 8px;
+    min-height: 38px;
   }
 
-  .mp-player-avatar {
-    width: 24px;
-    height: 24px;
-  }
-
-  .mp-avatar-fallback {
-    font-size: 9.5px;
+  .mp-player-number {
+    font-size: 12px;
+    min-width: 22px;
   }
 
   .mp-player-name {
-    font-size: 10.5px;
+    font-size: 12px;
   }
 
   .mp-player-role {
-    font-size: 8px;
+    font-size: 8.5px;
+  }
+
+  /* Timeline lista móvil */
+  .mp-timeline-list {
+    max-height: 250px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Barra de Navegación Flotante Móvil Sticky */
@@ -2073,6 +2265,370 @@
 
   .mp-nav-btn.back-btn {
     margin-left: 0;
+  }
+
+  /* Modales en Móvil Portrait */
+  .mp-two-step-overlay {
+    padding: 8px;
+  }
+
+  .mp-two-step-card {
+    max-width: 96vw;
+    max-height: 92vh;
+    border-radius: 12px;
+  }
+
+  .mp-two-step-header {
+    padding: 10px 14px;
+  }
+
+  .mp-two-step-title {
+    font-size: 15px;
+  }
+
+  .mp-two-step-subtitle {
+    font-size: 11px;
+  }
+
+  .mp-two-step-body {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .mp-action-attacker-card {
+    padding: 8px 10px;
+  }
+
+  .mp-two-step-roster-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 6px;
+  }
+
+  .mp-two-step-player-btn {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .mp-two-step-player-num {
+    font-size: 12px;
+    padding: 1px 5px;
+    min-width: 22px;
+  }
+
+  .mp-two-step-player-name {
+    font-size: 11px;
+  }
+
+  .mp-two-step-footer {
+    padding: 8px 14px;
+  }
+
+  .mp-initial-possession-card {
+    max-width: 94vw;
+    max-height: 90vh;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .mp-initial-possession-card.pivot-option-modal {
+    max-width: 95vw;
+    max-height: 92vh;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .mp-pivot-option-card {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+}
+
+/* ---- SMARTPHONES NARROW (<= 380px) ---- */
+@media screen and (max-width: 380px) {
+  .mp-team-name {
+    max-width: 48px;
+    font-size: 8.5px;
+  }
+
+  .mp-score-digit {
+    font-size: 19px;
+  }
+
+  .mp-center-time {
+    font-size: 13px;
+  }
+
+  .mp-actions-4x4-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+  }
+
+  .mp-action-tile {
+    min-height: 44px;
+  }
+
+  .mp-action-tile span {
+    font-size: 7px;
+  }
+
+  .mp-two-step-roster-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================================
+   MOBILE & TABLET LANDSCAPE ORIENTATION (max-height: 520px)
+   Ultra-optimized for sports recording in horizontal mode
+   ========================================================== */
+@media screen and (orientation: landscape) and (max-height: 520px) {
+  .match-dashboard-wrapper {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .mp-mobile-nav-tabs {
+    display: none !important;
+  }
+
+  /* Scoreboard súper compacto en fila horizontal */
+  .mp-scoreboard-bar {
+    padding: 3px 8px;
+    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 38px;
+  }
+
+  .mp-top-left-info,
+  .mp-top-right-actions {
+    width: auto;
+    gap: 4px;
+  }
+
+  .mp-scoreboard-banner {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0;
+  }
+
+  .mp-team-banner {
+    padding: 2px 6px;
+    gap: 4px;
+    max-width: 110px;
+  }
+
+  .mp-team-logo-wrap {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mp-team-name {
+    font-size: 9px;
+    max-width: 65px;
+  }
+
+  .mp-possession-indicator {
+    font-size: 7.5px;
+  }
+
+  .mp-scoreboard-grouped {
+    padding: 2px 6px;
+    gap: 4px;
+    border-radius: 8px;
+  }
+
+  .mp-score-box {
+    min-width: 28px;
+    height: 28px;
+    padding: 1px 3px;
+    border-radius: 5px;
+  }
+
+  .mp-score-digit {
+    font-size: 17px;
+  }
+
+  .mp-center-period {
+    font-size: 8px;
+    margin-bottom: 0;
+  }
+
+  .mp-center-time {
+    font-size: 13px;
+  }
+
+  .mp-time-adjust-btn {
+    padding: 1px 3px;
+    font-size: 7.5px;
+  }
+
+  .mp-timer-toggle-btn {
+    width: 22px;
+    height: 22px;
+  }
+
+  .mp-period-end-btn {
+    padding: 2px 5px;
+    font-size: 8px;
+  }
+
+  /* 3 columnas en landscape: Mi Equipo (Izq) | Pista & Acciones (Centro) | Rival (Der) */
+  .mp-main-container {
+    grid-template-columns: 165px 1fr 165px !important;
+    gap: 6px !important;
+    align-items: stretch;
+  }
+
+  .mp-team-column {
+    display: flex !important;
+    max-height: calc(100vh - 58px) !important;
+    padding: 6px 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mp-team-column.home-column {
+    order: 1 !important;
+  }
+
+  .mp-center-column {
+    display: flex !important;
+    order: 2 !important;
+    gap: 6px;
+    overflow-y: auto;
+    max-height: calc(100vh - 58px);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mp-team-column.away-column {
+    display: flex !important;
+    order: 3 !important;
+  }
+
+  .mp-player-row {
+    padding: 2px 4px;
+    gap: 4px;
+    min-height: 28px;
+  }
+
+  .mp-player-number {
+    font-size: 10px;
+    min-width: 18px;
+    padding: 1px 3px;
+  }
+
+  .mp-player-name {
+    font-size: 10px;
+  }
+
+  .mp-player-role,
+  .mp-pos-pill {
+    font-size: 7.5px;
+    padding: 1px 3px;
+  }
+
+  .mp-player-time-badge {
+    font-size: 8px;
+  }
+
+  .mp-selection-bar {
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .mp-step-item {
+    font-size: 8px;
+  }
+
+  /* Pista y portería lado a lado en landscape */
+  .mp-court-goal-grid {
+    grid-template-columns: 1.15fr 0.85fr !important;
+    gap: 6px !important;
+  }
+
+  .mp-half-court {
+    height: 120px !important;
+  }
+
+  .mp-goal-frame {
+    height: 120px !important;
+  }
+
+  /* Grid inferior en landscape */
+  .mp-bottom-grid {
+    grid-template-columns: 1.35fr 0.65fr !important;
+    gap: 6px !important;
+  }
+
+  .mp-actions-4x4-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 3px !important;
+  }
+
+  .mp-action-tile {
+    min-height: 36px !important;
+    padding: 2px 1px !important;
+  }
+
+  .mp-tile-icon {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .mp-action-tile span {
+    font-size: 7px !important;
+  }
+
+  .mp-timeline-card {
+    max-height: 130px;
+  }
+
+  .mp-timeline-list {
+    max-height: 95px;
+  }
+
+  .mp-bottom-nav {
+    display: none !important;
+  }
+
+  /* Modales en landscape */
+  .mp-two-step-card {
+    max-height: 95vh;
+  }
+
+  .mp-two-step-header {
+    padding: 6px 12px;
+  }
+
+  .mp-two-step-body {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .mp-action-attacker-card {
+    padding: 4px 8px;
+  }
+
+  .mp-two-step-roster-grid {
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    gap: 4px;
+  }
+
+  .mp-two-step-player-btn {
+    padding: 4px 6px;
+  }
+
+  .mp-initial-possession-card.pivot-option-modal {
+    max-height: 94vh;
+    padding: 10px 14px;
+  }
+
+  .mp-pivot-option-card {
+    padding: 6px 10px;
   }
 }
 

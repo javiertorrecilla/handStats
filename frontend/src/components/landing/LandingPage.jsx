@@ -548,6 +548,37 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
           <div className="hero-court-grain-filter" />
         </div>
 
+        {/* Central Hero Content — Broadcast Typography (Primary Visual Focus) */}
+        <div className="hero-content-center">
+          {/* Architectural Sports Eyebrow */}
+          <div className="hero-eyebrow-bar">
+            <span className="hero-eyebrow-accent">{t("hero.eyebrow_pro")}</span>
+            <span className="hero-eyebrow-sep">/</span>
+            <span className="hero-eyebrow-spec">{t("hero.eyebrow_spec")}</span>
+          </div>
+
+          <h1 className="hero-main-title">
+            {t("hero.title_line1")}<br />
+            <span className="hero-title-highlight">{t("hero.title_line2")}</span>
+          </h1>
+
+          <p className="hero-desc">
+            {t("hero.subtitle")}
+          </p>
+
+          <div className="hero-buttons-row">
+            <button className="btn-hero-primary" onClick={handleTry}>
+              <span>{t("hero.btn_try")}</span>
+              <IconArrowRight />
+            </button>
+
+            <button className="btn-hero-secondary" onClick={() => scrollTo("product")}>
+              <IconBarChart />
+              <span>{t("hero.btn_demo")}</span>
+            </button>
+          </div>
+        </div>
+
         {/* Floating Animated Scoreboard & Tactical Placars (Asymmetric, Sports Character) */}
         <div className="hero-floating-elements-layer">
           {/* Placar 1: Live Match Scorebug Placar (Top Left - High visual hierarchy) */}
@@ -672,37 +703,6 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
               <span className="scorebug-tag green">{t("hero.card_penalty_tag")}</span>
             </div>
             <div className="penalty-readout-val">5 / 5 <span className="penalty-note">{t("hero.card_penalty_shots")}</span></div>
-          </div>
-        </div>
-
-        {/* Central Hero Content — Broadcast Typography */}
-        <div className="hero-content-center">
-          {/* Architectural Sports Eyebrow */}
-          <div className="hero-eyebrow-bar">
-            <span className="hero-eyebrow-accent">{t("hero.eyebrow_pro")}</span>
-            <span className="hero-eyebrow-sep">/</span>
-            <span className="hero-eyebrow-spec">{t("hero.eyebrow_spec")}</span>
-          </div>
-
-          <h1 className="hero-main-title">
-            {t("hero.title_line1")}<br />
-            <span className="hero-title-highlight">{t("hero.title_line2")}</span>
-          </h1>
-
-          <p className="hero-desc">
-            {t("hero.subtitle")}
-          </p>
-
-          <div className="hero-buttons-row">
-            <button className="btn-hero-primary" onClick={handleTry}>
-              <span>{t("hero.btn_try")}</span>
-              <IconArrowRight />
-            </button>
-
-            <button className="btn-hero-secondary" onClick={() => scrollTo("product")}>
-              <IconBarChart />
-              <span>{t("hero.btn_demo")}</span>
-            </button>
           </div>
         </div>
       </section>
@@ -944,6 +944,9 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
               <div className="device-matrix-header">
                 <h4 className="device-matrix-title">{t("product.matrix_title", "Matriz Comparativa de Capacidades")}</h4>
                 <p className="device-matrix-subtitle">{t("product.matrix_subtitle", "Diferencias técnicas y operativas entre ambas interfaces de HandStats")}</p>
+                <div className="device-matrix-swipe-hint">
+                  <span>← {t("product.matrix_swipe", "Desliza para comparar")} →</span>
+                </div>
               </div>
 
               <div className="device-matrix-table-wrap">

@@ -30,7 +30,8 @@
     "yes": "Yes",
     "no": "No",
     "actions": "Actions",
-    "recommendation": "Recommendation"
+    "recommendation": "Recommendation",
+    "swipe_hint": "Swipe horizontally to view all metrics"
   },
   "nav": {
     "features": "Features",
@@ -419,6 +420,7 @@
     "save_settings": "Save Settings"
   },
   "mesa_control": {
+    "court_actions_tab": "Court / Actions",
     "step1_player": "1. PLAYER",
     "step2_action": "2. ACTION",
     "step3_court": "3. COURT",
@@ -932,5 +934,32 @@
     "section_dynamics_tag": "Match Dynamics",
     "section_players_title": "Player Breakdown — {{team}}",
     "section_players_sub": "Field individual statistics, goalkeeping performance and technical rating"
+  },
+  "device_guard": {
+    "badge": "MOBILE DETECTED · DEVICE NOT SUPPORTED",
+    "title": "HandStats is exclusively available for Tablets and PCs",
+    "subtitle": "Our professional handball match-tracking and tactical analytics suite requires a Tablet screen (minimum 768px width) or a Computer to guarantee the precision and ergonomics demanded by competition.",
+    "why_title": "Why do we not support mobile phones?",
+    "why_text": "The interactive court, 16-action tactical grid, simultaneous attribution of committed/provoked players in 7m/offensive fouls, and multivariable player tables require a larger screen surface.",
+    "device_desktop_title": "Desktop / PC / Mac",
+    "device_desktop_status": "Supported",
+    "device_desktop_role": "Office, Video & Tactical Scouting",
+    "device_desktop_desc": "Full analytics suite, downloadable PDF reports, and historical cumulative trends.",
+    "device_tablet_title": "Tablet (iPad / Android)",
+    "device_tablet_status": "Supported",
+    "device_tablet_role": "Bench & Courtside Live Tracking",
+    "device_tablet_desc": "Ultra-fast 2-touch live data logging on the bench, in portrait or landscape.",
+    "device_mobile_title": "Mobile Phone / Smartphone",
+    "device_mobile_status": "Not Supported",
+    "device_mobile_role": "Insufficient screen area",
+    "device_mobile_desc": "A smartphone screen does not allow recording actions or reviewing metrics at the speed required.",
+    "detected_resolution": "Current resolution:",
+    "min_required": "Minimum required: 768 px width",
+    "desktop_hint": "If you are on a PC or laptop, maximize or widen your browser window.",
+    "btn_copy_link": "Copy link to open on Tablet or PC",
+    "btn_link_copied": "Link copied to clipboard!",
+    "btn_view_landing": "View product presentation (Info Landing)",
+    "btn_back_to_guard": "Back to compatibility notice",
+    "landing_mobile_banner": "HandStats is exclusively designed for Tablets and PCs (Desktop/Mac). To use the platform, please access from a tablet or PC."
   }
 }

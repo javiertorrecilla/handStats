@@ -133,6 +133,10 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
           {t("players_table.subtitle", "Haz clic en el título de cualquier columna para ordenar o haz clic en cualquier jugador para ver su desglose detallado de rating.")}
         </p>
 
+        <div className="hs-table-swipe-hint">
+          <span>← {t("common.swipe_hint", "Desliza horizontalmente para ver todas las métricas")} →</span>
+        </div>
+
         <div className="hs-table-container">
           <table className="hs-data-table">
             <thead>

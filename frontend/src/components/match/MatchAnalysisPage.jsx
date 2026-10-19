@@ -256,6 +256,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
   // Cronómetro, Periodo, Vista Principal y Selección Táctica Exacta
   const [mainViewMode, setMainViewMode] = useState(initialMode); // "live" | "stats"
+  const [mobileLiveTab, setMobileLiveTab] = useState("court"); // "court" | "home" | "away"
   const [currentPeriod, setCurrentPeriod] = useState("1ª PARTE");
   const [courtCoord, setCourtCoord] = useState({ x: 50, y: 40 }); // Coordenadas % en Media Pista
   const [goalCoord, setGoalCoord] = useState({ x: 22, y: 22 }); // Coordenadas % en Portería
@@ -2400,6 +2401,11 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       category: isFieldInGkSlot ? "starter" : category,
       isBench: category === "bench"
     });
+
+    // En pantallas móviles en modo vertical, volver inmediatamente a la pestaña de pista tras seleccionar jugador
+    if (typeof window !== "undefined" && window.innerWidth <= 767) {
+      setMobileLiveTab("court");
+    }
   };
 
   const timelineEvents = useMemo(() => {
@@ -3098,8 +3104,34 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
           />
         </div>
       ) : (
-        /* VISTA PRINCIPAL 3 COLUMNAS */
-        <div className="mp-main-container">
+        <>
+          {/* TABS DE SELECCIÓN RÁPIDA EN MÓVIL VERTICAL (PISTA vs PLANTILLA LOCAL vs PLANTILLA RIVAL) */}
+          <div className="mp-mobile-nav-tabs">
+            <button
+              type="button"
+              className={`mp-mobile-nav-tab ${mobileLiveTab === "court" ? "active" : ""}`}
+              onClick={() => setMobileLiveTab("court")}
+            >
+              <span>🎯 {t("mesa_control.court_actions_tab", "Pista / Acciones")}</span>
+            </button>
+            <button
+              type="button"
+              className={`mp-mobile-nav-tab home ${mobileLiveTab === "home" ? "active" : ""}`}
+              onClick={() => setMobileLiveTab("home")}
+            >
+              <span>🟢 {currentMatch.home_team || t("common.home_team", "LOCAL")}</span>
+            </button>
+            <button
+              type="button"
+              className={`mp-mobile-nav-tab away ${mobileLiveTab === "away" ? "active" : ""}`}
+              onClick={() => setMobileLiveTab("away")}
+            >
+              <span>🔵 {currentMatch.away_team || t("common.away_team", "VISITANTE")}</span>
+            </button>
+          </div>
+
+          {/* VISTA PRINCIPAL 3 COLUMNAS */}
+          <div className={`mp-main-container mobile-tab-${mobileLiveTab}`}>
           {/* COLUMNA IZQUIERDA: MI EQUIPO (VERDE) */}
           <aside className="mp-team-column home-column">
             <div className="mp-team-column-header">
@@ -4058,6 +4090,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
             </div>
           </aside>
         </div>
+        </>
       )}
 
       {/* MODAL POSESIÓN INICIAL DEL PARTIDO */}

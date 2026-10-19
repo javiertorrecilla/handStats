@@ -2477,7 +2477,7 @@ export function ReportStatsView({ metrics, match }) {
       {/* =========================================================================
           PANEL PRINCIPAL A 2 COLUMNAS (ESPACIADO AMPLIO Y EQUILIBRADO)
           ========================================================================= */}
-      <div className="no-print" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 380px", gap: "var(--space-20)", alignItems: "start" }}>
+      <div className="no-print hs-report-studio-main-grid">
 
         {/* COLUMNA IZQUIERDA: MÓDULOS DE CONFIGURACIÓN */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-20)" }}>

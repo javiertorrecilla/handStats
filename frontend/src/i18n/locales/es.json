@@ -30,7 +30,8 @@
     "yes": "Sí",
     "no": "No",
     "actions": "Acciones",
-    "recommendation": "Recomendación"
+    "recommendation": "Recomendación",
+    "swipe_hint": "Desliza horizontalmente para ver todas las métricas"
   },
   "nav": {
     "features": "Funciones",
@@ -433,6 +434,7 @@
     "save_settings": "Guardar Ajustes"
   },
   "mesa_control": {
+    "court_actions_tab": "Pista / Acciones",
     "step1_player": "1. JUGADOR",
     "step2_action": "2. ACCIÓN",
     "step3_court": "3. PISTA",
@@ -946,5 +948,32 @@
     "section_dynamics_tag": "Dinámica de Partido",
     "section_players_title": "Detalle de Jugadores — {{team}}",
     "section_players_sub": "Estadísticas individuales de campo, rendimiento en portería y rating técnico"
+  },
+  "device_guard": {
+    "badge": "MÓVIL DETECTADO · DISPOSITIVO NO ADMITIDO",
+    "title": "HandStats está disponible exclusivamente para Tablets y Ordenadores",
+    "subtitle": "Nuestra plataforma profesional de toma de datos y análisis táctico de balonmano requiere una pantalla de Tablet (mínimo 768px de ancho) o un Ordenador para garantizar la precisión y ergonomía que exige la alta competición.",
+    "why_title": "¿Por qué no admitimos dispositivos móviles?",
+    "why_text": "El campograma interactivo, la botonera de 16 acciones tácticas, la asignación simultánea de autores y provocadores en 7m/faltas en ataque y las tablas multivariables con más de 15 métricas por jugador requieren una superficie visual amplia.",
+    "device_desktop_title": "Ordenador (PC / Mac)",
+    "device_desktop_status": "Compatible",
+    "device_desktop_role": "Despacho, Vídeo & Análisis Táctico",
+    "device_desktop_desc": "Suite completa de analítica táctica, modelos xG, comparativas históricas y dossiers PDF.",
+    "device_tablet_title": "Tablet (iPad / Android)",
+    "device_tablet_status": "Compatible",
+    "device_tablet_role": "Banquillo & Pie de Pista",
+    "device_tablet_desc": "Toma de datos táctil ultra rápida a 2 toques, control de tiempos muertos y rotaciones en directo.",
+    "device_mobile_title": "Teléfono Móvil",
+    "device_mobile_status": "No Compatible",
+    "device_mobile_role": "Superficie Reducida",
+    "device_mobile_desc": "La pantalla de un móvil no permite registrar acciones ni consultar analíticas con la velocidad requerida.",
+    "detected_resolution": "Resolución actual:",
+    "min_required": "Mínimo requerido: 768 px de ancho",
+    "desktop_hint": "Si estás en un PC o portátil, maximiza o amplía la ventana de tu navegador para continuar.",
+    "btn_copy_link": "Copiar enlace para abrir en Tablet o PC",
+    "btn_link_copied": "¡Enlace copiado al portapapeles!",
+    "btn_view_landing": "Ver presentación web (Landing informativa)",
+    "btn_back_to_guard": "Ver compatibilidad",
+    "landing_mobile_banner": "HandStats está diseñado exclusivamente para Tablets y Ordenadores (PC / Mac). Para usar la plataforma, accede desde una tablet o PC."
   }
 }

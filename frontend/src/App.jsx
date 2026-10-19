@@ -15,6 +15,7 @@ import CreateMatchPage from "./components/match/CreateMatchPage";
 import TeamsPage from "./components/team/TeamsPage";
 import SettingsPage from "./components/settings/SettingsPage";
 import MatchAnalysisPage from "./components/match/MatchAnalysisPage";
+import DeviceGuard from "./components/common/DeviceGuard";
 
 /**
  * Componente contenedor de ruta para el análisis y mesa de control de un partido.
@@ -326,24 +327,34 @@ function App() {
   if (!user) {
     if (showLanding) {
       return (
-        <LandingPage
-          theme={theme}
-          toggleTheme={toggleTheme}
-          onTryApp={() => setShowLanding(false)}
-        />
+        <DeviceGuard
+          allowLandingPreview={true}
+          onBackToLanding={() => setShowLanding(true)}
+        >
+          <LandingPage
+            theme={theme}
+            toggleTheme={toggleTheme}
+            onTryApp={() => setShowLanding(false)}
+          />
+        </DeviceGuard>
       );
     }
 
     return (
-      <AuthPage
-        login={login}
-        register={register}
-        loginWithGoogle={loginWithGoogle}
-        loginAsGuest={loginAsGuest}
-        theme={theme}
-        toggleTheme={toggleTheme}
+      <DeviceGuard
+        allowLandingPreview={true}
         onBackToLanding={() => setShowLanding(true)}
-      />
+      >
+        <AuthPage
+          login={login}
+          register={register}
+          loginWithGoogle={loginWithGoogle}
+          loginAsGuest={loginAsGuest}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          onBackToLanding={() => setShowLanding(true)}
+        />
+      </DeviceGuard>
     );
   }
 
@@ -354,105 +365,107 @@ function App() {
   const isAnalyzeView = location.pathname.startsWith("/matches/") && location.pathname !== "/matches/new";
 
   return (
-    <div className="app-layout">
-      {!isAnalyzeView && (
-        <Sidebar
-          user={user}
-          guestMatches={guestMatches}
-          logout={logout}
-          theme={theme}
-          toggleTheme={toggleTheme}
-        />
-      )}
-
-      <main
-        className="app-main"
-        style={isAnalyzeView ? { marginLeft: 0, width: "100%", padding: 0, minHeight: "100vh" } : {}}
-      >
-        {loadingData && (
-          <div
-            style={{
-              marginBottom: 20,
-              padding: "12px 16px",
-              borderRadius: 8,
-              background: "var(--color-primary-subtle)",
-              color: "var(--color-primary)",
-              fontWeight: 600,
-            }}
-          >
-            Sincronizando datos...
-          </div>
+    <DeviceGuard allowLandingPreview={false}>
+      <div className="app-layout">
+        {!isAnalyzeView && (
+          <Sidebar
+            user={user}
+            guestMatches={guestMatches}
+            logout={logout}
+            theme={theme}
+            toggleTheme={toggleTheme}
+          />
         )}
 
-        <Routes>
-          <Route path="/" element={<Navigate to="/matches" replace />} />
-          <Route
-            path="/matches"
-            element={
-              <MatchesPage
-                user={user}
-                matchesList={matchesList}
-                loadMatch={handleLoadMatch}
-                currentMatch={currentMatch}
-                onCreateNew={() => navigate("/matches/new")}
-                onDeleteMatch={handleDeleteMatch}
-                isGuest={user.role === "guest"}
-                guestMatches={guestMatches}
-              />
-            }
-          />
-          <Route
-            path="/matches/new"
-            element={
-              <CreateMatchPage
-                user={user}
-                onMatchCreated={handleMatchCreated}
-                onCancel={() => navigate("/matches")}
-              />
-            }
-          />
-          <Route
-            path="/matches/:matchId"
-            element={
-              <MatchAnalysisRoute
-                user={user}
-                theme={theme}
-                toggleTheme={toggleTheme}
-                onUpdateMatchEvents={handleUpdateMatchEvents}
-              />
-            }
-          />
-          <Route
-            path="/matches/:matchId/stats"
-            element={
-              <MatchAnalysisRoute
-                user={user}
-                theme={theme}
-                toggleTheme={toggleTheme}
-                onUpdateMatchEvents={handleUpdateMatchEvents}
-              />
-            }
-          />
-          <Route
-            path="/teams"
-            element={
-              user.role === "guest" ? (
-                <Navigate to="/matches" replace />
-              ) : (
-                <TeamsPage user={user} matchesList={matchesList} />
-              )
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <SettingsPage matchesList={matchesList} currentMatch={currentMatch} />
-            }
-          />
-          <Route path="*" element={<Navigate to="/matches" replace />} />
-        </Routes>
-      </main>
-    </div>
+        <main
+          className="app-main"
+          style={isAnalyzeView ? { marginLeft: 0, width: "100%", padding: 0, minHeight: "100vh" } : {}}
+        >
+          {loadingData && (
+            <div
+              style={{
+                marginBottom: 20,
+                padding: "12px 16px",
+                borderRadius: 8,
+                background: "var(--color-primary-subtle)",
+                color: "var(--color-primary)",
+                fontWeight: 600,
+              }}
+            >
+              Sincronizando datos...
+            </div>
+          )}
+
+          <Routes>
+            <Route path="/" element={<Navigate to="/matches" replace />} />
+            <Route
+              path="/matches"
+              element={
+                <MatchesPage
+                  user={user}
+                  matchesList={matchesList}
+                  loadMatch={handleLoadMatch}
+                  currentMatch={currentMatch}
+                  onCreateNew={() => navigate("/matches/new")}
+                  onDeleteMatch={handleDeleteMatch}
+                  isGuest={user.role === "guest"}
+                  guestMatches={guestMatches}
+                />
+              }
+            />
+            <Route
+              path="/matches/new"
+              element={
+                <CreateMatchPage
+                  user={user}
+                  onMatchCreated={handleMatchCreated}
+                  onCancel={() => navigate("/matches")}
+                />
+              }
+            />
+            <Route
+              path="/matches/:matchId"
+              element={
+                <MatchAnalysisRoute
+                  user={user}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onUpdateMatchEvents={handleUpdateMatchEvents}
+                />
+              }
+            />
+            <Route
+              path="/matches/:matchId/stats"
+              element={
+                <MatchAnalysisRoute
+                  user={user}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onUpdateMatchEvents={handleUpdateMatchEvents}
+                />
+              }
+            />
+            <Route
+              path="/teams"
+              element={
+                user.role === "guest" ? (
+                  <Navigate to="/matches" replace />
+                ) : (
+                  <TeamsPage user={user} matchesList={matchesList} />
+                )
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <SettingsPage matchesList={matchesList} currentMatch={currentMatch} />
+              }
+            />
+            <Route path="*" element={<Navigate to="/matches" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </DeviceGuard>
   );
 }
 

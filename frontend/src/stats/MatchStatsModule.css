@@ -51,11 +51,40 @@
 
 @media (max-width: 640px) {
   .hs-team-switcher-buttons {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
   }
 
   .team-vs-divider {
     display: none;
+  }
+
+  .hs-team-btn {
+    padding: var(--space-8) var(--space-10);
+    gap: var(--space-6);
+  }
+
+  .hs-team-btn .team-name {
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hs-team-btn .team-role-tag {
+    display: none;
+  }
+
+  .hs-team-btn .team-goals-badge {
+    font-size: 11px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .hs-team-switcher-buttons {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -467,6 +496,25 @@
 
 .hs-table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.hs-table-swipe-hint {
+  display: none;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-8);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .hs-table-swipe-hint {
+    display: block;
+  }
 }
 
 .hs-data-table {
@@ -747,12 +795,27 @@
 }
 
 /* ==========================================================
-   RESPONSIVE
+   RESPONSIVE DESIGN (MOBILE, TABLET & DESKTOP — VERTICAL & HORIZONTAL)
    ========================================================== */
 
-@media (max-width: 992px) {
+/* Report Studio Main Grid (Config Column + Preview Column) */
+.hs-report-studio-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--space-20);
+  align-items: start;
+}
+
+/* Tablets Landscape & Small Desktops (<= 1024px) */
+@media (max-width: 1024px) {
+  .hs-report-studio-main-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
   .hs-dual-chart-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-16);
   }
 
   .hs-kpi-grid {
@@ -760,28 +823,226 @@
   }
 }
 
-@media (max-width: 576px) {
-  .hs-kpi-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
+/* Tablets Portrait & Medium Mobile (<= 768px) */
+@media (max-width: 768px) {
   .hs-stats-tabs {
-    gap: 2px;
-    padding: 2px;
+    gap: 4px;
+    padding: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
   }
 
   .hs-tab-btn {
-    padding: var(--space-4) var(--space-8);
-    font-size: 0.65rem;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 36px;
+    gap: 6px;
+  }
+
+  .hs-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-10);
+  }
+
+  .hs-kpi-card {
+    padding: 12px 14px;
   }
 
   .hs-card {
     padding: var(--space-16);
   }
 
+  /* Tabla con desplazamiento horizontal y columnas de Dorsal y Nombre fijas */
+  .hs-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-sm);
+  }
+
+  .hs-data-table {
+    min-width: 760px;
+  }
+
+  .hs-data-table th:first-child,
+  .hs-data-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--bg-surface, #0c1713);
+    min-width: 44px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.25);
+  }
+
+  .hs-data-table th:nth-child(2),
+  .hs-data-table td:nth-child(2) {
+    position: sticky;
+    left: 44px;
+    z-index: 3;
+    background: var(--bg-surface, #0c1713);
+    min-width: 110px;
+    box-shadow: 3px 0 8px rgba(0, 0, 0, 0.35);
+  }
+
+  [data-theme="light"] .hs-data-table th:first-child,
+  [data-theme="light"] .hs-data-table td:first-child,
+  [data-theme="light"] .hs-data-table th:nth-child(2),
+  [data-theme="light"] .hs-data-table td:nth-child(2) {
+    background: #ffffff;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .hs-data-table th,
+  .hs-data-table td {
+    padding: 9px 12px;
+    font-size: 0.76rem;
+  }
+
   .hs-timeline-item {
     flex-wrap: wrap;
-    gap: var(--space-4);
+    gap: var(--space-6);
+  }
+
+  .hs-timeline-player {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .hs-timeline-desc {
+    white-space: normal;
+    word-break: break-word;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .hs-chart-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+/* Compact Mobile (<= 560px) */
+@media (max-width: 560px) {
+  .hs-report-header-banner {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .hs-report-header-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .hs-report-header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Modal de desglose de rating en móvil */
+  .hs-player-modal-card {
+    max-width: 96vw;
+    max-height: 92vh;
+  }
+
+  .hs-player-modal-header {
+    padding: 12px 16px;
+  }
+
+  .hs-player-modal-body {
+    padding: 14px 16px;
+    gap: 14px;
+  }
+
+  .hs-player-rating-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .hs-player-rating-summary > div:last-child {
+    text-align: left;
+  }
+
+  .hs-player-stat-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .hs-player-stat-tile {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Narrow Smartphones (<= 400px) */
+@media (max-width: 400px) {
+  .hs-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hs-card {
+    padding: 12px;
+  }
+
+  .hs-tab-btn {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+}
+
+/* Mobile & Tablet Landscape Orientation (max-height: 520px) */
+@media screen and (orientation: landscape) and (max-height: 520px) {
+  .hs-stats-module {
+    gap: 10px;
+  }
+
+  .hs-team-switcher-header {
+    padding: 6px 12px;
+    gap: 4px;
+  }
+
+  .hs-team-btn {
+    padding: 6px 10px;
+  }
+
+  .hs-stats-tabs {
+    padding: 2px 4px;
+    gap: 2px;
+  }
+
+  .hs-tab-btn {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+    min-height: 30px;
+  }
+
+  .hs-card {
+    padding: 12px 16px;
+  }
+
+  .hs-player-modal-card {
+    max-height: 95vh;
+  }
+
+  .hs-player-modal-body {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .hs-player-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .hs-player-stat-tile {
+    padding: 6px 10px;
+    font-size: 11px;
   }
 }
 
