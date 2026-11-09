@@ -346,47 +346,9 @@ export default function TermsPage({ theme = "light", toggleTheme, onBack, user }
       {/* HERO BANNER & BÚSQUEDA */}
       <div className="legal-hero-banner">
         <div className="legal-hero-inner">
-          <div className="legal-badge-pill">
-            <span className="legal-dot-pulse"></span>
-            <span>{content.badge}</span>
-          </div>
+
           <h1 className="legal-hero-title">{content.title}</h1>
-          <p className="legal-hero-subtitle">
-            Acuerdo oficial de licencia de software, propiedad de algoritmos cuantitativos y condiciones del servicio HandStats Pro Suite.
-          </p>
 
-          <div className="legal-search-box">
-            <div className="search-icon-wrap">
-              <IconSearch />
-            </div>
-            <input
-              type="text"
-              className="legal-search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={nav.searchPlaceholderTerms || "Buscar en los términos de uso (ej: licencia, propiedad, modo invitado)..."}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className="clear-search-btn"
-                onClick={() => setSearchQuery("")}
-                aria-label="Limpiar búsqueda"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          <div className="legal-hero-meta">
-            <span>{nav.lastUpdated} {content.updatedDate}</span>
-            <span>·</span>
-            <span>{content.sections.length} {nav.sectionsCount || "Secciones Oficiales"}</span>
-            <span>·</span>
-            <span>{content.platformText}</span>
-            <span>·</span>
-            <span>{nav.version} {content.version}</span>
-          </div>
         </div>
       </div>
 

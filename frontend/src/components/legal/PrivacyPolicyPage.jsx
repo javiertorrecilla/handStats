@@ -302,47 +302,7 @@ export default function PrivacyPolicyPage({ theme = "light", toggleTheme, onBack
       {/* HERO BANNER & BÚSQUEDA */}
       <div className="legal-hero-banner">
         <div className="legal-hero-inner">
-          <div className="legal-badge-pill">
-            <span className="legal-dot-pulse"></span>
-            <span>{content.badge}</span>
-          </div>
           <h1 className="legal-hero-title">{content.title}</h1>
-          <p className="legal-hero-subtitle">
-            Marco regulatorio oficial y compromiso técnico de protección de datos para clubes, entrenadores y analistas de HandStats.
-          </p>
-
-          <div className="legal-search-box">
-            <div className="search-icon-wrap">
-              <IconSearch />
-            </div>
-            <input
-              type="text"
-              className="legal-search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={nav.searchPlaceholderPrivacy || "Buscar en la política de privacidad (ej: RGPD, datos, derechos)..."}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className="clear-search-btn"
-                onClick={() => setSearchQuery("")}
-                aria-label="Limpiar búsqueda"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          <div className="legal-hero-meta">
-            <span>{nav.lastUpdated} {content.updatedDate}</span>
-            <span>·</span>
-            <span>{content.sections.length} {nav.sectionsCount || "Secciones Oficiales"}</span>
-            <span>·</span>
-            <span>{content.scopeText}</span>
-            <span>·</span>
-            <span>{nav.version} {content.version}</span>
-          </div>
         </div>
       </div>
 
