@@ -1131,46 +1131,75 @@
 
 .stat-counter-box {
     text-align: center;
-    padding: 24px 16px;
+    padding: 26px 16px;
     border-radius: var(--radius);
     background: var(--lp-bg-card);
     border: 1px solid var(--lp-border);
     box-shadow: var(--lp-shadow-subtle);
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 135px;
 }
 
 .stat-counter-box:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
     border-color: var(--lp-primary);
     background: var(--lp-bg-card-hover);
+    box-shadow: 0 10px 24px rgba(4, 8, 20, 0.4);
 }
 
 .stat-num-val {
     font-family: var(--font-data, monospace);
-    font-size: 3rem;
+    font-size: clamp(1.95rem, 2.3vw, 2.6rem);
     font-weight: 900;
     color: var(--lp-primary-bright);
     line-height: 1;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     display: flex;
     align-items: baseline;
     justify-content: center;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.stat-num-sign,
+.stat-num-digits,
+.stat-num-unit {
+    color: var(--lp-primary-bright);
+    font-family: var(--font-data, monospace);
+    font-weight: 900;
+}
+
+.stat-num-prefix {
+    font-family: var(--font-sans);
+    font-size: 0.54em;
+    color: var(--lp-text-title);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-right: 0.32em;
 }
 
 .stat-num-suffix {
-    font-size: 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.54em;
     color: var(--lp-text-title);
-    margin-left: 2px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-left: 0.32em;
 }
 
 .stat-num-label {
     font-family: var(--font-sans);
-    font-size: 0.82rem;
+    font-size: 0.76rem;
     font-weight: 700;
     color: var(--lp-text-muted);
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    line-height: 1.4;
+    text-align: center;
 }
 
 /* ==========================================================
@@ -1807,7 +1836,213 @@
 }
 
 /* ==========================================================
-   6. FEATURES GRID (Instrumentos de Control)
+   6. STATISTICAL ENGINES & CALCULATION SECTION
+   ========================================================== */
+
+.landing-engines-section {
+    background: var(--lp-bg-section-alt);
+    padding: 100px 0;
+    border-top: 1px solid var(--lp-border);
+    border-bottom: 1px solid var(--lp-border);
+    transition: background 0.25s ease;
+    position: relative;
+}
+
+.engines-grid-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+}
+
+.engine-card-box {
+    background: var(--lp-bg-card);
+    border: 1px solid var(--lp-border);
+    border-radius: var(--radius);
+    padding: 30px 26px;
+    box-shadow: var(--lp-shadow-subtle);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.engine-card-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--lp-border);
+    transition: background 0.25s ease;
+}
+
+.engine-card-box.green::before { background: var(--lp-primary); }
+.engine-card-box.blue::before { background: var(--lp-tactical); }
+.engine-card-box.amber::before { background: var(--lp-secondary); }
+.engine-card-box.purple::before { background: #A855F7; }
+
+.engine-card-box:hover {
+    transform: translateY(-4px);
+    border-color: var(--lp-border-strong);
+    box-shadow: var(--lp-shadow-card), 0 12px 28px rgba(4, 8, 20, 0.4);
+}
+
+.engine-card-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.engine-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.engine-icon-wrap svg {
+    width: 22px;
+    height: 22px;
+}
+
+.engine-icon-wrap.green {
+    background: var(--lp-primary-subtle);
+    color: var(--lp-primary-bright);
+    border: 1px solid var(--lp-primary-border);
+}
+
+.engine-icon-wrap.blue {
+    background: var(--lp-tactical-subtle);
+    color: var(--lp-tactical);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.engine-icon-wrap.amber {
+    background: var(--lp-secondary-subtle);
+    color: var(--lp-secondary);
+    border: 1px solid var(--lp-secondary-border);
+}
+
+.engine-icon-wrap.purple {
+    background: rgba(168, 85, 247, 0.14);
+    color: #C084FC;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.engine-meta-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.engine-tag-badge {
+    font-family: var(--font-data, monospace);
+    font-size: 0.70rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 6px;
+}
+
+.engine-tag-badge.green {
+    background: var(--lp-primary-subtle);
+    color: var(--lp-primary-bright);
+    border: 1px solid var(--lp-primary-border);
+}
+
+.engine-tag-badge.blue {
+    background: var(--lp-tactical-subtle);
+    color: var(--lp-tactical);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.engine-tag-badge.amber {
+    background: var(--lp-secondary-subtle);
+    color: var(--lp-secondary);
+    border: 1px solid var(--lp-secondary-border);
+}
+
+.engine-tag-badge.purple {
+    background: rgba(168, 85, 247, 0.14);
+    color: #C084FC;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.engine-formula-pill {
+    font-family: var(--font-data, monospace);
+    font-size: 0.74rem;
+    color: var(--lp-text-title);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--lp-border);
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+[data-theme="light"] .engine-formula-pill {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.12);
+}
+
+.engine-card-title {
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--lp-text-title);
+    margin: 0 0 10px 0;
+    line-height: 1.3;
+}
+
+.engine-card-desc {
+    font-size: 0.92rem;
+    color: var(--lp-text-body);
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    flex-grow: 1;
+}
+
+.engine-pills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--lp-border);
+}
+
+.engine-spec-pill {
+    font-family: var(--font-data, monospace);
+    font-size: 0.74rem;
+    color: var(--lp-text-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--lp-border);
+    padding: 4px 9px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+[data-theme="light"] .engine-spec-pill {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 900px) {
+    .engines-grid-2x2 {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+}
+
+/* ==========================================================
+   7. FEATURES GRID (Instrumentos de Control)
    ========================================================== */
 
 .landing-features-section {
@@ -2044,6 +2279,37 @@
     font-size: 0.78rem;
     color: var(--lp-footer-text);
     opacity: 0.6;
+}
+
+.footer-legal-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-legal-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--lp-footer-text);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s ease, opacity 0.15s ease;
+    font-family: var(--font-sans);
+    opacity: 0.8;
+}
+
+.footer-legal-btn:hover {
+    color: var(--color-primary, #ea580c);
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.footer-legal-sep {
+    color: var(--lp-footer-text);
+    opacity: 0.4;
+    font-size: 0.78rem;
 }
 
 /* ==========================================================

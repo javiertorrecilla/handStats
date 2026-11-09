@@ -1,0 +1,812 @@
+/* ==========================================================
+   HANDSTATS — 404 NOT FOUND PAGE (HERO 404 EDITION)
+   Tema: Balonmano & Sports Analytics
+   ========================================================== */
+
+.not-found-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg-primary, #090e19);
+  color: var(--text-primary, #edf2f7);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
+}
+
+/* --------------------------------------------------
+   1. FONDO AMBIENTAL Y LÍNEAS DE PISTA DE BALONMANO
+   -------------------------------------------------- */
+
+.not-found-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(850px, 90vw);
+  height: 480px;
+  background: radial-gradient(circle, rgba(46, 125, 79, 0.25) 0%, rgba(2, 132, 199, 0.12) 45%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .not-found-ambient-glow {
+  background: radial-gradient(circle, rgba(46, 125, 79, 0.14) 0%, rgba(2, 132, 199, 0.08) 50%, transparent 75%);
+}
+
+.not-found-court-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+[data-theme="light"] .not-found-court-bg {
+  opacity: 0.09;
+}
+
+.court-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.court-line {
+  stroke: var(--color-primary, #2E7D4F);
+  stroke-width: 2.2;
+  fill: none;
+}
+
+[data-theme="dark"] .court-line {
+  stroke: #44D878;
+}
+
+/* --------------------------------------------------
+   2. HEADER COMPACTO
+   -------------------------------------------------- */
+
+.not-found-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: rgba(14, 20, 32, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme="light"] .not-found-header {
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+}
+
+.not-found-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.not-found-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.4));
+  transition: transform 0.25s ease;
+}
+
+.not-found-brand:hover .not-found-logo {
+  transform: rotate(15deg) scale(1.08);
+}
+
+.not-found-brand-text {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+}
+
+.not-found-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  box-shadow: 0 0 8px #EF4444;
+  animation: pulseBeacon 1.4s ease-in-out infinite;
+}
+
+@keyframes pulseBeacon {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+.not-found-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.not-found-theme-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background: var(--bg-surface, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.not-found-theme-btn:hover {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------
+   3. CENTRO: EL 404 GIGANTE Y HEROICO
+   -------------------------------------------------- */
+
+.not-found-centerpiece {
+  position: relative;
+  z-index: 5;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+}
+
+/* Píldora del reloj del partido */
+.match-clock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(16, 24, 40, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  font-family: var(--font-mono, 'Exo 2', monospace);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .match-clock-badge {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #14181B;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.clock-time {
+  color: #F59E0B;
+  font-weight: 900;
+}
+
+.clock-divider {
+  opacity: 0.4;
+}
+
+.clock-infraction {
+  color: #EF4444;
+  font-weight: 800;
+}
+
+/* EL 404 GIGANTE */
+.giant-404-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 2vw, 24px);
+  user-select: none;
+  margin: 4px 0;
+}
+
+.digit-four {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: clamp(6.5rem, 16vw, 11.5rem);
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  text-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.35),
+    0 0 40px rgba(46, 125, 79, 0.25);
+  transition: transform 0.25s ease;
+}
+
+[data-theme="dark"] .digit-four {
+  color: #EDEFEE;
+  text-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    0 0 60px rgba(68, 216, 120, 0.3);
+}
+
+.left-four {
+  transform-origin: right center;
+}
+
+.right-four {
+  transform-origin: left center;
+}
+
+.giant-404-hero:hover .left-four {
+  transform: translateX(-4px);
+}
+
+.giant-404-hero:hover .right-four {
+  transform: translateX(4px);
+}
+
+/* El 0 central integrado con el balón de balonmano */
+.center-ball-portal {
+  position: relative;
+  width: clamp(100px, 15vw, 165px);
+  height: clamp(100px, 15vw, 165px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ball-orbit-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed rgba(56, 189, 248, 0.45);
+  animation: orbitRotate 18s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes orbitRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Balón de balonmano */
+.handball-ball {
+  position: relative;
+  width: clamp(90px, 13vw, 145px);
+  height: clamp(90px, 13vw, 145px);
+  z-index: 5;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.center-ball-portal.idle .handball-ball {
+  animation: handballDribbleCompact 1.2s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+}
+
+.center-ball-portal:hover .handball-ball {
+  transform: scale(1.08);
+}
+
+@keyframes handballDribbleCompact {
+  0% {
+    transform: translateY(-20px) scale(1, 1);
+  }
+  45% {
+    transform: translateY(4px) scale(0.97, 1.03);
+  }
+  50% {
+    transform: translateY(8px) scale(1.06, 0.94);
+  }
+  55% {
+    transform: translateY(4px) scale(0.98, 1.02);
+  }
+  100% {
+    transform: translateY(-20px) scale(1, 1);
+  }
+}
+
+.ball-shadow {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 12px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.5) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: shadowPulseCompact 1.2s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+}
+
+@keyframes shadowPulseCompact {
+  0%, 100% {
+    transform: translateX(-50%) scale(0.7);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* Animación de Disparo a Portería */
+.center-ball-portal.shooting .handball-ball {
+  animation: handballShotBurst 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes handballShotBurst {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-60px) translateX(-30px) scale(0.85) rotate(270deg);
+  }
+  100% {
+    transform: translateY(-110px) translateX(60px) scale(0.6) rotate(720deg);
+  }
+}
+
+.center-ball-portal.goal .handball-ball {
+  transform: translateY(-110px) translateX(60px) scale(0.6) rotate(720deg);
+}
+
+.ball-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 10px 22px rgba(245, 158, 11, 0.45));
+}
+
+.ball-base {
+  fill: #F59E0B; /* Ámbar/cuero oficial */
+}
+
+.ball-panel-center {
+  fill: #D97706;
+}
+
+.ball-core {
+  fill: #B45309;
+}
+
+.ball-seams {
+  stroke: rgba(255, 255, 255, 0.65);
+  stroke-width: 2.2;
+  fill: none;
+}
+
+.ball-resin {
+  fill: #78350F;
+  opacity: 0.75;
+}
+
+/* Flash de Golazo */
+.goal-hit-flash {
+  position: absolute;
+  top: -45px;
+  right: -25px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #EDEFEE;
+  padding: 6px 14px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+  animation: popInBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 15;
+}
+
+@keyframes popInBounce {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.trophy-sparkle {
+  color: #FBBF24;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8));
+}
+
+/* --------------------------------------------------
+   4. TEXTOS Y EXPLICACIÓN
+   -------------------------------------------------- */
+
+.not-found-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 680px;
+}
+
+.not-found-title {
+  margin: 0;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.title-accent {
+  color: #EF4444;
+}
+
+.not-found-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-secondary, #94A3B8);
+  line-height: 1.45;
+}
+
+.not-found-desc code {
+  color: #38BDF8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.88em;
+}
+
+/* Botón interactivo de minijuego */
+.mini-interactive-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-shoot-court {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--brand-secondary, #F59E0B);
+  color: #14181B;
+  font-weight: 800;
+  font-size: 0.84rem;
+  letter-spacing: 0.03em;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-shoot-court:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.03);
+  background: #FBBF24;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.5);
+}
+
+.btn-shoot-court.btn-goal-success {
+  background: var(--color-primary, #2E7D4F);
+  color: #EDEFEE;
+  box-shadow: 0 6px 18px rgba(46, 125, 79, 0.4);
+}
+
+.btn-reset-shot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-reset-shot:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------
+   5. TIRA COMPACTA DE ESTADÍSTICAS
+   -------------------------------------------------- */
+
+.compact-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 840px;
+  margin-top: 4px;
+}
+
+.stat-pill {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-pill:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary-border, rgba(46, 125, 79, 0.4));
+}
+
+.stat-pill-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-primary, #4ADE80);
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .stat-pill-icon {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.stat-pill-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.stat-pill-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-pill-val {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.stat-pill-val.danger {
+  color: #EF4444;
+}
+
+.stat-pill-val.warning {
+  color: #F59E0B;
+}
+
+.stat-pill-val.highlight {
+  color: #F43F5E;
+}
+
+.stat-pill-tag {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.tag-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.tag-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* --------------------------------------------------
+   6. ACCIONES Y ATAJOS
+   -------------------------------------------------- */
+
+.compact-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.btn-action-main,
+.btn-action-sub,
+.btn-action-back {
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-decoration: none;
+}
+
+.btn-action-main {
+  background: var(--color-primary, #2E7D4F);
+  color: #EDEFEE;
+  border: 1px solid var(--color-primary);
+  box-shadow: 0 6px 20px rgba(46, 125, 79, 0.35);
+}
+
+.btn-action-main:hover {
+  background: var(--color-primary-hover, #246640);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(46, 125, 79, 0.45);
+}
+
+.btn-action-sub {
+  background: var(--bg-surface, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+}
+
+.btn-action-sub:hover {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.btn-action-back {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.btn-action-back:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.quick-tactical-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 0.76rem;
+}
+
+.shortcuts-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.shortcut-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--bg-surface, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.shortcut-pill:hover {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------
+   7. FOOTER
+   -------------------------------------------------- */
+
+.not-found-footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 12px 24px;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted, rgba(255, 255, 255, 0.35));
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+}
+
+/* --------------------------------------------------
+   8. RESPONSIVE (TABLETS Y PANTALLAS PEQUEÑAS)
+   -------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .compact-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .digit-four {
+    font-size: clamp(5.5rem, 14vw, 8.5rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .not-found-header {
+    padding: 12px 16px;
+  }
+
+  .not-found-centerpiece {
+    padding: 16px 12px;
+    gap: 14px;
+  }
+
+  .compact-stats-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .compact-actions-row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-action-main,
+  .btn-action-sub,
+  .btn-action-back {
+    width: 100%;
+    justify-content: center;
+  }
+}

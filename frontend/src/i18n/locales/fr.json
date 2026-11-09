@@ -35,6 +35,7 @@
   "nav": {
     "features": "Fonctionnalités",
     "product": "Produit",
+    "engines": "Calcul & Moteurs",
     "how_it_works": "Comment ça marche",
     "testimonials": "Avis",
     "try_handstats": "Essayer HandStats",
@@ -51,7 +52,7 @@
     "btn_try": "Essayer HandStats Maintenant",
     "btn_demo": "Voir la Démonstration",
     "card_live": "DIRECT · 48:15",
-    "card_live_tag": "NATIONALE 1",
+    "card_live_tag": "ASOBAL",
     "card_possession": "Possession",
     "card_xg_label": "MODÈLE xG // ASSOCIATIF",
     "card_xg_tag": "+1.8 vs xG",
@@ -72,7 +73,7 @@
     "items": [
       "Analyse en Direct",
       "Modèles xG & xSaves",
-      "Cartes Thermiques 3D",
+      "Cartes Thermiques Tactiques",
       "Évaluation 0-10",
       "Export PDF",
       "Performance Défensive",
@@ -87,16 +88,21 @@
     ]
   },
   "landing_stats": {
-    "stat1_label": "Modules Statistiques Pro",
-    "stat2_label": "Précision Algorithmique xG",
-    "stat3_label": "Matchs Traités",
-    "stat4_label": "Disponibilité Cloud 24/7"
+    "stat1_suffix": "Touches",
+    "stat1_label": "SAISIE ULTRA-RAPIDE DES DONNÉES SUR LE TERRAIN",
+    "stat2_prefix": "+",
+    "stat2_suffix": "Points",
+    "stat2_label": "PRÉCISION MILLIMÉTRIQUE BASÉE SUR LES COORDONNÉES",
+    "stat3_prefix": "Rating",
+    "stat3_label": "MODÈLE DE NOTATION DYNAMIQUE DES JOUEURS",
+    "stat4_suffix": "Handball",
+    "stat4_label": "CONÇU EXCLUSIVEMENT POUR LA HAUTE PERFORMANCE"
   },
   "product": {
     "kicker_num": "01",
     "kicker_title": "SUITE & VISUALISATIONS",
     "title": "Une suite analytique conçue pour gagner",
-    "subtitle": "Découvrez les outils employés par les entraîneurs et analystes tactiques pour transformer les données en victoires.",
+    "subtitle": "Découvrez les outils conçus pour les entraîneurs et analystes tactiques afin de transformer les données en victoires.",
     "tab_dashboard": "Tableau de Bord",
     "tab_shots": "Plan de Tirs & xG",
     "tab_players": "Joueurs & Notes",
@@ -148,8 +154,42 @@
     "device_tablet_p3_bold": "Synchronisation Cloud Automatique :",
     "device_tablet_p3_text": "Vos données sont transmises en temps réel pour consultation immédiate du staff."
   },
-  "features": {
+  "engines": {
     "kicker_num": "02",
+    "kicker_title": "MOTEURS ANALYTIQUES & CALCUL",
+    "title": "Comment HandStats calcule-t-il les statistiques ?",
+    "subtitle": "Notre plateforme ne se contente pas de simples totaux : elle évalue chaque action grâce à quatre moteurs mathématiques conçus pour la biomécanique et le rythme du handball.",
+    "e1_tag": "PROBABILITÉ DE BUT",
+    "e1_title": "Modèle Expected Goals (xG)",
+    "e1_formula": "xG = Base(Zone) × Phase × Situation",
+    "e1_desc": "Calcule la probabilité mathématique (0.00 à 1.00) qu'un tir finisse au fond des filets selon la distance, l'angle de tir, la phase de jeu (montée de balle rapide vs attaque posée) et la situation numérique (7 contre 6, 6 contre 5 ou cage vide).",
+    "e1_pill1": "Ailiers : 0.55 xG",
+    "e1_pill2": "6m Pivot : 0.75 xG",
+    "e1_pill3": "Jet de 7m : 0.85 xG",
+    "e2_tag": "EFFICACITÉ GARDIEN",
+    "e2_title": "Modèle Expected Saves (xSaves)",
+    "e2_formula": "xSaves = (1 - xG) + Modificateur(3×3)",
+    "e2_desc": "Mesure la performance réelle des gardiens en calculant les buts évités par rapport aux tirs subis. Valorise les parades à bout portant et analyse l'efficacité sur chacune des 9 zones de la cage.",
+    "e2_pill1": "Buts réellement évités",
+    "e2_pill2": "Difficulté par zone",
+    "e2_pill3": "Pourcentage ajusté",
+    "e3_tag": "NOTATION OBJECTIVE",
+    "e3_title": "Algorithme de Note 0.0 - 10.0",
+    "e3_formula": "Rating = 10 / (1 + e^(-k · NPS))",
+    "e3_desc": "Calcule le Net Player Score (NPS). Récompense les buts difficiles (1 - xG), passes décisives et 7m provoqués ; pénalise les pertes de balle et sanctions. Une courbe sigmoïde centre les performances neutres à 5.0 sans parti pris.",
+    "e3_pill1": "Courbe logistique sigmoïde",
+    "e3_pill2": "Pertes & sanctions pondérées",
+    "e3_pill3": "Zéro biais subjectif",
+    "e4_tag": "RÉSOLUTION SPATIALE",
+    "e4_title": "Coordonnées (X, Y) et Autocalibration",
+    "e4_formula": "Terrain (40×20m) ⟷ Buts (3×2m)",
+    "e4_desc": "Enregistre l'emplacement spatial continu de chaque action sur le terrain de 40×20m et dans la cage de 3×2m. Dès 500 tirs cumulés, le moteur empirique recalibre automatiquement les probabilités selon l'adresse réelle de votre équipe.",
+    "e4_pill1": "Coordonnées continues (X, Y)",
+    "e4_pill2": "9 zones de cage",
+    "e4_pill3": "Autocalibration progressive"
+  },
+  "features": {
+    "kicker_num": "03",
     "kicker_title": "MODULES D'ANALYSE",
     "title": "Tout ce dont votre équipe a besoin",
     "subtitle": "Conçu avec des professionnels du handball pour couvrir chaque phase de la rencontre.",
@@ -167,7 +207,7 @@
     "f6_desc": "Partagez des bilans d'après-match complets en un clic au format PDF professionnel soigné."
   },
   "how_it_works": {
-    "kicker_num": "03",
+    "kicker_num": "04",
     "kicker_title": "MÉTHODOLOGIE",
     "title": "En 3 étapes simples",
     "subtitle": "Sans configurations complexes ni courbe d'apprentissage fastidieuse.",
@@ -199,7 +239,10 @@
     "btn": "Essayer HandStats Maintenant"
   },
   "footer": {
-    "rights": "HandStats. Tous droits réservés."
+    "rights": "HandStats. Tous droits réservés.",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions Générales d'Utilisation",
+    "manual": "Manuel d'utilisation"
   },
   "sidebar": {
     "my_matches": "Mes Matchs",
@@ -214,7 +257,9 @@
     "guest_role": "Démo ({{count}}/3 matchs)",
     "coach_role": "Entraîneur / Analyste",
     "open_nav": "Ouvrir le menu de navigation",
-    "close_menu": "Fermer le menu"
+    "close_menu": "Fermer le menu",
+    "user_manual": "Manuel d'utilisation",
+    "guided_tour": "Tour guidé"
   },
   "auth": {
     "back_to_landing": "Retour",
@@ -241,7 +286,13 @@
     "passwords_dont_match": "Les mots de passe ne correspondent pas.",
     "invalid_credentials": "E-mail ou mot de passe incorrect.",
     "user_not_found": "Cet utilisateur n'existe pas.",
-    "wrong_password": "Mot de passe incorrect."
+    "wrong_password": "Mot de passe incorrect.",
+    "legal_notice_prefix": "En vous inscrivant ou en vous connectant, vous acceptez nos",
+    "legal_notice_and": "et la",
+    "email_verified_success": "E-mail vérifié avec succès ! Accès à votre tableau de bord...",
+    "verification_check_error": "Erreur lors de la vérification de l'e-mail.",
+    "resend_fail": "Erreur lors du renvoi de l'e-mail de confirmation.",
+    "create_error": "Erreur lors du traitement de la requête."
   },
   "matches": {
     "title": "Mes Matchs",
@@ -256,7 +307,9 @@
     "statistics": "Statistiques",
     "delete_confirm": "Supprimer ce match ?",
     "delete_error": "Erreur lors de la suppression du match.",
-    "create_error": "Erreur lors de la création du match."
+    "create_error": "Erreur lors de la création du match.",
+    "create_success": "Match créé avec succès.",
+    "delete_success": "Match supprimé avec succès."
   },
   "create_match": {
     "title": "Nouveau Match",
@@ -338,6 +391,11 @@
     "all_team_goalkeepers": "Tous les Gardiens de l'Équipe",
     "cumulative_court_title": "PLAN CUMULÉ DES TIRS ET ARRÊTS DE LA SAISON — {{name}}",
     "roster_performance_title": "PERFORMANCE CUMULÉE DE L'EFFECTIF",
+    "interactive_players_title": "Fiches Individuelles :",
+    "interactive_players_desc": "Cliquez sur un joueur pour ouvrir sa fiche complète avec les statistiques de la saison et le détail match par match.",
+    "click_to_view": "Cliquer pour plus d'infos",
+    "click_to_view_player": "Cliquer pour voir la fiche et les matchs de {{name}}",
+    "no_matches_found": "Aucun match trouvé avec les filtres sélectionnés.",
     "kpis": {
       "matches_played": "MATCHS JOUÉS",
       "goals_for_against": "BUTS POUR / CONTRE",
@@ -354,7 +412,10 @@
       "poss_avg_sub": "Moyenne : {{val}} poss. / match",
       "def_eff_title": "EFFICACITÉ DÉFENSIVE",
       "def_eff_sub": "Calculée sur les buts concédés par possession"
-    }
+    },
+    "invalid_dorsal": "Veuillez saisir un numéro valide entre 0 et 99.",
+    "save_error": "Erreur lors de l'enregistrement de l'équipe.",
+    "delete_error": "Erreur lors de la suppression de l'équipe."
   },
   "settings": {
     "title": "Paramètres Tactiques",
@@ -416,7 +477,25 @@
     "xsaves_f3_code": "Écart vs Efficacité Globale",
     "xsaves_explanation": "Les arrêts attendus sont calculés selon la formule (1 - xG) + ModificateurZoneXSaves. Le Modificateur par Zone 3x3 évalue la performance empirique du gardien dans chaque secteur du but en soustrayant son pourcentage réel d'arrêts dans cette zone de son efficacité moyenne globale.",
     "reset_all": "Tout Réinitialiser",
-    "save_settings": "Enregistrer les Paramètres"
+    "save_settings": "Enregistrer les Paramètres",
+    "danger_zone_title": "Zone de Danger",
+    "danger_zone_desc": "Actions irréversibles concernant votre compte et vos données personnelles.",
+    "delete_account_btn": "Supprimer définitivement le compte",
+    "delete_account_info": "Tous vos matchs, équipes sauvegardées, notes de joueurs et configurations seront définitivement effacés conformément au RGPD.",
+    "delete_modal_title": "Supprimer le compte et toutes les données ?",
+    "delete_modal_warning": "Attention ! Cette action est irréversible. Les éléments suivants seront supprimés définitivement :",
+    "delete_item_matches": "Historique complet des matchs et actions enregistrées",
+    "delete_item_teams": "Équipes sauvegardées, compositions et numéros",
+    "delete_item_auth": "Identifiants d'accès et profil utilisateur",
+    "delete_type_confirm_label": "Pour confirmer, écrivez \"ELIMINAR\" ou \"DELETE\" ci-dessous :",
+    "delete_type_confirm_placeholder": "Tapez ELIMINAR",
+    "cancel": "Annuler",
+    "confirm_delete_btn": "Oui, supprimer définitivement mon compte",
+    "deleting": "Suppression du compte...",
+    "account_deleted_success": "Votre compte et vos données ont été supprimés avec succès.",
+    "delete_reauth_required": "Pour des raisons de sécurité, veuillez vous reconnecter avant de supprimer votre compte.",
+    "delete_account_error": "Erreur lors de la suppression du compte. Veuillez réessayer.",
+    "type_confirm_warning": "Veuillez taper ELIMINAR ou DELETE pour confirmer."
   },
   "mesa_control": {
     "step1_player": "1. JOUEUR",
@@ -531,9 +610,9 @@
     "rebound_attack_tag": "GARDE LA POSSESSION",
     "rebound_attack_desc": "L'équipe attaquante récupère le rebond et conserve la possession",
     "alert_gk_only_sub": "Dans la section GARDIEN, seul un gardien remplaçant peut être placé. Sélectionnez un gardien.",
-    "alert_select_player_first": "Veuillez d'abord sélectionner un joueur de l'alignement pour enregistrer l'action.",
-    "alert_substitutes_sanctions_only": "Les remplaçants ne peuvent recevoir que des sanctions (2 min, carton jaune, rouge, bleu). Pour faire entrer ce joueur, cliquez sur un titulaire.",
-    "alert_free_throw_defending_only": "Le jet franc ne peut être attribué qu'à un joueur de l'équipe qui DÉFEND (sans possession).",
+    "alert_select_player_first": "Veuillez d'abord sélectionner un joueur dans la composition d'équipe.",
+    "alert_substitutes_sanctions_only": "Les remplaçants ne peuvent recevoir que des sanctions (2 min, Jaune, Rouge, Bleue).",
+    "alert_free_throw_defending_only": "Le Jet Franc ne peut être attribué qu'à un joueur de l'équipe DÉFENDANTE.",
     "player_excluded_tooltip": "Joueur exclu (2 min) — Temps restant : {{time}}",
     "action_cambio": "CHANGEMENT",
     "filter_substitutions": "CHANGEMENTS",
@@ -560,7 +639,11 @@
     "action_gol_porteria_vacia": "BUT CAGE VIDE",
     "empty_net_badge": "7v6 CHAMP",
     "empty_net_tooltip": "Cage vide / Joueur de champ sur le terrain",
-    "empty_net_court_skipped": "Cage vide : cliquez directement sur le but"
+    "empty_net_court_skipped": "Cage vide : cliquez directement sur le but",
+    "undo_error": "Impossible d'annuler l'action",
+    "alert_select_attacker_first": "Veuillez d'abord sélectionner le joueur attaquant sur le terrain ({{team}}) avant d'enregistrer {{action}}.",
+    "alert_select_attacker_wrong_team": "Le joueur sélectionné (#{{number}} {{name}}) appartient à l'équipe défendante. Sélectionnez d'abord un joueur attaquant ({{team}}) sur le terrain.",
+    "alert_select_attacker_court_only": "Le joueur attaquant doit être sur le terrain (pas sur le banc)."
   },
   "dashboard": {
     "select_team_banner": "-- SÉLECTIONNER L'ÉQUIPE POUR AFFICHER LES STATS : --",
@@ -701,7 +784,9 @@
     "gk_saves": "Arrêts du gardien :",
     "legend_title": "Légende des marqueurs et densité thermique",
     "miss_post": "Raté / Poteau",
-    "max_concentration": "Concentration maximale d'actions"
+    "max_concentration": "Concentration maximale d'actions",
+    "court_density_gk": "Zones de tir adverses sur le terrain ({{count}} tirs subis)",
+    "gk_save_eff": "Efficacité des arrêts :"
   },
   "goalkeeper": {
     "select_gk": "SÉLECTIONNER LE GARDIEN :",
@@ -923,5 +1008,25 @@
     "section_dynamics_tag": "Dynamique de Match",
     "section_players_title": "Détail des Joueurs — {{team}}",
     "section_players_sub": "Statistiques individuelles de champ, performance des gardiens et note technique"
+  },
+  "toast": {
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Attention",
+    "info": "Information",
+    "close": "Fermer",
+    "system_notifications": "Notifications système"
+  },
+  "pdf": {
+    "download_success": "PDF officiel téléchargé avec succès.",
+    "manual_download_success": "Manuel d'utilisation PDF téléchargé avec succès.",
+    "report_download_success": "Rapport tactique en PDF téléchargé avec succès.",
+    "download_error": "Erreur lors de la génération du document PDF.",
+    "generating": "Génération du document PDF en cours..."
+  },
+  "player_card": {
+    "goals_shots_field": "Buts / Tirs champ",
+    "xg_field": "xG champ",
+    "court_tab_gk": "Carte de tirs et de cage"
   }
 }

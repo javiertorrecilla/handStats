@@ -37,6 +37,11 @@ const userService = {
         return res.data;
     },
 
+    deleteAccount: async (userId) => {
+        const res = await api.delete(`/users/${userId}`);
+        return res.data;
+    },
+
 };
 
 export default userService;

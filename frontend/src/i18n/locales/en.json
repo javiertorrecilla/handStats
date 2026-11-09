@@ -36,6 +36,7 @@
   "nav": {
     "features": "Features",
     "product": "Product",
+    "engines": "Analytics & Engines",
     "how_it_works": "How It Works",
     "testimonials": "Testimonials",
     "try_handstats": "Try HandStats",
@@ -52,7 +53,7 @@
     "btn_try": "Try HandStats Now",
     "btn_demo": "Watch Demo",
     "card_live": "LIVE · 48:15",
-    "card_live_tag": "NATIONAL LEAGUE",
+    "card_live_tag": "ASOBAL",
     "card_possession": "Possession",
     "card_xg_label": "xG MODEL // ASSOCIATIVE",
     "card_xg_tag": "+1.8 vs xG",
@@ -73,7 +74,7 @@
     "items": [
       "Live Analytics",
       "xG & xSaves Models",
-      "3D Heatmaps",
+      "Tactical Heatmaps",
       "0-10 Rating",
       "PDF Export",
       "Defensive Performance",
@@ -88,16 +89,21 @@
     ]
   },
   "landing_stats": {
-    "stat1_label": "Pro Statistical Modules",
-    "stat2_label": "xG Algorithmic Accuracy",
-    "stat3_label": "Processed Matches",
-    "stat4_label": "24/7 Cloud Availability"
+    "stat1_suffix": "Taps",
+    "stat1_label": "ULTRA-FAST ON-COURT DATA CAPTURE",
+    "stat2_prefix": "+",
+    "stat2_suffix": "Points",
+    "stat2_label": "MILLIMETER PRECISION BASED ON COORDINATES",
+    "stat3_prefix": "Rating",
+    "stat3_label": "DYNAMIC PLAYER RATING MODEL",
+    "stat4_suffix": "Handball",
+    "stat4_label": "DESIGNED EXCLUSIVELY FOR HIGH PERFORMANCE"
   },
   "product": {
     "kicker_num": "01",
     "kicker_title": "SUITE & VISUALIZATIONS",
     "title": "An analytical suite engineered to win",
-    "subtitle": "Explore the tools used by coaches and tactical analysts to turn data into victories.",
+    "subtitle": "Explore the tools designed for coaches and tactical analysts to turn data into victories.",
     "tab_dashboard": "Overview Dashboard",
     "tab_shots": "Court Map & xG",
     "tab_players": "Players & Ratings",
@@ -149,8 +155,42 @@
     "device_tablet_p3_bold": "Automatic Cloud Sync:",
     "device_tablet_p3_text": "Data transmits in real time for immediate staff consultation."
   },
-  "features": {
+  "engines": {
     "kicker_num": "02",
+    "kicker_title": "ANALYTICS ENGINES & MATH",
+    "title": "How does HandStats compute match statistics?",
+    "subtitle": "Our platform doesn't just tally raw counts: it evaluates every event with four mathematical engines tailored specifically to the biomechanics and pace of handball.",
+    "e1_tag": "GOAL PROBABILITY",
+    "e1_title": "Expected Goals (xG) Model",
+    "e1_formula": "xG = Base(Zone) × Phase × Situation",
+    "e1_desc": "Computes the exact mathematical probability (0.00 to 1.00) of any shot becoming a goal based on court distance, shooting angle, transition speed (direct fastbreak vs set play), and numerical balance (7v6, 6v5, or empty net).",
+    "e1_pill1": "Wings: 0.55 xG",
+    "e1_pill2": "6m Center: 0.75 xG",
+    "e1_pill3": "7m Penalty: 0.85 xG",
+    "e2_tag": "GOALKEEPER EFFICIENCY",
+    "e2_title": "Expected Saves (xSaves) Model",
+    "e2_formula": "xSaves = (1 - xG) + Modifier(3×3)",
+    "e2_desc": "Evaluates genuine goalkeeping performance by computing goals prevented above expected. Accurately credits point-blank stops and measures coverage across each of the 9 goal quadrants.",
+    "e2_pill1": "Goals prevented vs expected",
+    "e2_pill2": "Quadrant difficulty rating",
+    "e2_pill3": "True save percentage",
+    "e3_tag": "OBJECTIVE RATING",
+    "e3_title": "0.0 - 10.0 Rating Algorithm",
+    "e3_formula": "Rating = 10 / (1 + e^(-k · NPS))",
+    "e3_desc": "Calculates Net Player Score (NPS). Rewards high-difficulty goals (1 - xG), assists, and drawn 7m fouls; penalizes turnovers and tiered penalties. A logistic sigmoid curves neutral performances to 5.0 with total objectivity.",
+    "e3_pill1": "Logistic sigmoid curve",
+    "e3_pill2": "Turnover & sanction penalty",
+    "e3_pill3": "Zero subjective bias",
+    "e4_tag": "SPATIAL RESOLUTION",
+    "e4_title": "(X, Y) Coordinates & Self-Calibration",
+    "e4_formula": "Court (40×20m) ⟷ Goal (3×2m)",
+    "e4_desc": "Captures continuous spatial coordinates on the 40×20m court and the 3×2m goal grid. As shots accumulate, an empirical engine dynamically recalibrates baseline probabilities according to your own squad's actual precision.",
+    "e4_pill1": "Continuous (X, Y) tracking",
+    "e4_pill2": "9-quadrant goal grid",
+    "e4_pill3": "Empirical self-calibration"
+  },
+  "features": {
+    "kicker_num": "03",
     "kicker_title": "ANALYSIS MODULES",
     "title": "Everything your team needs",
     "subtitle": "Built alongside handball professionals to cover every phase of the game.",
@@ -168,7 +208,7 @@
     "f6_desc": "Share post-match reports with one click in professional, high-impact PDF format."
   },
   "how_it_works": {
-    "kicker_num": "03",
+    "kicker_num": "04",
     "kicker_title": "METHODOLOGY",
     "title": "In 3 simple steps",
     "subtitle": "No complex setups or tedious learning curves.",
@@ -200,7 +240,10 @@
     "btn": "Try HandStats Now"
   },
   "footer": {
-    "rights": "HandStats. All rights reserved."
+    "rights": "HandStats. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions",
+    "manual": "User Manual"
   },
   "sidebar": {
     "my_matches": "My Matches",
@@ -215,7 +258,9 @@
     "guest_role": "Demo ({{count}}/3 matches)",
     "coach_role": "Coach / Analyst",
     "open_nav": "Open navigation menu",
-    "close_menu": "Close menu"
+    "close_menu": "Close menu",
+    "user_manual": "User Manual",
+    "guided_tour": "Guided Tour"
   },
   "auth": {
     "back_to_landing": "Back",
@@ -238,11 +283,44 @@
     "password_hint": "Minimum 6 characters",
     "register_btn": "Create account",
     "registering": "Creating account...",
+    "login_success": "Signed in successfully.",
+    "register_success": "Account created successfully.",
     "fill_all_fields": "Please complete all fields.",
     "passwords_dont_match": "Passwords do not match.",
     "invalid_credentials": "Incorrect email or password.",
     "user_not_found": "User does not exist.",
-    "wrong_password": "Incorrect password."
+    "wrong_password": "Incorrect password.",
+    "forgot_password_question": "Forgot your password?",
+    "forgot_password_title": "Reset Password",
+    "forgot_password_desc": "Enter your email address and we will send you a link to reset your password.",
+    "send_reset_link": "Send reset link",
+    "sending_reset_link": "Sending link...",
+    "reset_email_sent_title": "Reset link sent!",
+    "reset_email_sent_desc": "We have sent an email to {{email}} with instructions to reset your password.",
+    "back_to_login": "Back to Log In",
+    "resend_reset_link": "Didn't receive it? Resend",
+    "email_not_found": "No account found with this email address.",
+    "email_already_in_use": "An account already exists with this email address.",
+    "weak_password": "Password must be at least 6 characters.",
+    "too_many_requests": "Too many requests. Please wait a few minutes.",
+    "verify_email_title": "Verify your email address",
+    "verify_email_subtitle": "We've sent a confirmation link to your email address.",
+    "verify_email_instructions": "To protect your account and your handball statistics, please confirm your email before continuing.",
+    "verify_email_sent_to": "Email sent to:",
+    "check_verification_btn": "I have verified my email",
+    "checking_verification": "Checking...",
+    "resend_verification_btn": "Resend verification email",
+    "resend_cooldown": "Resend in {{seconds}}s",
+    "resend_success": "Verification email resent successfully. Please check your inbox or spam.",
+    "not_verified_yet": "Your email is not verified yet. If you already clicked the link, please wait a few seconds and try again.",
+    "logout_or_switch": "Log out / Use another account",
+    "spam_tip": "Can't find the email? Check your spam or promotions folder.",
+    "legal_notice_prefix": "By signing up or logging in, you agree to our",
+    "legal_notice_and": "and our",
+    "email_verified_success": "Email verified successfully! Accessing your dashboard...",
+    "verification_check_error": "Error checking email verification status.",
+    "resend_fail": "Error resending verification email.",
+    "create_error": "Error processing request."
   },
   "matches": {
     "title": "My Matches",
@@ -257,7 +335,9 @@
     "statistics": "Statistics",
     "delete_confirm": "Delete this match?",
     "delete_error": "Error deleting match.",
-    "create_error": "Error creating match."
+    "create_error": "Error creating match.",
+    "create_success": "Match created successfully.",
+    "delete_success": "Match deleted successfully."
   },
   "create_match": {
     "title": "New Match",
@@ -339,6 +419,11 @@
     "all_team_goalkeepers": "All Team Goalkeepers",
     "cumulative_court_title": "SEASON CUMULATIVE SHOTS AND GOAL SAVES MAP — {{name}}",
     "roster_performance_title": "CUMULATIVE ROSTER PERFORMANCE",
+    "interactive_players_title": "Individual Cards:",
+    "interactive_players_desc": "Click on any player to open their full card with season statistics and match-by-match details.",
+    "click_to_view": "Click for more info",
+    "click_to_view_player": "Click to view full card and matches for {{name}}",
+    "no_matches_found": "No matches found with selected filters.",
     "kpis": {
       "matches_played": "MATCHES PLAYED",
       "goals_for_against": "GOALS FOR / AGAINST",
@@ -355,7 +440,10 @@
       "poss_avg_sub": "Avg: {{val}} poss. / match",
       "def_eff_title": "DEFENSIVE EFFICIENCY",
       "def_eff_sub": "Based on goals conceded per possession"
-    }
+    },
+    "invalid_dorsal": "Please enter a valid number between 0 and 99.",
+    "save_error": "Error saving team.",
+    "delete_error": "Error deleting team."
   },
   "settings": {
     "title": "Tactical Parameter Settings",
@@ -417,7 +505,25 @@
     "xsaves_f3_code": "Deviation vs Global Efficiency",
     "xsaves_explanation": "Expected goalkeeper saves are computed as (1 - xG) + ZoneXSavesModifier. The 3x3 Goal Quadrant Modifier assesses empirical goalkeeper performance across each quadrant by subtracting their actual save percentage in that sector from their overall save rate.",
     "reset_all": "Reset All",
-    "save_settings": "Save Settings"
+    "save_settings": "Save Settings",
+    "danger_zone_title": "Danger Zone",
+    "danger_zone_desc": "Irreversible actions regarding your account and personal data.",
+    "delete_account_btn": "Permanently Delete Account",
+    "delete_account_info": "All your recorded matches, saved teams, player ratings, and custom settings will be permanently erased under GDPR.",
+    "delete_modal_title": "Delete account and all data?",
+    "delete_modal_warning": "Warning! This action cannot be undone. The following will be permanently removed from servers:",
+    "delete_item_matches": "Complete history of matches and live recorded events",
+    "delete_item_teams": "Saved teams, rosters, and player jersey numbers",
+    "delete_item_auth": "Access credentials and user profile",
+    "delete_type_confirm_label": "To confirm, type \"ELIMINAR\" or \"DELETE\" below:",
+    "delete_type_confirm_placeholder": "Type ELIMINAR",
+    "cancel": "Cancel",
+    "confirm_delete_btn": "Yes, permanently delete my account",
+    "deleting": "Deleting account...",
+    "account_deleted_success": "Your account and all data have been deleted successfully.",
+    "delete_reauth_required": "For security reasons, please log out and log back in before deleting your account.",
+    "delete_account_error": "Error deleting account. Please try again.",
+    "type_confirm_warning": "Please type ELIMINAR or DELETE to confirm."
   },
   "mesa_control": {
     "court_actions_tab": "Court / Actions",
@@ -533,9 +639,9 @@
     "rebound_attack_tag": "RETAINS POSSESSION",
     "rebound_attack_desc": "Attacking team captures the rebound and retains possession",
     "alert_gk_only_sub": "Only a substitute goalkeeper can be placed in the GOALKEEPER section. Select a goalkeeper.",
-    "alert_select_player_first": "Please select a player from the lineup/roster first to record the action.",
-    "alert_substitutes_sanctions_only": "Substitutes can only receive Sanctions (2 min, Yellow, Red, Blue). To bring this player on court, click an on-court player in the lineup.",
-    "alert_free_throw_defending_only": "Free Throw can only be awarded to a player on the DEFENDING team (without possession).",
+    "alert_select_player_first": "Please first select a player from the lineup to record the action.",
+    "alert_substitutes_sanctions_only": "Substitutes can only receive sanctions (2 min, Yellow, Red, Blue).",
+    "alert_free_throw_defending_only": "Free Throw can only be awarded to a DEFENDING player (without possession).",
     "player_excluded_tooltip": "Excluded player (2 min) — Remaining time: {{time}}",
     "action_cambio": "SUBSTITUTION",
     "filter_substitutions": "SUBSTITUTIONS",
@@ -562,7 +668,11 @@
     "action_gol_porteria_vacia": "EMPTY NET GOAL",
     "empty_net_badge": "7v6 FIELD",
     "empty_net_tooltip": "Empty net / Field player on court",
-    "empty_net_court_skipped": "Empty net: click directly on the goal"
+    "empty_net_court_skipped": "Empty net: click directly on the goal",
+    "undo_error": "Could not undo action",
+    "alert_select_attacker_first": "Please select the attacking player on court ({{team}}) before marking {{action}}.",
+    "alert_select_attacker_wrong_team": "Selected player (#{{number}} {{name}}) belongs to defending team. To record {{action}}, first select an attacking player ({{team}}) on court.",
+    "alert_select_attacker_court_only": "Attacking player must be on the court (not on the bench)."
   },
   "dashboard": {
     "select_team_banner": "-- SELECT TEAM TO VIEW STATS: --",
@@ -703,7 +813,9 @@
     "gk_saves": "Goalkeeper Saves:",
     "legend_title": "Markers Legend & Heat Density",
     "miss_post": "Miss / Post",
-    "max_concentration": "Maximum Concentration of Actions"
+    "max_concentration": "Maximum Concentration of Actions",
+    "court_density_gk": "Opponent Shot Zones on Court ({{count}} Shots Faced)",
+    "gk_save_eff": "Save Efficiency:"
   },
   "goalkeeper": {
     "select_gk": "SELECT GOALKEEPER:",
@@ -729,6 +841,20 @@
     "col_rating": "Rating",
     "no_gk_stats": "No goalkeeper stats recorded for this team.",
     "heatmap_title": "SHOTS FACED & GOAL PERFORMANCE HEATMAP — {{name}}"
+  },
+  "player_card": {
+    "general_tab": "General Summary",
+    "matches_tab": "Matches Played",
+    "court_tab_field": "Shots Map",
+    "court_tab_gk": "Shot & Goal Map",
+    "rating_title": "Overall Rating (0 - 10)",
+    "nps_title": "NPS Net Points",
+    "base_rating_note": "Base score 5.0 (neutral) + Sigmoid Transformation",
+    "roles_section": "7-Meter & Offensive Fouls (Drawn vs Committed)",
+    "general_stats": "General Performance",
+    "no_shots_in_match": "No direct shots recorded for this player in this match.",
+    "goals_shots_field": "Field Goals / Shots",
+    "xg_field": "Field xG"
   },
   "players_table": {
     "title": "INDIVIDUAL PLAYER & GOALKEEPER STATS — {{team}}",
@@ -961,5 +1087,48 @@
     "btn_view_landing": "View product presentation (Info Landing)",
     "btn_back_to_guard": "Back to compatibility notice",
     "landing_mobile_banner": "HandStats is exclusively designed for Tablets and PCs (Desktop/Mac). To use the platform, please access from a tablet or PC."
+  },
+  "not_found": {
+    "badge_var": "VAR · PLAY UNDER REVIEW",
+    "scoreboard_league": "HANDSTATS PRO LEAGUE // REGULAR SEASON",
+    "scoreboard_timeout": "2ND H · TIME OUT",
+    "team_local": "HOME",
+    "team_away": "AWAY",
+    "out_of_bounds": "OUT OF BOUNDS",
+    "page_lost": "PAGE LOST",
+    "ticker_infraction": "INFRACTION: TURNOVER OR BALL OUT OF BOUNDS",
+    "ticker_path": "NON-EXISTENT ROUTE:",
+    "goal_title": "GOAL FROM 9 METERS!",
+    "goal_desc": "Possession recovered successfully. xG recalculated to 1.00.",
+    "btn_shoot": "⚡ Shoot at Goal (Recover Possession)",
+    "btn_shoot_again": "Shoot at Goal Again!",
+    "report_title": "TACTICAL ANALYST REPORT // EVENT #404",
+    "status_finished": "REVIEW COMPLETE",
+    "xg_label": "Expected Goals (xG)",
+    "xg_detail": "Shot outside court boundaries",
+    "efficiency_label": "Route Efficiency",
+    "possession_label": "Ball Possession",
+    "possession_turnover": "TURNOVER",
+    "card_label": "Referee Sanction",
+    "card_red": "🟥 RED CARD",
+    "btn_back_matches": "Back to the Bench (My Matches)",
+    "btn_go_home": "Go to Home (HandStats)",
+    "btn_create_match": "Create New Match",
+    "btn_previous_play": "Previous Play (Back)"
+  },
+  "toast": {
+    "error": "Error",
+    "success": "Completed",
+    "warning": "Warning",
+    "info": "Information",
+    "close": "Close",
+    "system_notifications": "System notifications"
+  },
+  "pdf": {
+    "download_success": "Official PDF downloaded successfully.",
+    "manual_download_success": "User manual PDF downloaded successfully.",
+    "report_download_success": "Tactical match report PDF downloaded successfully.",
+    "download_error": "Error generating PDF document.",
+    "generating": "Generating PDF document..."
   }
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
+import { toast } from "../../context/ToastContext";
 
 function RegisterUserForm({ onRegisterSuccess }) {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ function RegisterUserForm({ onRegisterSuccess }) {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleChange = (e) => {
     setForm({
@@ -24,6 +26,7 @@ function RegisterUserForm({ onRegisterSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg(null);
 
     if (
       !form.name ||
@@ -31,30 +34,70 @@ function RegisterUserForm({ onRegisterSuccess }) {
       !form.password ||
       !form.confirmPassword
     ) {
-      return alert(t("auth.fill_all_fields"));
+      const msg = t("auth.fill_all_fields");
+      setErrorMsg(msg);
+      toast.warning(msg);
+      return;
+    }
+
+    if (form.password.length < 6) {
+      const msg = t("auth.weak_password");
+      setErrorMsg(msg);
+      toast.warning(msg);
+      return;
     }
 
     if (form.password !== form.confirmPassword) {
-      return alert(t("auth.passwords_dont_match"));
+      const msg = t("auth.passwords_dont_match");
+      setErrorMsg(msg);
+      toast.warning(msg);
+      return;
     }
 
     try {
       setLoading(true);
       await register(form.email, form.password, form.name);
+      toast.success(t("auth.register_success", "Cuenta creada correctamente."));
       if (onRegisterSuccess) {
         onRegisterSuccess();
       }
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      let userFriendlyMsg = error.message;
+      switch (error.code) {
+        case "auth/email-already-in-use":
+          userFriendlyMsg = t("auth.email_already_in_use");
+          break;
+        case "auth/invalid-email":
+          userFriendlyMsg = t("auth.invalid_credentials");
+          break;
+        case "auth/weak-password":
+          userFriendlyMsg = t("auth.weak_password");
+          break;
+        default:
+          userFriendlyMsg = error.message;
+      }
+      setErrorMsg(userFriendlyMsg);
+      toast.error(userFriendlyMsg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="auth-form">
+    <form onSubmit={handleSubmit} className="auth-form" noValidate>
       <h2>{t("auth.register_title")}</h2>
+
+      {errorMsg && (
+        <div className="auth-alert-box error" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span>{errorMsg}</span>
+        </div>
+      )}
 
       <div className="form-group">
         <label htmlFor="register-name">{t("auth.full_name")}</label>

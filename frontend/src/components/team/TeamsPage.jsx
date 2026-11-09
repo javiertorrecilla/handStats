@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "../../context/ToastContext";
 
 const IconUploadCloud = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -19,6 +20,7 @@ import {
   IconClock
 } from "../../stats/components/common/Icons";
 import "./TeamsPage.css";
+import PlayerDetailModal from "./PlayerDetailModal";
 
 const IconTeams = () => (
   <svg className="page-header-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 8, width: 22, height: 22, display: "inline-block", verticalAlign: "middle" }}>
@@ -485,6 +487,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
   const [rightPanelTab, setRightPanelTab] = useState("stats"); // "stats" | "roster"
   const [playerTableFilter, setPlayerTableFilter] = useState("all"); // "all" | "field" | "goalkeepers"
   const [playerSortConfig, setPlayerSortConfig] = useState({ key: "number", direction: "asc" });
+  const [selectedPlayerForDetail, setSelectedPlayerForDetail] = useState(null);
   const [selectedTeamGkNumber, setSelectedTeamGkNumber] = useState("all");
   const [editName, setEditName] = useState("");
   const [editLogoUrl, setEditLogoUrl] = useState("");
@@ -497,7 +500,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
   const processLogoFile = (file) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert(t("teams.badge_formats"));
+      toast.warning(t("teams.badge_formats"));
       return;
     }
     const reader = new FileReader();
@@ -583,11 +586,11 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
     const numberVal = parseInt(newPlayerNumber, 10);
     if (isNaN(numberVal) || numberVal < 0 || numberVal > 99) {
-      alert("Introduce un dorsal válido entre 0 y 99.");
+      toast.warning(t("teams.invalid_dorsal", "Introduce un dorsal válido entre 0 y 99."));
       return;
     }
     if (editPlayers.some((p) => p.number === numberVal)) {
-      alert(t("create_match.dorsal_exists", "Este dorsal ya está asignado a otro jugador."));
+      toast.error(t("create_match.dorsal_exists", "Este dorsal ya está asignado a otro jugador."));
       return;
     }
 
@@ -626,11 +629,11 @@ export default function TeamsPage({ user, matchesList = [] }) {
     if (!editingName.trim() || editingNumber === "") return;
     const numberVal = parseInt(editingNumber, 10);
     if (isNaN(numberVal) || numberVal < 0 || numberVal > 99) {
-      alert("Introduce un dorsal válido entre 0 y 99.");
+      toast.warning(t("teams.invalid_dorsal", "Introduce un dorsal válido entre 0 y 99."));
       return;
     }
     if (editPlayers.some((p, i) => i !== index && p.number === numberVal)) {
-      alert(t("create_match.dorsal_exists", "Este dorsal ya está asignado a otro jugador."));
+      toast.error(t("create_match.dorsal_exists", "Este dorsal ya está asignado a otro jugador."));
       return;
     }
 
@@ -656,14 +659,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
   const handleSaveTeam = async (e) => {
     e.preventDefault();
     if (!editName.trim()) {
-      alert(t("teams.team_name_empty"));
+      toast.warning(t("teams.team_name_empty"));
       return;
     }
 
     try {
       if (isCreating) {
         if (teams.some((tItem) => tItem.name.toLowerCase() === editName.trim().toLowerCase())) {
-          alert(t("teams.team_name_exists"));
+          toast.error(t("teams.team_name_exists"));
           return;
         }
         await userService.saveTeam(user._id, {
@@ -671,7 +674,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
           logo_url: editLogoUrl || null,
           players: editPlayers,
         });
-        alert(t("teams.team_created_success"));
+        toast.success(t("teams.team_created_success"));
         setSelectedTeam(null);
         setIsCreating(false);
       } else if (selectedTeam) {
@@ -680,7 +683,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
           logo_url: editLogoUrl || null,
           players: editPlayers,
         });
-        alert(t("teams.team_saved_success"));
+        toast.success(t("teams.team_saved_success"));
         setSelectedTeam((prev) => ({
           ...prev,
           name: editName.trim(),
@@ -692,7 +695,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
       loadTeams();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.detail || "Error al guardar el equipo.");
+      toast.error(err.response?.data?.detail || t("teams.save_error", "Error al guardar el equipo."));
     }
   };
 
@@ -705,10 +708,10 @@ export default function TeamsPage({ user, matchesList = [] }) {
         setSelectedTeam(null);
       }
       loadTeams();
-      alert(t("teams.delete_team_success"));
+      toast.success(t("teams.delete_team_success"));
     } catch (err) {
       console.error(err);
-      alert("Error al eliminar el equipo.");
+      toast.error(t("teams.delete_error", "Error al eliminar el equipo."));
     }
   };
 
@@ -1209,55 +1212,83 @@ export default function TeamsPage({ user, matchesList = [] }) {
                     {t("teams.no_players")}
                   </p>
                 ) : (
-                  <div className="hs-table-container" style={{ overflowX: "hidden" }}>
-                    <table className="hs-data-table hs-table-compact" style={{ width: "100%", tableLayout: "auto" }}>
-                      <thead>
-                        {playerTableFilter === "field" ? (
-                          <tr>
-                            <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
-                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">{t("players_table.col_name")}{renderSortIndicator("name")}</th>
-                            <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
-                            <th onClick={() => handlePlayerSort("shotsCount")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por tiros a campo">{t("players_table.col_shots")}{renderSortIndicator("shotsCount")}</th>
-                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")}{renderSortIndicator("goals")}</th>
-                            <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% {t("common.efficiency")}{renderSortIndicator("efficiency")}</th>
-                            <th onClick={() => handlePlayerSort("xg")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xG">{t("players_table.col_xg")}{renderSortIndicator("xg")}</th>
-                            <th onClick={() => handlePlayerSort("turnovers")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por pérdidas">{t("players_table.col_turnovers")}{renderSortIndicator("turnovers")}</th>
-                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
-                          </tr>
-                        ) : playerTableFilter === "goalkeepers" ? (
-                          <tr>
-                            <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
-                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por portero">{t("common.goalkeeper")}{renderSortIndicator("name")}</th>
-                            <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
-                            <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">{t("players_table.col_saves")} / Rec.{renderSortIndicator("saves")}</th>
-                            <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% {t("players_table.col_saves")}{renderSortIndicator("savePct")}</th>
-                            <th onClick={() => handlePlayerSort("goalkeeperXSaves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xSaves">{t("players_table.col_xsaves")}{renderSortIndicator("goalkeeperXSaves")}</th>
-                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")}{renderSortIndicator("goals")}</th>
-                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
-                          </tr>
-                        ) : (
-                          <tr>
-                            <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
-                            <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">{t("players_table.col_name")}{renderSortIndicator("name")}</th>
-                            <th onClick={() => handlePlayerSort("role")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rol">{t("players_table.col_role")}{renderSortIndicator("role")}</th>
-                            <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
-                            <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")} / {t("common.shots")}{renderSortIndicator("goals")}</th>
-                            <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% {t("common.efficiency")}{renderSortIndicator("efficiency")}</th>
-                            <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">{t("players_table.col_saves")}{renderSortIndicator("saves")}</th>
-                            <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% Par.{renderSortIndicator("savePct")}</th>
-                            <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
-                          </tr>
-                        )}
-                      </thead>
-                      <tbody>
-                        {sortedPlayerStats.map((p, idx) => {
-                          const isGk = p.is_goalkeeper === true || p.is_goalkeeper === "true";
-                          return (
-                            <tr key={idx} style={{ background: isGk ? "rgba(16, 185, 129, 0.04)" : "transparent" }}>
-                              <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>#{p.number}</strong></td>
-                              <td style={{ padding: "6px 6px", whiteSpace: "nowrap" }}>
-                                <strong>{p.name}</strong>
-                              </td>
+                  <>
+                    <div className="hs-table-interactive-callout">
+                      <div className="hs-callout-left">
+                        <div className="hs-callout-beacon-large">
+                          <span className="hs-beacon-ring" />
+                          <span className="hs-beacon-core" />
+                        </div>
+                        <span>
+                          <strong>{t("teams.interactive_players_title", "Fichas Individuales:")}</strong>{" "}
+                          {t("teams.interactive_players_desc", "Pulsa en cualquier jugador para abrir su ficha completa con estadísticas de la temporada y el desglose de cada partido jugado.")}
+                        </span>
+                      </div>
+                      <span className="hs-callout-badge">{t("teams.click_to_view", "Clic para más info")} ↗</span>
+                    </div>
+
+                    <div className="hs-table-container" style={{ overflowX: "hidden" }}>
+                      <table className="hs-data-table hs-table-compact" style={{ width: "100%", tableLayout: "auto" }}>
+                        <thead>
+                          {playerTableFilter === "field" ? (
+                            <tr>
+                              <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
+                              <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">{t("players_table.col_name")}{renderSortIndicator("name")}</th>
+                              <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
+                              <th onClick={() => handlePlayerSort("shotsCount")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por tiros a campo">{t("players_table.col_shots")}{renderSortIndicator("shotsCount")}</th>
+                              <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")}{renderSortIndicator("goals")}</th>
+                              <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% {t("common.efficiency")}{renderSortIndicator("efficiency")}</th>
+                              <th onClick={() => handlePlayerSort("xg")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xG">{t("players_table.col_xg")}{renderSortIndicator("xg")}</th>
+                              <th onClick={() => handlePlayerSort("turnovers")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por pérdidas">{t("players_table.col_turnovers")}{renderSortIndicator("turnovers")}</th>
+                              <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
+                            </tr>
+                          ) : playerTableFilter === "goalkeepers" ? (
+                            <tr>
+                              <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
+                              <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por portero">{t("common.goalkeeper")}{renderSortIndicator("name")}</th>
+                              <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
+                              <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">{t("players_table.col_saves")} / Rec.{renderSortIndicator("saves")}</th>
+                              <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% {t("players_table.col_saves")}{renderSortIndicator("savePct")}</th>
+                              <th onClick={() => handlePlayerSort("goalkeeperXSaves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por xSaves">{t("players_table.col_xsaves")}{renderSortIndicator("goalkeeperXSaves")}</th>
+                              <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")}{renderSortIndicator("goals")}</th>
+                              <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
+                            </tr>
+                          ) : (
+                            <tr>
+                              <th onClick={() => handlePlayerSort("number")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por número">#{renderSortIndicator("number")}</th>
+                              <th onClick={() => handlePlayerSort("name")} style={{ padding: "8px 6px", cursor: "pointer", userSelect: "none" }} title="Ordenar por jugador">{t("players_table.col_name")}{renderSortIndicator("name")}</th>
+                              <th onClick={() => handlePlayerSort("role")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rol">{t("players_table.col_role")}{renderSortIndicator("role")}</th>
+                              <th onClick={() => handlePlayerSort("matchesPlayed")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por partidos jugados">PJ{renderSortIndicator("matchesPlayed")}</th>
+                              <th onClick={() => handlePlayerSort("goals")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por goles">{t("players_table.col_goals")} / {t("common.shots")}{renderSortIndicator("goals")}</th>
+                              <th onClick={() => handlePlayerSort("efficiency")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por eficacia">% {t("common.efficiency")}{renderSortIndicator("efficiency")}</th>
+                              <th onClick={() => handlePlayerSort("saves")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por paradas">{t("players_table.col_saves")}{renderSortIndicator("saves")}</th>
+                              <th onClick={() => handlePlayerSort("savePct")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por % de paradas">% Par.{renderSortIndicator("savePct")}</th>
+                              <th onClick={() => handlePlayerSort("avgRating")} style={{ textAlign: "center", padding: "8px 4px", cursor: "pointer", userSelect: "none" }} title="Ordenar por rating">{t("players_table.col_rating")}{renderSortIndicator("avgRating")}</th>
+                            </tr>
+                          )}
+                        </thead>
+                        <tbody>
+                          {sortedPlayerStats.map((p, idx) => {
+                            const isGk = p.is_goalkeeper === true || p.is_goalkeeper === "true";
+                            return (
+                              <tr
+                                key={idx}
+                                className="hs-player-interactive-row"
+                                onClick={() => setSelectedPlayerForDetail(p)}
+                                title={t("teams.click_to_view_player", { name: p.name, defaultValue: `Haz clic para ver la ficha completa y partidos de ${p.name}` })}
+                                style={{ background: isGk ? "rgba(16, 185, 129, 0.04)" : "transparent" }}
+                              >
+                                <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>#{p.number}</strong></td>
+                                <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>
+                                  <div className="hs-player-cell-with-hint">
+                                    <strong>{p.name}</strong>
+                                    <span className="hs-player-click-beacon">
+                                      <span className="hs-pulse-dot" />
+                                      <span>{t("common.more_info", "Detalles")}</span>
+                                      <svg className="hs-beacon-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6" /></svg>
+                                    </span>
+                                  </div>
+                                </td>
 
                               {playerTableFilter === "field" ? (
                                 <>
@@ -1406,6 +1437,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
                       </tbody>
                     </table>
                   </div>
+                  </>
                 )}
               </div>
 
@@ -1682,7 +1714,45 @@ export default function TeamsPage({ user, matchesList = [] }) {
                         return (
                           <tr key={`${player.number}_${player.name}`} className="tr-player-row">
                             <td className="td-num">#{player.number}</td>
-                            <td className="td-name">{player.name}</td>
+                            <td
+                              className="td-name"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => {
+                                const found = cumulativeStats?.playerStats?.find(
+                                  (sp) => String(sp.number) === String(player.number) || (sp.name && player.name && sp.name.trim().toLowerCase() === player.name.trim().toLowerCase())
+                                );
+                                setSelectedPlayerForDetail(found || {
+                                  number: player.number,
+                                  name: player.name,
+                                  is_goalkeeper: isGk,
+                                  matchesPlayed: 0,
+                                  goals: 0,
+                                  shotsCount: 0,
+                                  efficiency: 0,
+                                  xg: "0.00",
+                                  turnovers: 0,
+                                  steals: 0,
+                                  twoMins: 0,
+                                  saves: 0,
+                                  shotsFaced: 0,
+                                  savePct: 0,
+                                  goalkeeperXSaves: 0,
+                                  avgRating: 7.0,
+                                  matches: [],
+                                  allShots: [],
+                                  allGkShotsFaced: []
+                                });
+                              }}
+                              title="Haz clic para ver la ficha completa y partidos"
+                            >
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                                <span>{player.name}</span>
+                                <span className="hs-player-click-beacon" style={{ padding: "2px 6px", fontSize: "0.62rem" }}>
+                                  <span className="hs-pulse-dot" />
+                                  <span>Info</span>
+                                </span>
+                              </div>
+                            </td>
                             <td className="td-role">
                               <button
                                 type="button"
@@ -1695,6 +1765,40 @@ export default function TeamsPage({ user, matchesList = [] }) {
                             </td>
                             <td className="td-pj">{pj}</td>
                             <td className="td-actions">
+                              <button
+                                type="button"
+                                className="btn-table-action btn-action-stats"
+                                onClick={() => {
+                                  const found = cumulativeStats?.playerStats?.find(
+                                    (sp) => String(sp.number) === String(player.number) || (sp.name && player.name && sp.name.trim().toLowerCase() === player.name.trim().toLowerCase())
+                                  );
+                                  setSelectedPlayerForDetail(found || {
+                                    number: player.number,
+                                    name: player.name,
+                                    is_goalkeeper: isGk,
+                                    matchesPlayed: 0,
+                                    goals: 0,
+                                    shotsCount: 0,
+                                    efficiency: 0,
+                                    xg: "0.00",
+                                    turnovers: 0,
+                                    steals: 0,
+                                    twoMins: 0,
+                                    saves: 0,
+                                    shotsFaced: 0,
+                                    savePct: 0,
+                                    goalkeeperXSaves: 0,
+                                    avgRating: 7.0,
+                                    matches: [],
+                                    allShots: [],
+                                    allGkShotsFaced: []
+                                  });
+                                }}
+                                title="Ver ficha completa y partidos"
+                                style={{ color: "var(--brand-primary, #44D878)" }}
+                              >
+                                <IconBarChart size={14} />
+                              </button>
                               <button
                                 type="button"
                                 className="btn-table-action btn-action-edit"
@@ -1818,6 +1922,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
             </form>
           )}
         </div>
+      )}
+
+      {selectedPlayerForDetail && (
+        <PlayerDetailModal
+          player={selectedPlayerForDetail}
+          team={selectedTeam}
+          onClose={() => setSelectedPlayerForDetail(null)}
+        />
       )}
     </div>
   );

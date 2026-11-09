@@ -198,3 +198,38 @@ async def delete_saved_team(user_id: str, team_name: str):
         "status": "Equipo eliminado correctamente",
         "deleted_matches_count": delete_result.deleted_count
     }
+
+# ==========================================================
+# ELIMINAR CUENTA DE USUARIO Y TODOS SUS DATOS (RGPD)
+# ==========================================================
+
+@router.delete("/{user_id}")
+async def delete_user_account(user_id: str):
+    from app.database import match_collection
+
+    user = None
+    if ObjectId.is_valid(user_id):
+        user = await user_collection.find_one({"_id": ObjectId(user_id)})
+
+    if not user:
+        user = await user_collection.find_one({"firebase_uid": user_id})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    firebase_uid = user.get("firebase_uid")
+    deleted_matches = 0
+
+    # 1. Eliminar en cascada todos los partidos creados por el usuario
+    if firebase_uid:
+        match_delete_res = await match_collection.delete_many({"user_id": firebase_uid})
+        deleted_matches = match_delete_res.deleted_count
+
+    # 2. Eliminar el documento de usuario (equipos guardados, configuración, etc.)
+    await user_collection.delete_one({"_id": user["_id"]})
+
+    return {
+        "status": "Cuenta y datos eliminados correctamente",
+        "deleted_matches_count": deleted_matches
+    }
+

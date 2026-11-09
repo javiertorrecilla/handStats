@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { matchService } from '../services/handstatsService';
+import { toast } from './ToastContext';
+import i18n from '../i18n/i18n';
 
 const MatchContext = createContext();
 
@@ -178,7 +180,7 @@ export const MatchProvider = ({ children }) => {
       setCurrentMatch(updated);
     } catch (error) {
       console.error("Error al deshacer el último evento:", error);
-      alert(error.response?.data?.detail || "No se pudo deshacer la acción");
+      toast.error(error.response?.data?.detail || i18n.t("mesa_control.undo_error", "No se pudo deshacer la acción"));
     }
   };
 

@@ -358,6 +358,7 @@ export function TacticalHeatmapGrid({
   events = [],
   gkEvents = null,
   isOpponent = false,
+  isPreFiltered: isPreFilteredProp = false,
   match = null,
   selectedGkNumber = "all",
   selectedPlayerNumber = "all",
@@ -369,8 +370,8 @@ export function TacticalHeatmapGrid({
   const [showShotMarkers, setShowShotMarkers] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState(null);
 
-  // Si gkEvents está presente o isOpponent no está definido (por ejemplo, en TeamsPage acumulado), los eventos ya vienen 100% pre-filtrados para el equipo
-  const isPreFiltered = Boolean(gkEvents) || isOpponent === null || isOpponent === undefined;
+  // Si gkEvents está presente, isPreFilteredProp es true o isOpponent no está definido (por ejemplo, en TeamsPage acumulado), los eventos ya vienen 100% pre-filtrados para el equipo
+  const isPreFiltered = Boolean(gkEvents) || isPreFilteredProp || isOpponent === null || isOpponent === undefined;
 
   // Filtrar eventos de juego en pista (excluyendo terminantemente sustituciones)
   const shots = useMemo(() => {
@@ -417,9 +418,10 @@ export function TacticalHeatmapGrid({
   const courtPoints = useMemo(() => {
     return generateContinuousCourtHeatmapData(shots, {
       metricType: metricFilter,
-      selectedPlayer: selectedPlayerNumber
+      selectedPlayer: selectedPlayerNumber,
+      selectedGoalkeeper: isGkMode ? selectedGkNumber : "all"
     });
-  }, [shots, metricFilter, selectedPlayerNumber]);
+  }, [shots, metricFilter, selectedPlayerNumber, isGkMode, selectedGkNumber]);
 
   // Generar puntos continuos para la Portería
   const goalPoints = useMemo(() => {
@@ -553,7 +555,16 @@ export function TacticalHeatmapGrid({
               <IconTarget size={14} /> {t("heatmaps.selected_action", "Acción Seleccionada:")}
             </span>
             <span style={{ color: "var(--text-primary)" }}>
-              #{selectedActionDetail.player_number || ""} {selectedActionDetail.player_name || "Jugador"}
+              {isGkMode ? (
+                <>
+                  Lanzador: <strong>#{selectedActionDetail.player_number || ""} {selectedActionDetail.player_name || "Rival"}</strong>
+                  {selectedActionDetail.goalkeeper_name ? ` • Portero: #${selectedActionDetail.goalkeeper_number || ""} ${selectedActionDetail.goalkeeper_name}` : ""}
+                </>
+              ) : (
+                <>
+                  #{selectedActionDetail.player_number || ""} {selectedActionDetail.player_name || "Jugador"}
+                </>
+              )}
             </span>
             <span
               style={{
@@ -601,7 +612,9 @@ export function TacticalHeatmapGrid({
         {/* BLOQUE 1: MEDIA PISTA DE BALONMANO (400x300) */}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)", width: "100%" }}>
           <h5 style={{ fontSize: "12px", fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0, textAlign: "center", border: "none" }}>
-            {t("heatmaps.court_density", { count: courtPoints.length, defaultValue: `DENSIDAD TÉRMICA EN MEDIA PISTA (${courtPoints.length} ACCIONES)` })}
+            {isGkMode
+              ? t("heatmaps.court_density_gk", { count: courtPoints.length, defaultValue: `ZONAS DE LANZAMIENTO DEL RIVAL EN PISTA (${courtPoints.length} TIROS RECIBIDOS)` })
+              : t("heatmaps.court_density", { count: courtPoints.length, defaultValue: `DENSIDAD TÉRMICA EN MEDIA PISTA (${courtPoints.length} ACCIONES)` })}
           </h5>
 
           <div
@@ -639,8 +652,17 @@ export function TacticalHeatmapGrid({
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", background: "var(--bg-inset)", padding: "var(--space-10) var(--space-16)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "11px", fontWeight: 800 }}>
-            <span>{t("heatmaps.court_eff", "Efectividad en Pista:")} <strong style={{ color: effPct >= 60 ? "#44D878" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
-            <span>{t("attack.turnovers_title", "Pérdidas de Balón")}: <strong style={{ color: "#ef4444" }}>{countTurnovers}</strong></span>
+            {isGkMode ? (
+              <>
+                <span>{t("heatmaps.gk_save_eff", "Eficacia de Paradas:")} <strong style={{ color: countAllShots > 0 && Math.round((countSaves / countAllShots) * 100) >= 30 ? "#44D878" : "#f59e0b" }}>{countAllShots > 0 ? Math.round((countSaves / countAllShots) * 100) : 0}% ({countSaves}/{countAllShots})</strong></span>
+                <span>{t("heatmaps.goals_conceded", "Goles Encajados")}: <strong style={{ color: "#ef4444" }}>{countGoals}</strong></span>
+              </>
+            ) : (
+              <>
+                <span>{t("heatmaps.court_eff", "Efectividad en Pista:")} <strong style={{ color: effPct >= 60 ? "#44D878" : "#f59e0b" }}>{effPct}% ({countGoals}/{countAllShots})</strong></span>
+                <span>{t("attack.turnovers_title", "Pérdidas de Balón")}: <strong style={{ color: "#ef4444" }}>{countTurnovers}</strong></span>
+              </>
+            )}
           </div>
         </div>
 

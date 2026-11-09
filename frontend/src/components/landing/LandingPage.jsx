@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../common/LanguageSelector";
 import logoHorizontal from "../../assets/logoHorizontal.png";
@@ -149,7 +150,7 @@ const IconTablet = () => (
    HOOKS
    ========================================================== */
 
-function useCountUp(target, duration = 2000, isVisible = false) {
+function useCountUp(target, duration = 2000, isVisible = false, decimals = 0) {
   const [count, setCount] = useState(0);
   const hasAnimated = useRef(false);
 
@@ -162,19 +163,20 @@ function useCountUp(target, duration = 2000, isVisible = false) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(eased * target));
+      const current = eased * target;
+      setCount(decimals > 0 ? parseFloat(current.toFixed(decimals)) : Math.round(current));
       if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
-  }, [isVisible, target, duration]);
+  }, [isVisible, target, duration, decimals]);
 
   return count;
 }
 
-function StatCounterCard({ value, suffix, label }) {
+function StatCounterCard({ prefix, value, decimals = 0, unit = "", suffix, label }) {
   const ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  const count = useCountUp(value, 1800, isVisible);
+  const count = useCountUp(value, 1800, isVisible, decimals);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -185,11 +187,21 @@ function StatCounterCard({ value, suffix, label }) {
     return () => { if (ref.current) observer.unobserve(ref.current); };
   }, []);
 
+  const formattedCount = decimals > 0
+    ? count.toFixed(decimals)
+    : (value >= 1000 ? count.toLocaleString("es-ES") : count);
+
   return (
     <div ref={ref} className="stat-counter-box">
       <div className="stat-num-val">
-        {count}
-        <span className="stat-num-suffix">{suffix}</span>
+        {prefix && (
+          <span className={prefix.trim() === "+" ? "stat-num-sign" : "stat-num-prefix"}>
+            {prefix.trim()}
+          </span>
+        )}
+        <span className="stat-num-digits">{formattedCount}</span>
+        {unit && <span className="stat-num-unit">{unit}</span>}
+        {suffix && <span className="stat-num-suffix">{suffix.trim()}</span>}
       </div>
       <div className="stat-num-label">{label}</div>
     </div>
@@ -201,6 +213,7 @@ function StatCounterCard({ value, suffix, label }) {
    ========================================================== */
 
 export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -241,10 +254,29 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
   const marqueeLoop2 = useMemo(() => buildInfiniteLoop(marqueeItems2, 36), [marqueeItems2]);
 
   const statsData = [
-    { value: 8, suffix: "+", label: t("landing_stats.stat1_label") },
-    { value: 96, suffix: "%", label: t("landing_stats.stat2_label") },
-    { value: 500, suffix: "+", label: t("landing_stats.stat3_label") },
-    { value: 100, suffix: "%", label: t("landing_stats.stat4_label") },
+    {
+      value: 4,
+      suffix: t("landing_stats.stat1_suffix", "Toques"),
+      label: t("landing_stats.stat1_label", "CAPTURA ULTRAVELOZ DE DATOS EN PISTA")
+    },
+    {
+      prefix: t("landing_stats.stat2_prefix", "+"),
+      value: 10000,
+      suffix: t("landing_stats.stat2_suffix", "Puntos"),
+      label: t("landing_stats.stat2_label", "PRECISIÓN MILIMÉTRICA BASADA EN COORDENADAS")
+    },
+    {
+      prefix: t("landing_stats.stat3_prefix", "Rating"),
+      value: 10,
+      decimals: 1,
+      label: t("landing_stats.stat3_label", "MODELO DE VALORACIÓN DINÁMICA DE JUGADORES")
+    },
+    {
+      value: 100,
+      unit: "%",
+      suffix: t("landing_stats.stat4_suffix", "Balonmano"),
+      label: t("landing_stats.stat4_label", "DISEÑADO EXCLUSIVAMENTE PARA ALTO RENDIMIENTO")
+    },
   ];
 
   const productTabs = [
@@ -383,6 +415,61 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
     }
   ];
 
+  const enginesList = [
+    {
+      icon: <IconTarget />,
+      accentClass: "green",
+      tag: t("engines.e1_tag"),
+      formula: t("engines.e1_formula"),
+      title: t("engines.e1_title"),
+      desc: t("engines.e1_desc"),
+      pills: [
+        t("engines.e1_pill1"),
+        t("engines.e1_pill2"),
+        t("engines.e1_pill3")
+      ]
+    },
+    {
+      icon: <IconShield />,
+      accentClass: "blue",
+      tag: t("engines.e2_tag"),
+      formula: t("engines.e2_formula"),
+      title: t("engines.e2_title"),
+      desc: t("engines.e2_desc"),
+      pills: [
+        t("engines.e2_pill1"),
+        t("engines.e2_pill2"),
+        t("engines.e2_pill3")
+      ]
+    },
+    {
+      icon: <IconTrendingUp />,
+      accentClass: "amber",
+      tag: t("engines.e3_tag"),
+      formula: t("engines.e3_formula"),
+      title: t("engines.e3_title"),
+      desc: t("engines.e3_desc"),
+      pills: [
+        t("engines.e3_pill1"),
+        t("engines.e3_pill2"),
+        t("engines.e3_pill3")
+      ]
+    },
+    {
+      icon: <IconZap />,
+      accentClass: "purple",
+      tag: t("engines.e4_tag"),
+      formula: t("engines.e4_formula"),
+      title: t("engines.e4_title"),
+      desc: t("engines.e4_desc"),
+      pills: [
+        t("engines.e4_pill1"),
+        t("engines.e4_pill2"),
+        t("engines.e4_pill3")
+      ]
+    }
+  ];
+
   const featuresList = [
     {
       icon: <IconZap />,
@@ -492,8 +579,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
           <IconX />
         </button>
 
-        <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
         <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo("product"); }}>{t("nav.product")}</a>
+        <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo("features"); }}>{t("nav.features")}</a>
         <a href="#how" onClick={(e) => { e.preventDefault(); scrollTo("how"); }}>{t("nav.how_it_works")}</a>
 
         <div style={{ padding: "6px 0", display: "flex", justifyContent: "center" }}>
@@ -823,35 +910,6 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
               <p className="device-selector-subtitle">{t("product.device_subtitle")}</p>
             </div>
 
-            {/* Toggle Buttons: Comparativa vs Solo PC vs Solo Tablet */}
-            <div className="device-buttons-group">
-              <button
-                type="button"
-                className={`btn-device-toggle ${selectedDevice === "all" ? "active" : ""}`}
-                onClick={() => setSelectedDevice("all")}
-              >
-                <span>{t("product.device_view_all", "Comparativa Completa")}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`btn-device-toggle ${selectedDevice === "desktop" ? "active" : ""}`}
-                onClick={() => setSelectedDevice("desktop")}
-              >
-                <IconLaptop />
-                <span>{t("product.device_desktop_btn")}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`btn-device-toggle ${selectedDevice === "tablet" ? "active" : ""}`}
-                onClick={() => setSelectedDevice("tablet")}
-              >
-                <IconTablet />
-                <span>{t("product.device_tablet_btn")}</span>
-              </button>
-            </div>
-
             {/* Comparison Cards: Side by Side (or filtered) */}
             <div className={`device-comparison-grid view-${selectedDevice}`}>
               {/* DESKTOP CARD */}
@@ -990,7 +1048,8 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         </div>
       </section>
 
-      {/* ======== 6. FEATURES GRID ======== */}
+
+      {/* ======== 7. FEATURES GRID ======== */}
       <section className="landing-features-section" id="features">
         <div className="landing-container">
           <div className="center-header">
@@ -1065,6 +1124,33 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             <img src={logoHorizontal} alt="HandStats" />
             <span className="footer-tagline">Analyze. Improve. Win.</span>
           </div>
+
+          <div className="footer-legal-links">
+            <button
+              type="button"
+              className="footer-legal-btn"
+              onClick={() => navigate("/manual")}
+            >
+              {t("footer.manual", "Manual de Usuario")}
+            </button>
+            <span className="footer-legal-sep">·</span>
+            <button
+              type="button"
+              className="footer-legal-btn"
+              onClick={() => navigate("/privacy")}
+            >
+              {t("footer.privacy", "Política de Privacidad")}
+            </button>
+            <span className="footer-legal-sep">·</span>
+            <button
+              type="button"
+              className="footer-legal-btn"
+              onClick={() => navigate("/terms")}
+            >
+              {t("footer.terms", "Términos y Condiciones")}
+            </button>
+          </div>
+
           <div className="footer-copy">
             © {new Date().getFullYear()} {t("footer.rights")}
           </div>

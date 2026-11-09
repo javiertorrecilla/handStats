@@ -1,21 +1,28 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "../../context/ToastContext";
 
 function LoginForm({
   login,
   loginWithGoogle,
   loginAsGuest,
+  onForgotPassword,
 }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErrorMsg(null);
 
     if (!email || !password) {
-      return alert(t("auth.fill_all_fields"));
+      const msg = t("auth.fill_all_fields");
+      setErrorMsg(msg);
+      toast.warning(msg);
+      return;
     }
 
     try {
@@ -23,19 +30,25 @@ function LoginForm({
       await login(email, password);
     } catch (error) {
       console.error(error);
+      let userFriendlyMsg = error.message;
       switch (error.code) {
         case "auth/invalid-credential":
-          alert(t("auth.invalid_credentials"));
+          userFriendlyMsg = t("auth.invalid_credentials");
           break;
         case "auth/user-not-found":
-          alert(t("auth.user_not_found"));
+          userFriendlyMsg = t("auth.user_not_found");
           break;
         case "auth/wrong-password":
-          alert(t("auth.wrong_password"));
+          userFriendlyMsg = t("auth.wrong_password");
+          break;
+        case "auth/too-many-requests":
+          userFriendlyMsg = t("auth.too_many_requests");
           break;
         default:
-          alert(error.message);
+          userFriendlyMsg = error.message;
       }
+      setErrorMsg(userFriendlyMsg);
+      toast.error(userFriendlyMsg);
     } finally {
       setLoading(false);
     }
@@ -43,7 +56,18 @@ function LoginForm({
 
   return (
     <>
-      <form className="auth-form" onSubmit={handleLogin}>
+      <form className="auth-form" onSubmit={handleLogin} noValidate>
+        {errorMsg && (
+          <div className="auth-alert-box error" role="alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         <div className="form-group">
           <label htmlFor="login-email">{t("auth.email")}</label>
           <input
@@ -59,7 +83,18 @@ function LoginForm({
         </div>
 
         <div className="form-group">
-          <label htmlFor="login-password">{t("auth.password")}</label>
+          <div className="form-label-with-action">
+            <label htmlFor="login-password">{t("auth.password")}</label>
+            {onForgotPassword && (
+              <button
+                type="button"
+                className="auth-link-inline"
+                onClick={onForgotPassword}
+              >
+                {t("auth.forgot_password_question")}
+              </button>
+            )}
+          </div>
           <input
             id="login-password"
             className="input-field"

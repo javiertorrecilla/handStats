@@ -35,6 +35,7 @@
   "nav": {
     "features": "Funkcje",
     "product": "Produkt",
+    "engines": "Silniki i Obliczenia",
     "how_it_works": "Jak to działa",
     "testimonials": "Opinie",
     "try_handstats": "Wypróbuj HandStats",
@@ -51,7 +52,7 @@
     "btn_try": "Wypróbuj HandStats Teraz",
     "btn_demo": "Zobacz Wersję Demonstracyjną",
     "card_live": "NA ŻYWO · 48:15",
-    "card_live_tag": "SUPERLIGA",
+    "card_live_tag": "ASOBAL",
     "card_possession": "Posiadanie",
     "card_xg_label": "MODEL xG // POZYCYJNY",
     "card_xg_tag": "+1.8 vs xG",
@@ -72,7 +73,7 @@
     "items": [
       "Analiza na Żywo",
       "Modele xG i xSaves",
-      "Mapy Ciepła 3D",
+      "Taktyczne Mapy Ciepła",
       "Oceny 0-10",
       "Eksport do PDF",
       "Efektywność Defensywna",
@@ -87,16 +88,21 @@
     ]
   },
   "landing_stats": {
-    "stat1_label": "Zaawansowane Moduły Statystyczne",
-    "stat2_label": "Precyzja Algorytmiczna xG",
-    "stat3_label": "Przeanalizowanych Meczów",
-    "stat4_label": "Dostępność w Chmurze 24/7"
+    "stat1_suffix": "Dotknięcia",
+    "stat1_label": "BŁYSKAWICZNE WPROWADZANIE DANYCH Z BOISKA",
+    "stat2_prefix": "+",
+    "stat2_suffix": "Punktów",
+    "stat2_label": "MILIMETROWA PRECYZJA OPARTA NA WSPÓŁRZĘDNYCH",
+    "stat3_prefix": "Rating",
+    "stat3_label": "MODEL DYNAMICZNEJ OCENY ZAWODNIKÓW",
+    "stat4_suffix": "Piłki Ręcznej",
+    "stat4_label": "STWORZONY WYŁĄCZNIE DLA SPORTU WYCZYNOWEGO"
   },
   "product": {
     "kicker_num": "01",
     "kicker_title": "PAKIET I WIZUALIZACJE",
     "title": "Pakiet analityczny zaprojektowany do wygrywania",
-    "subtitle": "Poznaj narzędzia używane przez trenerów i analityków taktycznych do przekuwania danych w zwycięstwa.",
+    "subtitle": "Poznaj narzędzia stworzone dla trenerów i analityków taktycznych do przekuwania danych w zwycięstwa.",
     "tab_dashboard": "Główny Pulpit",
     "tab_shots": "Boisko i xG",
     "tab_players": "Zawodnicy i Oceny",
@@ -148,8 +154,42 @@
     "device_tablet_p3_bold": "Automatyczna Synchronizacja w Chmurze:",
     "device_tablet_p3_text": "Twoje dane są przesyłane w czasie rzeczywistym, by sztab szkoleniowy miał do nich natychmiastowy dostęp."
   },
-  "features": {
+  "engines": {
     "kicker_num": "02",
+    "kicker_title": "SILNIKI ANALITYCZNE & OBLICZENIA",
+    "title": "Jak HandStats oblicza statystyki meczowe?",
+    "subtitle": "Nasza platforma nie ogranicza się do prostych sum: ocenia każde zdarzenie za pomocą czterech silników matematycznych opracowanych z myślą o dynamice i biomechanice piłki ręcznej.",
+    "e1_tag": "PRAWDOPODOBIEŃSTWO BRAMKI",
+    "e1_title": "Model Expected Goals (xG)",
+    "e1_formula": "xG = Baza(Strefa) × Faza × Sytuacja",
+    "e1_desc": "Oblicza matematyczne prawdopodobieństwo (0.00 do 1.00) zdobycia bramki na podstawie odległości od bramki, kąta rzutu, tempa akcji (szybki atak bezpośredni vs atak pozycyjny) oraz sytuacji liczbowej (7 na 6, 6 na 5 lub pusta bramka).",
+    "e1_pill1": "Skrzydła: 0.55 xG",
+    "e1_pill2": "6m Koło: 0.75 xG",
+    "e1_pill3": "Rzut karny 7m: 0.85 xG",
+    "e2_tag": "EFEKTYWNOŚĆ BRAMKARZA",
+    "e2_title": "Model Expected Saves (xSaves)",
+    "e2_formula": "xSaves = (1 - xG) + Modyfikator(3×3)",
+    "e2_desc": "Mierzy rzeczywisty kunszt bramkarza, wyliczając bramki obronione powyżej oczekiwań statystycznych. Nagradza obronione rzuty z czystych pozycji i analizuje skuteczność w każdym z 9 sektorów bramki.",
+    "e2_pill1": "Bramki faktycznie uratowane",
+    "e2_pill2": "Trudność według sektora",
+    "e2_pill3": "Skorygowana skuteczność",
+    "e3_tag": "OBIEKTYWNA OCENA",
+    "e3_title": "Algorytm Oceny Zawodnika 0.0 - 10.0",
+    "e3_formula": "Rating = 10 / (1 + e^(-k · NPS))",
+    "e3_desc": "Wyznacza Wskaźnik Wpływu Netto (NPS). Premiuje trudne bramki (1 - xG), asysty i wywalczone karne; nakłada ujemne wagi za straty i wykluczenia. Logistyczna krzywa sigmoidalna obiektywnie ustala neutralną notę na poziomie 5.0.",
+    "e3_pill1": "Logistyczna krzywa sigmoidalna",
+    "e3_pill2": "Ważone straty i kary",
+    "e3_pill3": "Zero subiektywnych opinii",
+    "e4_tag": "ROZDZIELCZOŚĆ PRZESTRZENNA",
+    "e4_title": "Współrzędne (X, Y) i Autokalibracja",
+    "e4_formula": "Boisko (40×20m) ⟷ Bramka (3×2m)",
+    "e4_desc": "Rejestruje ciągłą pozycję każdej akcji na boisku 40×20m oraz w bramce 3×2m. Po zarejestrowaniu 500 rzutów model empiryczny automatycznie rekalibruje bazowe prawdopodobieństwa zgodnie z realną celnością Twojego zespołu.",
+    "e4_pill1": "Ciągłe śledzenie (X, Y)",
+    "e4_pill2": "9 sektorów bramki",
+    "e4_pill3": "Progresywna autokalibracja"
+  },
+  "features": {
+    "kicker_num": "03",
     "kicker_title": "MODUŁY ANALITYCZNE",
     "title": "Wszystko, czego potrzebuje Twój zespół",
     "subtitle": "Projektowane ramię w ramię z profesjonalistami piłki ręcznej, by objąć każdy element gry.",
@@ -167,7 +207,7 @@
     "f6_desc": "Udostępniaj pomeczowe analizy jednym kliknięciem w profesjonalnym i czytelnym formacie PDF."
   },
   "how_it_works": {
-    "kicker_num": "03",
+    "kicker_num": "04",
     "kicker_title": "METODOLOGIA PRACY",
     "title": "W 3 prostych krokach",
     "subtitle": "Bez skomplikowanej konfiguracji i żmudnej nauki oprogramowania.",
@@ -199,7 +239,10 @@
     "btn": "Wypróbuj HandStats Teraz"
   },
   "footer": {
-    "rights": "HandStats. Wszelkie prawa zastrzeżone."
+    "rights": "HandStats. Wszelkie prawa zastrzeżone.",
+    "privacy": "Polityka Prywatności",
+    "terms": "Regulamin i Warunki",
+    "manual": "Podręcznik Użytkownika"
   },
   "sidebar": {
     "my_matches": "Moje Mecze",
@@ -214,7 +257,9 @@
     "guest_role": "Demo ({{count}}/3 meczów)",
     "coach_role": "Trener / Analityk",
     "open_nav": "Otwórz menu nawigacji",
-    "close_menu": "Zamknij menu"
+    "close_menu": "Zamknij menu",
+    "user_manual": "Podręcznik Użytkownika",
+    "guided_tour": "Przewodnik"
   },
   "auth": {
     "back_to_landing": "Wstecz",
@@ -241,7 +286,13 @@
     "passwords_dont_match": "Hasła nie są identyczne.",
     "invalid_credentials": "Nieprawidłowy e-mail lub hasło.",
     "user_not_found": "Użytkownik nie istnieje.",
-    "wrong_password": "Nieprawidłowe hasło."
+    "wrong_password": "Nieprawidłowe hasło.",
+    "legal_notice_prefix": "Rejestrując się lub logując, akceptujesz nasz",
+    "legal_notice_and": "oraz",
+    "email_verified_success": "Adres e-mail pomyślnie zweryfikowany! Przekierowywanie...",
+    "verification_check_error": "Błąd weryfikacji statusu adresu e-mail.",
+    "resend_fail": "Błąd ponownego wysyłania e-maila weryfikacyjnego.",
+    "create_error": "Błąd podczas przetwarzania żądania."
   },
   "matches": {
     "title": "Moje Mecze",
@@ -256,7 +307,9 @@
     "statistics": "Statystyki",
     "delete_confirm": "Czy na pewno chcesz usunąć ten mecz?",
     "delete_error": "Błąd podczas usuwania meczu.",
-    "create_error": "Błąd podczas tworzenia meczu."
+    "create_error": "Błąd podczas tworzenia meczu.",
+    "create_success": "Mecz został utworzony pomyślnie.",
+    "delete_success": "Mecz został usunięty pomyślnie."
   },
   "create_match": {
     "title": "Nowy Mecz",
@@ -338,6 +391,11 @@
     "all_team_goalkeepers": "Wszyscy Bramkarze Drużyny",
     "cumulative_court_title": "SKUMULOWANA MAPA RZUTÓW I OBRON BRAMKARSKICH W SEZONIE — {{name}}",
     "roster_performance_title": "SKUMULOWANA WYDAJNOŚĆ KADRY",
+    "interactive_players_title": "Indywidualne Profile Zawodników:",
+    "interactive_players_desc": "Kliknij zawodnika, aby otworzyć jego pełny profil ze statystykami sezonu i szczegółami mecz po meczu.",
+    "click_to_view": "Kliknij po więcej info",
+    "click_to_view_player": "Kliknij, aby zobaczyć profil i mecze {{name}}",
+    "no_matches_found": "Nie znaleziono meczów z wybranymi filtrami.",
     "kpis": {
       "matches_played": "ROZEGRANE MECZE",
       "goals_for_against": "BRAMKI ZDOBYTE / STRACONE",
@@ -354,7 +412,10 @@
       "poss_avg_sub": "Średnia: {{val}} pos. / mecz",
       "def_eff_title": "SKUTECZNOŚĆ DEFENSYWNA",
       "def_eff_sub": "Na podstawie straconych bramek na posiadanie"
-    }
+    },
+    "invalid_dorsal": "Wprowadź prawidłowy numer od 0 do 99.",
+    "save_error": "Błąd podczas zapisywania drużyny.",
+    "delete_error": "Błąd podczas usuwania drużyny."
   },
   "settings": {
     "title": "Ustawienia Parametrów Taktycznych",
@@ -416,7 +477,25 @@
     "xsaves_f3_code": "Odchylenie vs Skuteczność Globalna",
     "xsaves_explanation": "Oczekiwane obrony bramkarza obliczane są jako (1 - xG) + ModyfikatorSektoraXSaves. Modyfikator Sektora Bramki 3x3 ocenia empiryczną wydajność bramkarza w każdym sektorze bramki, odejmując jego rzeczywisty procent obron w tym sektorze od jego globalnej skuteczności.",
     "reset_all": "Przywróć Wszystko",
-    "save_settings": "Zapisz Ustawienia"
+    "save_settings": "Zapisz Ustawienia",
+    "danger_zone_title": "Strefa Zagrożenia",
+    "danger_zone_desc": "Nieodwracalne operacje na Twoim koncie i danych osobowych.",
+    "delete_account_btn": "Usuń konto bezpowrotnie",
+    "delete_account_info": "Wszystkie Twoje mecze, zapisane drużyny, oceny graczy i ustawienia zostaną trwale usunięte zgodnie z RODO.",
+    "delete_modal_title": "Usunąć konto i wszystkie dane?",
+    "delete_modal_warning": "Uwaga! Ta operacja jest nieodwracalna. Następujące elementy zostaną trwale usunięte z serwerów:",
+    "delete_item_matches": "Pełna historia meczów i zarejestrowanych akcji",
+    "delete_item_teams": "Zapisane drużyny, składy i numery zawodników",
+    "delete_item_auth": "Dane logowania i profil użytkownika",
+    "delete_type_confirm_label": "Aby potwierdzić, wpisz poniżej \"ELIMINAR\" lub \"DELETE\":",
+    "delete_type_confirm_placeholder": "Wpisz ELIMINAR",
+    "cancel": "Anuluj",
+    "confirm_delete_btn": "Tak, usuń moje konto bezpowrotnie",
+    "deleting": "Usuwanie konta...",
+    "account_deleted_success": "Twoje konto i wszystkie dane zostały pomyślnie usunięte.",
+    "delete_reauth_required": "Ze względów bezpieczeństwa musisz zalogować się ponownie przed usunięciem konta.",
+    "delete_account_error": "Błąd podczas usuwania konta. Spróbuj ponownie.",
+    "type_confirm_warning": "Wpisz ELIMINAR lub DELETE, aby potwierdzić."
   },
   "mesa_control": {
     "step1_player": "1. ZAWODNIK",
@@ -531,9 +610,9 @@
     "rebound_attack_tag": "ZACHOWUJE POSIADANIE",
     "rebound_attack_desc": "Drużyna atakująca zbiera piłkę i zachowuje posiadanie",
     "alert_gk_only_sub": "W sekcji BRAMKARZ można umieścić tylko rezerwowego bramkarza. Wybierz bramkarza.",
-    "alert_select_player_first": "Proszę najpierw wybrać zawodnika ze składu, aby zarejestrować akcję.",
-    "alert_substitutes_sanctions_only": "Rezerwowi mogą otrzymać tylko kary (2 min, żółta, czerwona, niebieska kartka). Aby wprowadzić na boisko, kliknij zawodnika ze składu podstawowego.",
-    "alert_free_throw_defending_only": "Rzut wolny można przyznać tylko zawodnikowi drużyny BRONIĄCEJ (bez posiadania).",
+    "alert_select_player_first": "Wybierz najpierw zawodnika ze składu, aby zarejestrować akcję.",
+    "alert_substitutes_sanctions_only": "Rezerwowi mogą otrzymać tylko kary (2 min, Żółta, Czerwona, Niebieska kartka).",
+    "alert_free_throw_defending_only": "Rzut wolny można przyznać tylko zawodnikowi drużyny BRONIĄCEJ.",
     "player_excluded_tooltip": "Wykluczony zawodnik (2 min) — Pozostały czas: {{time}}",
     "action_cambio": "ZMIANA",
     "filter_substitutions": "ZMIANY",
@@ -542,7 +621,7 @@
     "adjust_minutes_title": "Dostosuj rozegrane minuty",
     "adjust_minutes_desc": "Przejrzyj lub ręcznie dostosuj minuty rozegrane przez każdego zawodnika w tym meczu. W przypadku pozostawienia pustego pola zostanie użyte automatyczne obliczanie oparte na zmianach.",
     "auto_calculated": "Obliczone",
-    "error_saving_minutes": "Błąd podczas zapisywania minut. Spróbuj ponownie.",
+    "error_saving_minutes": "Błąd zapisu minut graczy. Spróbuj ponownie.",
     "tactical_btn": "Taktyka",
     "tactical_title": "Ustawienia Taktyczne",
     "atq_def_title": "Zmiana Atak / Obrona",
@@ -560,7 +639,11 @@
     "action_gol_porteria_vacia": "GOL DO PUSTEJ BRAMKI",
     "empty_net_badge": "7v6 POLE",
     "empty_net_tooltip": "Pusta bramka / Zawodnik z pola w bramce",
-    "empty_net_court_skipped": "Pusta bramka: kliknij bezpośrednio w bramkę"
+    "empty_net_court_skipped": "Pusta bramka: kliknij bezpośrednio w bramkę",
+    "undo_error": "Nie udało się cofnąć akcji",
+    "alert_select_attacker_first": "Wybierz najpierw zawodnika atakującego na boisku ({{team}}) przed oznaczeniem {{action}}.",
+    "alert_select_attacker_wrong_team": "Wybrany zawodnik (#{{number}} {{name}}) należy do drużyny broniącej. Wybierz najpierw atakującego ({{team}}) na boisku.",
+    "alert_select_attacker_court_only": "Atakujący musi znajdować się na boisku (nie na ławce)."
   },
   "dashboard": {
     "select_team_banner": "-- WYBIERZ DRUŻYNĘ, ABY ZOBACZYĆ STATYSTYKI: --",
@@ -701,7 +784,9 @@
     "gk_saves": "Obrony bramkarza:",
     "legend_title": "Legenda znaczników i gęstości cieplnej",
     "miss_post": "Niecelny / Słupek",
-    "max_concentration": "Maksymalna koncentracja akcji"
+    "max_concentration": "Maksymalna koncentracja akcji",
+    "court_density_gk": "Strefy rzutów rywali na boisku ({{count}} rzutów)",
+    "gk_save_eff": "Skuteczność obron:"
   },
   "goalkeeper": {
     "select_gk": "WYBIERZ BRAMKARZA:",
@@ -920,5 +1005,25 @@
     "section_dynamics_tag": "Dynamika Meczu",
     "section_players_title": "Statystyki Zawodników — {{team}}",
     "section_players_sub": "Indywidualne statystyki zawodników z pola, bramkarzy i oceny techniczne"
+  },
+  "toast": {
+    "error": "Błąd",
+    "success": "Sukces",
+    "warning": "Uwaga",
+    "info": "Informacja",
+    "close": "Zamknij",
+    "system_notifications": "Powiadomienia systemowe"
+  },
+  "pdf": {
+    "download_success": "Oficjalny plik PDF został pomyślnie pobrany.",
+    "manual_download_success": "Podręcznik użytkownika w formacie PDF został pomyślnie pobrany.",
+    "report_download_success": "Raport taktyczny w formacie PDF został pomyślnie pobrany.",
+    "download_error": "Błąd podczas generowania dokumentu PDF.",
+    "generating": "Generowanie dokumentu PDF..."
+  },
+  "player_card": {
+    "goals_shots_field": "Bramki / Rzuty z gry",
+    "xg_field": "xG z gry",
+    "court_tab_gk": "Mapa rzutów i bramki"
   }
 }

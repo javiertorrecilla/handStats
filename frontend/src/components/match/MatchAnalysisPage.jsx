@@ -44,6 +44,7 @@ import {
   AlertCircle as IconAlertCircle
 } from 'lucide-react';
 import { useTranslation } from "react-i18next";
+import { toast } from "../../context/ToastContext";
 import { useMatch } from "../../context/MatchContext";
 import userService from "../../services/userService";
 import MatchStatsModule from "../../stats/MatchStatsModule";
@@ -1720,7 +1721,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       setEditingMinutesTeam(null);
     } catch (err) {
       console.error("Error guardando minutos ajustados:", err);
-      alert(t("mesa_control.error_saving_minutes", "Error al guardar los minutos. Inténtalo de nuevo."));
+      toast.error(t("mesa_control.error_saving_minutes", "Error al guardar los minutos. Inténtalo de nuevo."));
     } finally {
       setIsSavingMinutes(false);
     }
@@ -2604,17 +2605,17 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
       const actionInstantTime = time;
 
       if (!selectedPlayer) {
-        alert(t("mesa_control.alert_select_attacker_first", `Por favor, selecciona primero al jugador atacante en pista (${attackingTeamName}) antes de marcar ${actionKey === "penalti_7m" ? "7M Penalti" : "Falta en Ataque"}.`));
+        toast.warning(t("mesa_control.alert_select_attacker_first", `Por favor, selecciona primero al jugador atacante en pista (${attackingTeamName}) antes de marcar ${actionKey === "penalti_7m" ? "7M Penalti" : "Falta en Ataque"}.`));
         return;
       }
 
       if (selectedPlayer.team !== attackingTeam) {
-        alert(t("mesa_control.alert_select_attacker_wrong_team", `El jugador seleccionado (#${selectedPlayer.number} ${selectedPlayer.name || ""}) pertenece al equipo defensor. Para registrar ${actionKey === "penalti_7m" ? "7M Penalti" : "Falta en Ataque"}, selecciona primero a un jugador del equipo atacante (${attackingTeamName}) en pista.`));
+        toast.warning(t("mesa_control.alert_select_attacker_wrong_team", `El jugador seleccionado (#${selectedPlayer.number} ${selectedPlayer.name || ""}) pertenece al equipo defensor. Para registrar ${actionKey === "penalti_7m" ? "7M Penalti" : "Falta en Ataque"}, selecciona primero a un jugador del equipo atacante (${attackingTeamName}) en pista.`));
         return;
       }
 
       if (selectedPlayer.isBench) {
-        alert(t("mesa_control.alert_select_attacker_court_only", "El jugador atacante debe ser un jugador en pista (no del banquillo)."));
+        toast.warning(t("mesa_control.alert_select_attacker_court_only", "El jugador atacante debe ser un jugador en pista (no del banquillo)."));
         return;
       }
 
@@ -2647,7 +2648,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
 
     // Comprobación previa: Seleccionar jugador de la alineación
     if (!selectedPlayer) {
-      alert(t("mesa_control.alert_select_player_first", "Por favor, selecciona primero a un jugador de la alineación/plantilla para registrar la acción."));
+      toast.warning(t("mesa_control.alert_select_player_first", "Por favor, selecciona primero a un jugador de la alineación/plantilla para registrar la acción."));
       return;
     }
 
@@ -2655,7 +2656,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     if (selectedPlayer.isBench) {
       const isSanction = ["exclusion", "amarilla", "roja", "azul"].includes(actionKey);
       if (!isSanction) {
-        alert(t("mesa_control.alert_substitutes_sanctions_only", "Los suplentes solo pueden recibir Sanciones (2 min, Amarilla, Roja, Azul). Para meter a este jugador al campo, haz clic en un titular de la alineación."));
+        toast.warning(t("mesa_control.alert_substitutes_sanctions_only", "Los suplentes solo pueden recibir Sanciones (2 min, Amarilla, Roja, Azul). Para meter a este jugador al campo, haz clic en un titular de la alineación."));
         return;
       }
     }
@@ -2685,7 +2686,7 @@ export default function MatchAnalysisPage({ user, onBack, initialMode = "live", 
     if (actionKey === "golpe_franco") {
       const isDefendingPlayer = selectedPlayer && selectedPlayer.team !== activePossession?.team;
       if (!isDefendingPlayer || selectedPlayer.isBench) {
-        alert(t("mesa_control.alert_free_throw_defending_only", "El Golpe Franco solo se puede atribuir a un jugador del equipo que DEFIENDE (sin posesión)."));
+        toast.warning(t("mesa_control.alert_free_throw_defending_only", "El Golpe Franco solo se puede atribuir a un jugador del equipo que DEFIENDE (sin posesión)."));
         return;
       }
 

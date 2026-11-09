@@ -537,7 +537,7 @@ function calculateAttackBreakdown(shots) {
  * Verifica de forma exacta si un campo de evento (cadena o número) coincide con un jugador.
  * Evita que el dorsal 1 coincida erróneamente con "10 - Nombre", "11 - Nombre", etc.
  */
-function matchesPlayer(fieldStr, fieldNum, player) {
+export function matchesPlayer(fieldStr, fieldNum, player) {
   if (!player) return false;
   const pNum = String(player.number);
   const pName = player.name ? String(player.name).trim() : "";

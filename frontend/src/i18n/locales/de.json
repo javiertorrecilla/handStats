@@ -35,6 +35,7 @@
   "nav": {
     "features": "Funktionen",
     "product": "Produkt",
+    "engines": "Berechnung & Motoren",
     "how_it_works": "Ablauf",
     "testimonials": "Erfahrungsberichte",
     "try_handstats": "HandStats Testen",
@@ -51,7 +52,7 @@
     "btn_try": "Jetzt HandStats Testen",
     "btn_demo": "Demo Ansehen",
     "card_live": "LIVE · 48:15",
-    "card_live_tag": "BUNDESLIGA",
+    "card_live_tag": "ASOBAL",
     "card_possession": "Ballbesitz",
     "card_xg_label": "xG-MODELL // ASSOZIATIV",
     "card_xg_tag": "+1.8 vs xG",
@@ -72,7 +73,7 @@
     "items": [
       "Live-Analyse",
       "xG & xSaves Modelle",
-      "3D-Heatmaps",
+      "Taktische Heatmaps",
       "0-10 Bewertung",
       "PDF-Export",
       "Abwehrleistung",
@@ -87,16 +88,21 @@
     ]
   },
   "landing_stats": {
-    "stat1_label": "Statistische Pro-Module",
-    "stat2_label": "Algorithmische xG-Genauigkeit",
-    "stat3_label": "Verarbeitete Spiele",
-    "stat4_label": "24/7 Cloud-Verfügbarkeit"
+    "stat1_suffix": "Fingertipps",
+    "stat1_label": "BLITZSCHNELLE DATENERFASSUNG AM SPIELFELDRAND",
+    "stat2_prefix": "+",
+    "stat2_suffix": "Datenpunkte",
+    "stat2_label": "MILLIMETERGENAUE KOORDINATEN-PRÄZISION",
+    "stat3_prefix": "Rating",
+    "stat3_label": "DYNAMISCHES SPIELER-BEWERTUNGSMODELL",
+    "stat4_suffix": "Handball",
+    "stat4_label": "AUSSCHLIESSLICH FÜR DEN LEISTUNGSSPORT ENTWICKELT"
   },
   "product": {
     "kicker_num": "01",
     "kicker_title": "SUITE & VISUALISIERUNGEN",
     "title": "Eine Analysesuite, entwickelt um zu siegen",
-    "subtitle": "Entdecke die Werkzeuge, mit denen Trainer und Taktikanalysten Daten in Erfolge verwandeln.",
+    "subtitle": "Entdecke die Werkzeuge, die für Trainer und Taktikanalysten entwickelt wurden, um Daten in Siege zu verwandeln.",
     "tab_dashboard": "Dashboard-Übersicht",
     "tab_shots": "Wurfbild & xG",
     "tab_players": "Spieler & Noten",
@@ -148,8 +154,42 @@
     "device_tablet_p3_bold": "Automatische Cloud-Synchronisation:",
     "device_tablet_p3_text": "Daten werden in Echtzeit übertragen, damit das Trainerteam sofortigen Zugriff hat."
   },
-  "features": {
+  "engines": {
     "kicker_num": "02",
+    "kicker_title": "ANALYSE-MOTOREN & BERECHNUNG",
+    "title": "Wie berechnet HandStats die Spielstatistiken?",
+    "subtitle": "Unsere Plattform zählt keine oberflächlichen Zahlen: Sie bewertet jede Aktion mit vier mathematischen Modellen, die speziell auf die Dynamik und Biomechanik des Handballs abgestimmt sind.",
+    "e1_tag": "TORWAHRSCHEINLICHKEIT",
+    "e1_title": "Expected Goals (xG) Modell",
+    "e1_formula": "xG = Basis(Zone) × Phase × Situation",
+    "e1_desc": "Berechnet die mathematische Wahrscheinlichkeit (0.00 bis 1.00), dass ein Wurf zu einem Tor führt – basierend auf Wurfdistanz, Winkel, Spielphase (direkter Gegenstoß vs. Positionsangriff) und numerischer Situation (7v6, 6v5 oder leeres Tor).",
+    "e1_pill1": "Außen: 0.55 xG",
+    "e1_pill2": "6m Kreis: 0.75 xG",
+    "e1_pill3": "7m Siebenmeter: 0.85 xG",
+    "e2_tag": "TORHÜTER-EFFIZIENZ",
+    "e2_title": "Expected Saves (xSaves) Modell",
+    "e2_formula": "xSaves = (1 - xG) + Modifikator(3×3)",
+    "e2_desc": "Misst die tatsächliche Torwartleistung über verhinderte Tore im Vergleich zur Erwartung. Belohnt gehaltene Großchancen und analysiert die Abdeckung in jedem der 9 Torquadranten.",
+    "e2_pill1": "Tatsächlich verhinderte Tore",
+    "e2_pill2": "Schwierigkeit pro Quadrant",
+    "e2_pill3": "Bereinigte Haltequote",
+    "e3_tag": "OBJEKTIVE BEWERTUNG",
+    "e3_title": "0.0 - 10.0 Rating-Algorithmus",
+    "e3_formula": "Rating = 10 / (1 + e^(-k · NPS))",
+    "e3_desc": "Ermittelt den Net Player Score (NPS). Belohnt schwierige Tore (1 - xG), Assists und herausgeholte Siebenmeter; sanktioniert Ballverluste und Zeitstrafen. Eine logistische Sigmoidkurve zentriert neutrale Leistungen objektiv bei 5.0.",
+    "e3_pill1": "Logistische Sigmoidfunktion",
+    "e3_pill2": "Gewichtete Ballverluste & Strafen",
+    "e3_pill3": "Ohne subjektive Verzerrung",
+    "e4_tag": "RÄUMLICHE AUFLÖSUNG",
+    "e4_title": "(X, Y)-Koordinaten & Autokalibrierung",
+    "e4_formula": "Spielfeld (40×20m) ⟷ Tor (3×2m)",
+    "e4_desc": "Erfasst kontinuierliche Raumkoordinaten auf der 40×20m-Spielfläche und dem 3×2m-Tor. Ab 500 erfassten Würfen kalibriert das empirische Modell die Basiswahrscheinlichkeiten automatisch anhand der realen Treffsicherheit deines Teams nach.",
+    "e4_pill1": "Kontinuierliches (X, Y)-Tracking",
+    "e4_pill2": "9 Torquadranten",
+    "e4_pill3": "Progressive Autokalibrierung"
+  },
+  "features": {
+    "kicker_num": "03",
     "kicker_title": "ANALYSEMODULE",
     "title": "Alles, was dein Team benötigt",
     "subtitle": "Gemeinsam mit Handballprofis entwickelt, um jede Phase des Spiels präzise abzubilden.",
@@ -167,7 +207,7 @@
     "f6_desc": "Teile umfassende Spielberichte mit einem Klick im professionellen PDF-Format."
   },
   "how_it_works": {
-    "kicker_num": "03",
+    "kicker_num": "04",
     "kicker_title": "ARBEITSWEISE",
     "title": "In 3 einfachen Schritten",
     "subtitle": "Ohne komplizierte Konfigurationen oder lange Einarbeitungszeit.",
@@ -199,7 +239,10 @@
     "btn": "Jetzt HandStats Testen"
   },
   "footer": {
-    "rights": "HandStats. Alle Rechte vorbehalten."
+    "rights": "HandStats. Alle Rechte vorbehalten.",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Allgemeine Geschäftsbedingungen",
+    "manual": "Benutzerhandbuch"
   },
   "sidebar": {
     "my_matches": "Meine Spiele",
@@ -214,7 +257,9 @@
     "guest_role": "Demo ({{count}}/3 Spiele)",
     "coach_role": "Trainer / Analyst",
     "open_nav": "Navigationsmenü öffnen",
-    "close_menu": "Menü schließen"
+    "close_menu": "Menü schließen",
+    "user_manual": "Benutzerhandbuch",
+    "guided_tour": "Interaktive Tour"
   },
   "auth": {
     "back_to_landing": "Zurück",
@@ -241,7 +286,13 @@
     "passwords_dont_match": "Passwörter stimmen nicht überein.",
     "invalid_credentials": "E-Mail oder Passwort falsch.",
     "user_not_found": "Benutzer existiert nicht.",
-    "wrong_password": "Falsches Passwort."
+    "wrong_password": "Falsches Passwort.",
+    "legal_notice_prefix": "Mit der Registrierung oder Anmeldung akzeptierst du unsere",
+    "legal_notice_and": "und die",
+    "email_verified_success": "E-Mail erfolgreich bestätigt! Weiterleitung...",
+    "verification_check_error": "Fehler beim Überprüfen des Verifizierungsstatus.",
+    "resend_fail": "Fehler beim erneuten Senden der Verifizierungs-E-Mail.",
+    "create_error": "Fehler bei der Verarbeitung der Anfrage."
   },
   "matches": {
     "title": "Meine Spiele",
@@ -256,7 +307,9 @@
     "statistics": "Statistiken",
     "delete_confirm": "Möchtest du dieses Spiel löschen?",
     "delete_error": "Fehler beim Löschen des Spiels.",
-    "create_error": "Fehler beim Erstellen des Spiels."
+    "create_error": "Fehler beim Erstellen des Spiels.",
+    "create_success": "Spiel erfolgreich erstellt.",
+    "delete_success": "Spiel erfolgreich gelöscht."
   },
   "create_match": {
     "title": "Neues Spiel",
@@ -338,6 +391,11 @@
     "all_team_goalkeepers": "Alle Torhüter des Teams",
     "cumulative_court_title": "SAISON-WURF- UND PARADENKARTE — {{name}}",
     "roster_performance_title": "KADERLEISTUNG DER SAISON",
+    "interactive_players_title": "Individuelle Spielerprofile:",
+    "interactive_players_desc": "Klicken Sie auf einen Spieler, um sein vollständiges Profil mit Saisonstatistiken und Spielaufschlüsselung zu öffnen.",
+    "click_to_view": "Klick für mehr Info",
+    "click_to_view_player": "Klicken für Profil und Spiele von {{name}}",
+    "no_matches_found": "Keine Spiele mit den ausgewählten Filtern gefunden.",
     "kpis": {
       "matches_played": "GESPIELTE SPIELE",
       "goals_for_against": "TORE DAFÜR / DAGEGEN",
@@ -354,7 +412,10 @@
       "poss_avg_sub": "Schnitt: {{val}} Angriffe / Spiel",
       "def_eff_title": "ABWEHREFFEKTIVITÄT",
       "def_eff_sub": "Gegentore pro gegnerischen Ballbesitz"
-    }
+    },
+    "invalid_dorsal": "Bitte gib eine gültige Rückennummer zwischen 0 und 99 ein.",
+    "save_error": "Fehler beim Speichern des Teams.",
+    "delete_error": "Fehler beim Löschen des Teams."
   },
   "settings": {
     "title": "Taktische Parametereinstellungen",
@@ -416,7 +477,25 @@
     "xsaves_f3_code": "Abweichung vs Gesamteffizienz",
     "xsaves_explanation": "Die erwarteten Paraden werden nach der Formel (1 - xG) + ZonenXSavesModifikator berechnet. Der 3x3-Tormodifikator analysiert die Leistung des Torhüters in jedem Torbereich, indem seine reale Abwehrquote in dieser Zone mit seiner allgemeinen Gesamtparadenquote abgeglichen wird.",
     "reset_all": "Alles Zurücksetzen",
-    "save_settings": "Einstellungen Speichern"
+    "save_settings": "Einstellungen Speichern",
+    "danger_zone_title": "Gefahrenzone",
+    "danger_zone_desc": "Unwiderrufliche Aktionen bezüglich deines Kontos und deiner Daten.",
+    "delete_account_btn": "Konto endgültig löschen",
+    "delete_account_info": "Alle aufgezeichneten Spiele, gespeicherten Teams, Noten und Einstellungen werden gemäß DSGVO dauerhaft gelöscht.",
+    "delete_modal_title": "Konto und alle Daten löschen?",
+    "delete_modal_warning": "Achtung! Diese Aktion kann nicht rückgängig gemacht werden. Folgendes wird dauerhaft gelöscht:",
+    "delete_item_matches": "Vollständiger Spielverlauf und Kampfgericht-Events",
+    "delete_item_teams": "Gespeicherte Teams, Kader und Spielernummern",
+    "delete_item_auth": "Zugangsdaten und Benutzerprofil",
+    "delete_type_confirm_label": "Zur Bestätigung tippe unten \"ELIMINAR\" oder \"DELETE\":",
+    "delete_type_confirm_placeholder": "ELIMINAR eingeben",
+    "cancel": "Abbrechen",
+    "confirm_delete_btn": "Ja, mein Konto endgültig löschen",
+    "deleting": "Konto wird gelöscht...",
+    "account_deleted_success": "Dein Konto und alle Daten wurden erfolgreich gelöscht.",
+    "delete_reauth_required": "Aus Sicherheitsgründen musst du dich vor dem Löschen deines Kontos erneut anmelden.",
+    "delete_account_error": "Fehler beim Löschen des Kontos. Bitte erneut versuchen.",
+    "type_confirm_warning": "Bitte tippe zur Bestätigung ELIMINAR oder DELETE."
   },
   "mesa_control": {
     "step1_player": "1. SPIELER",
@@ -531,9 +610,9 @@
     "rebound_attack_tag": "BEHÄLT BALLBESITZ",
     "rebound_attack_desc": "Angreifende Mannschaft sichert den Abpraller und behält Ballbesitz",
     "alert_gk_only_sub": "Im Bereich TORWART kann nur ein Ersatztorwart eingewechselt werden. Bitte Torwart wählen.",
-    "alert_select_player_first": "Bitte zuerst einen Spieler aus der Aufstellung auswählen, um die Aktion zu erfassen.",
-    "alert_substitutes_sanctions_only": "Auswechselspieler können nur Strafen (2 Min, Gelb, Rot, Blau) erhalten. Klicke auf einen Feldspieler, um einzuwechseln.",
-    "alert_free_throw_defending_only": "Freiwurf kann nur einem Spieler der VERTEIDIGENDEN Mannschaft (ohne Ballbesitz) zugeordnet werden.",
+    "alert_select_player_first": "Bitte wähle zuerst einen Spieler aus dem Kader aus.",
+    "alert_substitutes_sanctions_only": "Auswechselspieler können nur Strafen erhalten (2 Min, Gelb, Rot, Blau).",
+    "alert_free_throw_defending_only": "Freiwurf kann nur einem Spieler des VERTEIDIGENDEN Teams zugeordnet werden.",
     "player_excluded_tooltip": "Hinausgestellter Spieler (2 Min) — Verbleibende Zeit: {{time}}",
     "action_cambio": "WECHSEL",
     "filter_substitutions": "WECHSEL",
@@ -542,7 +621,7 @@
     "adjust_minutes_title": "Gespielte Minuten anpassen",
     "adjust_minutes_desc": "Überprüfen oder passen Sie die gespielten Minuten jedes Spielers in diesem Spiel manuell an. Wenn das Feld leer bleibt, wird die automatische wechselbasierte Berechnung verwendet.",
     "auto_calculated": "Berechnet",
-    "error_saving_minutes": "Fehler beim Speichern der Minuten. Bitte versuchen Sie es erneut.",
+    "error_saving_minutes": "Fehler beim Speichern der Einsatzzeiten. Bitte erneut versuchen.",
     "tactical_btn": "Taktik",
     "tactical_title": "Taktische Einstellungen",
     "atq_def_title": "Angriff / Abwehr Wechsel",
@@ -560,7 +639,11 @@
     "action_gol_porteria_vacia": "LEERES TOR TOR",
     "empty_net_badge": "7v6 FELD",
     "empty_net_tooltip": "Leeres Tor / Feldspieler auf dem Feld",
-    "empty_net_court_skipped": "Leeres Tor: Klicke direkt auf das Tor"
+    "empty_net_court_skipped": "Leeres Tor: Klicke direkt auf das Tor",
+    "undo_error": "Aktion konnte nicht rückgängig gemacht werden",
+    "alert_select_attacker_first": "Bitte wähle zuerst den angreifenden Spieler auf dem Feld ({{team}}), bevor du {{action}} markierst.",
+    "alert_select_attacker_wrong_team": "Ausgewählter Spieler (#{{number}} {{name}}) gehört zum verteidigenden Team. Wähle zuerst einen Spieler des angreifenden Teams ({{team}}) auf dem Feld.",
+    "alert_select_attacker_court_only": "Der angreifende Spieler muss auf dem Feld stehen (nicht auf der Bank)."
   },
   "dashboard": {
     "select_team_banner": "-- TEAM AUSWÄHLEN FÜR STATISTIKEN: --",
@@ -701,7 +784,9 @@
     "gk_saves": "Torwart-Paraden:",
     "legend_title": "Legende für Markierungen & Wärmedichte",
     "miss_post": "Fehlwurf / Pfosten",
-    "max_concentration": "Höchste Aktionskonzentration"
+    "max_concentration": "Höchste Aktionskonzentration",
+    "court_density_gk": "Gegnerische Wurfzonen auf dem Feld ({{count}} erhaltene Würfe)",
+    "gk_save_eff": "Halteeffizienz:"
   },
   "goalkeeper": {
     "select_gk": "TORWART AUSWÄHLEN:",
@@ -923,5 +1008,25 @@
     "section_dynamics_tag": "Spieldynamik",
     "section_players_title": "Spielerdetails — {{team}}",
     "section_players_sub": "Individuelle Feldspielerstatistiken, Torhüterleistungen und technische Bewertung"
+  },
+  "toast": {
+    "error": "Fehler",
+    "success": "Erfolgreich",
+    "warning": "Warnung",
+    "info": "Information",
+    "close": "Schließen",
+    "system_notifications": "Systembenachrichtigungen"
+  },
+  "pdf": {
+    "download_success": "Offizielles PDF erfolgreich heruntergeladen.",
+    "manual_download_success": "Benutzerhandbuch als PDF erfolgreich heruntergeladen.",
+    "report_download_success": "Taktischer Spielbericht als PDF erfolgreich heruntergeladen.",
+    "download_error": "Fehler beim Erstellen des PDF-Dokuments.",
+    "generating": "PDF-Dokument wird generiert..."
+  },
+  "player_card": {
+    "goals_shots_field": "Feldtore / Würfe",
+    "xg_field": "Feld-xG",
+    "court_tab_gk": "Wurf- und Torkarte"
   }
 }

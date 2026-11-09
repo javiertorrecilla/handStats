@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useAuth } from "../../../context/AuthContext";
+import { toast } from "../../../context/ToastContext";
 import userService from "../../../services/userService";
 import logoHorizontal from "../../../assets/logoHorizontal.png";
 import isotipo from "../../../assets/isotipo.png";
@@ -2305,8 +2306,10 @@ export function ReportStatsView({ metrics, match }) {
       const filename = `HandStats_Informe_${homeClean}_vs_${awayClean}_${dateClean}.pdf`;
 
       pdf.save(filename);
+      toast.success(t("pdf.report_download_success", "Informe táctico en PDF descargado con éxito."));
     } catch (err) {
       console.error("Error al generar PDF con jsPDF:", err);
+      toast.error(t("pdf.download_error", "Error al generar el documento PDF."));
       window.print();
     } finally {
       element.style.display = "none";

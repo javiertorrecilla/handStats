@@ -46,6 +46,21 @@ const IconLogout = () => (
   </svg>
 );
 
+const IconBook = () => (
+  <svg className="sidebar-item-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+);
+
+const IconSparkles = () => (
+  <svg className="sidebar-item-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+  </svg>
+);
+
 const IconSun = () => (
   <svg className="theme-toggle-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="5" />
@@ -87,6 +102,7 @@ export default function Sidebar({
   logout,
   theme = "light",
   toggleTheme,
+  onStartTour,
 }) {
   const { t } = useTranslation();
   const location = useLocation();
@@ -97,6 +113,7 @@ export default function Sidebar({
   const isMatchesActive = pathname === "/matches" || pathname === "/matches/new" || pathname === "/";
   const isTeamsActive = pathname === "/teams";
   const isSettingsActive = pathname === "/settings";
+  const isManualActive = pathname === "/manual";
 
   const handleSelectRoute = (path) => {
     navigate(path);
@@ -188,6 +205,32 @@ export default function Sidebar({
             </div>
             <span className="sidebar-item-label">{t("sidebar.settings")}</span>
             <IconChevronRight />
+          </button>
+
+          <button
+            className={`sidebar-item ${isManualActive ? "active" : ""}`}
+            onClick={() => handleSelectRoute("/manual")}
+          >
+            <div className="sidebar-icon-box">
+              <IconBook />
+            </div>
+            <span className="sidebar-item-label">{t("sidebar.user_manual")}</span>
+            <IconChevronRight />
+          </button>
+
+          <button
+            type="button"
+            className="sidebar-item sidebar-tour-trigger"
+            onClick={() => {
+              setIsOpen(false);
+              if (onStartTour) onStartTour();
+            }}
+          >
+            <div className="sidebar-icon-box">
+              <IconSparkles />
+            </div>
+            <span className="sidebar-item-label">{t("sidebar.guided_tour")}</span>
+            <span className="sidebar-tour-badge">TOUR</span>
           </button>
         </nav>
 

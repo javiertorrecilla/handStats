@@ -8,6 +8,7 @@ export function HeatmapCourt({
   events = [],
   gkEvents = null,
   isOpponent = false,
+  isPreFiltered = false,
   match = null,
   selectedGkNumber = "all",
   selectedPlayerNumber = "all",
@@ -19,6 +20,7 @@ export function HeatmapCourt({
         events={events}
         gkEvents={gkEvents}
         isOpponent={isOpponent}
+        isPreFiltered={isPreFiltered}
         match={match}
         selectedGkNumber={selectedGkNumber}
         selectedPlayerNumber={selectedPlayerNumber}

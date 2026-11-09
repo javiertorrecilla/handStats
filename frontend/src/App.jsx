@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "./context/AuthContext";
 import { useMatch } from "./context/MatchContext";
+import { toast } from "./context/ToastContext";
 
 import { matchService } from "./services/handstatsService";
 import userService from "./services/userService";
 
 import AuthPage from "./components/auth/AuthPage";
+import EmailVerificationGate from "./components/auth/EmailVerificationGate";
 import LandingPage from "./components/landing/LandingPage";
 import Sidebar from "./components/layout/SideBar";
 import MatchesPage from "./components/match/MatchesPage";
@@ -16,6 +19,11 @@ import TeamsPage from "./components/team/TeamsPage";
 import SettingsPage from "./components/settings/SettingsPage";
 import MatchAnalysisPage from "./components/match/MatchAnalysisPage";
 import DeviceGuard from "./components/common/DeviceGuard";
+import NotFoundPage from "./components/common/NotFoundPage";
+import PrivacyPolicyPage from "./components/legal/PrivacyPolicyPage";
+import TermsPage from "./components/legal/TermsPage";
+import UserManualPage from "./components/manual/UserManualPage";
+import OnboardingTourModal from "./components/onboarding/OnboardingTourModal";
 
 /**
  * Componente contenedor de ruta para el análisis y mesa de control de un partido.
@@ -110,10 +118,13 @@ function MatchAnalysisRoute({ user, theme, toggleTheme, onUpdateMatchEvents }) {
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const {
+    firebaseUser,
     user,
     loading,
+    isEmailVerified,
     login,
     register,
     loginWithGoogle,
@@ -157,6 +168,20 @@ function App() {
   const [matchesList, setMatchesList] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
+  const [showTour, setShowTour] = useState(false);
+
+  // Comprobación de onboarding guiado para nuevos usuarios
+  useEffect(() => {
+    if (user && !location.pathname.startsWith("/matches/") && location.pathname !== "/manual") {
+      const hasSeenTour = localStorage.getItem("hs_onboarding_completed");
+      if (!hasSeenTour) {
+        const timer = setTimeout(() => {
+          setShowTour(true);
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user, location.pathname]);
 
   const fetchMatches = useCallback(async () => {
     if (!user) return;
@@ -188,7 +213,8 @@ function App() {
 
   const handleMatchCreated = async (matchData) => {
     if (user.role === "guest" && guestMatches >= 3) {
-      return alert("Has alcanzado el límite de partidos para invitados.");
+      toast.warning(t("matches.guest_limit_alert", "Has alcanzado el límite de 3 partidos para invitados."));
+      return;
     }
 
     const userId = user.firebase_uid || user.uid;
@@ -209,6 +235,7 @@ function App() {
       const created = await matchService.create(payload);
 
       setMatchesList((prev) => [created, ...prev]);
+      toast.success(t("matches.create_success", "Partido creado correctamente."));
       navigate("/matches");
 
       if (user.role === "guest") {
@@ -246,23 +273,24 @@ function App() {
 
     } catch (err) {
       console.error(err);
-      alert("Error al crear el partido.");
+      toast.error(t("matches.create_error", "Error al crear el partido."));
     }
   };
 
   const handleDeleteMatch = async (matchId) => {
-    if (!confirm("¿Eliminar este partido?")) return;
+    if (!confirm(t("matches.delete_confirm", "¿Eliminar este partido?"))) return;
 
     try {
       await matchService.delete(matchId);
       setMatchesList((prev) => prev.filter((m) => m._id !== matchId));
+      toast.success(t("matches.delete_success", "Partido eliminado correctamente."));
 
       if (currentMatch?._id === matchId) {
         setCurrentMatch(null);
       }
     } catch (err) {
       console.error(err);
-      alert("Error al eliminar el partido.");
+      toast.error(t("matches.delete_error", "Error al eliminar el partido."));
     }
   };
 
@@ -324,7 +352,79 @@ function App() {
     );
   }
 
+  const knownRoutes = ["/", "/matches", "/matches/new", "/teams", "/settings", "/privacy", "/terms", "/manual"];
+  const isKnownMatchRoute = location.pathname.startsWith("/matches/");
+  const isKnownRoute = knownRoutes.includes(location.pathname) || isKnownMatchRoute;
+  const isNotFoundView = !isKnownRoute;
+
   if (!user) {
+    if (location.pathname === "/manual") {
+      return (
+        <DeviceGuard allowLandingPreview={true} onBackToLanding={() => navigate("/")}>
+          <UserManualPage
+            theme={theme}
+            toggleTheme={toggleTheme}
+            onBack={() => {
+              setShowLanding(true);
+              navigate("/");
+            }}
+          />
+        </DeviceGuard>
+      );
+    }
+
+    if (location.pathname === "/privacy") {
+      return (
+        <DeviceGuard allowLandingPreview={true} onBackToLanding={() => navigate("/")}>
+          <PrivacyPolicyPage
+            theme={theme}
+            toggleTheme={toggleTheme}
+            onBack={() => {
+              setShowLanding(true);
+              navigate("/");
+            }}
+          />
+        </DeviceGuard>
+      );
+    }
+
+    if (location.pathname === "/terms") {
+      return (
+        <DeviceGuard allowLandingPreview={true} onBackToLanding={() => navigate("/")}>
+          <TermsPage
+            theme={theme}
+            toggleTheme={toggleTheme}
+            onBack={() => {
+              setShowLanding(true);
+              navigate("/");
+            }}
+          />
+        </DeviceGuard>
+      );
+    }
+
+    if (!isKnownRoute && location.pathname !== "/") {
+      return (
+        <DeviceGuard
+          allowLandingPreview={true}
+          onBackToLanding={() => {
+            setShowLanding(true);
+            navigate("/");
+          }}
+        >
+          <NotFoundPage
+            user={null}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            onGoHome={() => {
+              setShowLanding(true);
+              navigate("/");
+            }}
+          />
+        </DeviceGuard>
+      );
+    }
+
     if (showLanding) {
       return (
         <DeviceGuard
@@ -359,27 +459,59 @@ function App() {
   }
 
   // --------------------------------------------------
+  // VALIDACIÓN DE CORREO ELECTRÓNICO
+  // --------------------------------------------------
+  const isGuest = user.role === "guest";
+  const isGoogleUser = Boolean(
+    firebaseUser?.providerData?.some((p) => p.providerId === "google.com")
+  );
+  const isVerified =
+    isGuest ||
+    isGoogleUser ||
+    Boolean(firebaseUser?.emailVerified) ||
+    isEmailVerified;
+
+  if (!isVerified) {
+    return (
+      <DeviceGuard allowLandingPreview={false}>
+        <EmailVerificationGate
+          email={firebaseUser?.email || user?.email}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          onVerified={() => {
+            navigate("/matches");
+          }}
+        />
+      </DeviceGuard>
+    );
+  }
+
+  // --------------------------------------------------
   // RENDERIZADO PRINCIPAL CON RUTAS
   // --------------------------------------------------
 
   const isAnalyzeView = location.pathname.startsWith("/matches/") && location.pathname !== "/matches/new";
+  const isLegalView = location.pathname === "/privacy" || location.pathname === "/terms";
+  const isManualView = location.pathname === "/manual";
+  const isFullscreenView = isAnalyzeView || isNotFoundView || isLegalView || isManualView;
 
   return (
     <DeviceGuard allowLandingPreview={false}>
       <div className="app-layout">
-        {!isAnalyzeView && (
+        {!isFullscreenView && (
           <Sidebar
             user={user}
             guestMatches={guestMatches}
             logout={logout}
             theme={theme}
             toggleTheme={toggleTheme}
+            onStartTour={() => setShowTour(true)}
           />
         )}
 
         <main
           className="app-main"
-          style={isAnalyzeView ? { marginLeft: 0, width: "100%", padding: 0, minHeight: "100vh" } : {}}
+          style={isFullscreenView ? { marginLeft: 0, width: "100%", padding: 0, minHeight: "100vh" } : {}}
         >
           {loadingData && (
             <div
@@ -458,13 +590,62 @@ function App() {
             <Route
               path="/settings"
               element={
-                <SettingsPage matchesList={matchesList} currentMatch={currentMatch} />
+                <SettingsPage user={user} matchesList={matchesList} currentMatch={currentMatch} />
               }
             />
-            <Route path="*" element={<Navigate to="/matches" replace />} />
+            <Route
+              path="/privacy"
+              element={
+                <PrivacyPolicyPage
+                  user={user}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onBack={() => navigate(-1)}
+                />
+              }
+            />
+            <Route
+              path="/terms"
+              element={
+                <TermsPage
+                  user={user}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onBack={() => navigate(-1)}
+                />
+              }
+            />
+            <Route
+              path="/manual"
+              element={
+                <UserManualPage
+                  user={user}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onBack={() => navigate(-1)}
+                />
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <NotFoundPage
+                  user={user}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onGoHome={() => navigate("/matches")}
+                />
+              }
+            />
           </Routes>
         </main>
       </div>
+
+      <OnboardingTourModal
+        isOpen={showTour}
+        onClose={() => setShowTour(false)}
+        onOpenManual={() => navigate("/manual")}
+      />
     </DeviceGuard>
   );
 }

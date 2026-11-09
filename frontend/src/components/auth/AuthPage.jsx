@@ -5,13 +5,14 @@ import LanguageSelector from "../common/LanguageSelector";
 
 import LoginForm from "./LoginForm";
 import RegisterUserForm from "./RegisterUserForm";
+import ForgotPasswordForm from "./ForgotPasswordForm";
 
 import "./AuthPage.css";
 
 const IconSun = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
+    <line x1="12" y1="12" x2="12" y2="3" />
     <line x1="12" y1="21" x2="12" y2="23" />
     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
     <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
@@ -75,56 +76,74 @@ function AuthPage({
           <img src={logoCuadrado} alt="HandStats — Analyze. Improve. Win." className="auth-brand-logo" />
         </header>
 
-        <div className="auth-tabs" role="tablist" aria-label="Opciones de autenticación">
-          <button
-            role="tab"
-            aria-selected={mode === "login"}
-            aria-controls="panel-login"
-            id="tab-login"
-            className={mode === "login" ? "active" : ""}
-            onClick={() => setMode("login")}
-          >
-            {t("auth.login_tab")}
-          </button>
+        {mode === "forgot" ? (
+          <ForgotPasswordForm onBackToLogin={() => setMode("login")} />
+        ) : (
+          <>
+            <div className="auth-tabs" role="tablist" aria-label="Opciones de autenticación">
+              <button
+                role="tab"
+                aria-selected={mode === "login"}
+                aria-controls="panel-login"
+                id="tab-login"
+                className={mode === "login" ? "active" : ""}
+                onClick={() => setMode("login")}
+              >
+                {t("auth.login_tab")}
+              </button>
 
-          <button
-            role="tab"
-            aria-selected={mode === "register"}
-            aria-controls="panel-register"
-            id="tab-register"
-            className={mode === "register" ? "active" : ""}
-            onClick={() => setMode("register")}
-          >
-            {t("auth.register_tab")}
-          </button>
-        </div>
+              <button
+                role="tab"
+                aria-selected={mode === "register"}
+                aria-controls="panel-register"
+                id="tab-register"
+                className={mode === "register" ? "active" : ""}
+                onClick={() => setMode("register")}
+              >
+                {t("auth.register_tab")}
+              </button>
+            </div>
 
-        <div
-          role="tabpanel"
-          id="panel-login"
-          aria-labelledby="tab-login"
-          className="auth-panel"
-          style={{ display: mode === "login" ? "block" : "none" }}
-        >
-          <LoginForm
-            login={login}
-            loginWithGoogle={loginWithGoogle}
-            loginAsGuest={loginAsGuest}
-          />
-        </div>
+            <div
+              role="tabpanel"
+              id="panel-login"
+              aria-labelledby="tab-login"
+              className="auth-panel"
+              style={{ display: mode === "login" ? "block" : "none" }}
+            >
+              <LoginForm
+                login={login}
+                loginWithGoogle={loginWithGoogle}
+                loginAsGuest={loginAsGuest}
+                onForgotPassword={() => setMode("forgot")}
+              />
+            </div>
 
-        <div
-          role="tabpanel"
-          id="panel-register"
-          aria-labelledby="tab-register"
-          className="auth-panel"
-          style={{ display: mode === "register" ? "block" : "none" }}
-        >
-          <RegisterUserForm
-            register={register}
-            onRegisterSuccess={() => setMode("login")}
-          />
-        </div>
+            <div
+              role="tabpanel"
+              id="panel-register"
+              aria-labelledby="tab-register"
+              className="auth-panel"
+              style={{ display: mode === "register" ? "block" : "none" }}
+            >
+              <RegisterUserForm
+                register={register}
+                onRegisterSuccess={() => setMode("login")}
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="auth-legal-notice">
+        <span>{t("auth.legal_notice_prefix", "Al registrarte o acceder, aceptas nuestros")} </span>
+        <button type="button" onClick={() => window.open("/terms", "_blank")}>
+          {t("footer.terms", "Términos y Condiciones")}
+        </button>
+        <span> {t("auth.legal_notice_and", "y la")} </span>
+        <button type="button" onClick={() => window.open("/privacy", "_blank")}>
+          {t("footer.privacy", "Política de Privacidad")}
+        </button>
       </div>
     </div>
   );

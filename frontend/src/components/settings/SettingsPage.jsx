@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../common/LanguageSelector";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "../../context/ToastContext";
 import {
   getSettings,
   saveSettings,
@@ -15,6 +18,23 @@ import {
   IconSliders
 } from "../../stats/components/common/Icons";
 import "./SettingsPage.css";
+
+const IconAlertTriangle = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 18, height: 18, flexShrink: 0 }}>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const IconTrash = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16, flexShrink: 0 }}>
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+  </svg>
+);
 
 const IconSave = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ width: 16, height: 16 }}>
@@ -94,15 +114,50 @@ const BENCHMARK_GOAL_DATA = {
   BR: { label: "INF. DERECHO", shots: 21, saves: 4, xSavesPct: 5, mod: -0.18 },
 };
 
-export default function SettingsPage({ matchesList = [], currentMatch = null }) {
+export default function SettingsPage({ user: propUser, matchesList = [], currentMatch = null }) {
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user: authUser, deleteAccount } = useAuth();
+  const user = propUser || authUser;
+
   const [activeTab, setActiveTab] = useState("xg"); // "xg" | "xsaves" | "rating"
   const [form, setForm] = useState(DEFAULT_SETTINGS);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Estados para modal de eliminación de cuenta (RGPD)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     setForm(getSettings());
   }, []);
+
+  const isConfirmValid = useMemo(() => {
+    const val = deleteConfirmText.trim().toUpperCase();
+    const validWords = ["ELIMINAR", "DELETE", "LÖSCHEN", "SUPPRIMER", "SLET", "USUŃ"];
+    return validWords.includes(val) || (user?.email && val === user.email.toUpperCase());
+  }, [deleteConfirmText, user?.email]);
+
+  const handleDeleteAccount = async () => {
+    if (!isConfirmValid || isDeleting) return;
+    try {
+      setIsDeleting(true);
+      await deleteAccount();
+      toast.success(t("settings.account_deleted_success", "Tu cuenta y todos tus datos han sido eliminados correctamente."));
+      setIsDeleteModalOpen(false);
+      navigate("/");
+    } catch (err) {
+      console.error("Error al eliminar cuenta:", err);
+      if (err.code === "auth/requires-recent-login") {
+        toast.error(t("settings.delete_reauth_required", "Por motivos de seguridad, debes cerrar sesión y volver a entrar antes de eliminar tu cuenta."));
+      } else {
+        toast.error(err.message || t("settings.delete_account_error", "Error al eliminar la cuenta."));
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Calcular estadísticas empíricas del usuario sobre sus partidos registrados
   const empiricalData = useMemo(() => {
@@ -740,7 +795,146 @@ export default function SettingsPage({ matchesList = [], currentMatch = null }) 
             <span>{t("settings.save_settings")}</span>
           </button>
         </div>
+
+        {/* ZONA DE PELIGRO: ELIMINACIÓN DE CUENTA (RGPD) */}
+        <div className="settings-danger-card">
+          <div className="settings-danger-header">
+            <div className="settings-danger-title-row">
+              <span className="settings-danger-icon">
+                <IconAlertTriangle />
+              </span>
+              <div>
+                <h3 className="settings-danger-title">
+                  {t("settings.danger_zone_title", "Zona de Peligro")}
+                </h3>
+                <p className="settings-danger-subtitle">
+                  {t("settings.danger_zone_desc", "Acciones irreversibles sobre tu cuenta y tus datos personales.")}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="settings-danger-content">
+            <div className="settings-danger-desc">
+              <p>
+                {t(
+                  "settings.delete_account_info",
+                  "Se borrarán todos tus partidos registrados, equipos guardados, notas de jugadores y configuraciones de forma permanente bajo el RGPD."
+                )}
+              </p>
+              {user?.email && (
+                <div className="settings-danger-account-pill">
+                  <span>{user.email}</span>
+                  {user.role === "guest" && <span className="settings-guest-tag">(Modo Invitado)</span>}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="btn btn-danger-action"
+              onClick={() => {
+                setDeleteConfirmText("");
+                setIsDeleteModalOpen(true);
+              }}
+            >
+              <IconTrash />
+              <span>{t("settings.delete_account_btn", "Eliminar Cuenta Definitivamente")}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ENLACES LEGALES Y PRIVACIDAD */}
+        <div className="settings-legal-footer">
+          <button type="button" className="settings-legal-btn" onClick={() => navigate("/privacy")}>
+            {t("footer.privacy", "Política de Privacidad")}
+          </button>
+          <span className="settings-legal-dot">·</span>
+          <button type="button" className="settings-legal-btn" onClick={() => navigate("/terms")}>
+            {t("footer.terms", "Términos y Condiciones")}
+          </button>
+        </div>
       </form>
+
+      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN DE CUENTA */}
+      {isDeleteModalOpen && (
+        <div className="settings-modal-backdrop" role="dialog" aria-modal="true" onClick={() => !isDeleting && setIsDeleteModalOpen(false)}>
+          <div className="settings-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-modal-header">
+              <div className="settings-modal-icon-badge">
+                <IconAlertTriangle />
+              </div>
+              <div>
+                <h3 className="settings-modal-title">
+                  {t("settings.delete_modal_title", "¿Eliminar cuenta y todos los datos?")}
+                </h3>
+                <p className="settings-modal-subtitle">
+                  {t(
+                    "settings.delete_modal_warning",
+                    "¡Atención! Esta acción no se puede deshacer. Se eliminarán permanentemente de los servidores:"
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <ul className="settings-modal-list">
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{t("settings.delete_item_matches", "Historial completo de partidos y eventos tomados en mesa")}</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{t("settings.delete_item_teams", "Equipos guardados, plantillas y dorsales de jugadores")}</span>
+              </li>
+              <li>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{t("settings.delete_item_auth", "Credenciales de acceso y perfil de usuario")}</span>
+              </li>
+            </ul>
+
+            <div className="settings-modal-confirm-input-area">
+              <label htmlFor="delete-confirm-input">
+                {t("settings.delete_type_confirm_label", "Para confirmar, escribe \"ELIMINAR\" en el campo inferior:")}
+              </label>
+              <input
+                id="delete-confirm-input"
+                type="text"
+                autoComplete="off"
+                className="settings-modal-input"
+                placeholder={t("settings.delete_type_confirm_placeholder", "Escribe ELIMINAR")}
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                disabled={isDeleting}
+                autoFocus
+              />
+            </div>
+
+            <div className="settings-modal-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  if (!isDeleting) setIsDeleteModalOpen(false);
+                }}
+                disabled={isDeleting}
+              >
+                {t("settings.cancel", "Cancelar")}
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger-action btn-confirm-delete"
+                onClick={handleDeleteAccount}
+                disabled={!isConfirmValid || isDeleting}
+              >
+                <IconTrash />
+                <span>
+                  {isDeleting
+                    ? t("settings.deleting", "Eliminando cuenta...")
+                    : t("settings.confirm_delete_btn", "Sí, eliminar mi cuenta definitivamente")}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

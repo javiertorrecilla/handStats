@@ -1,4 +1,10 @@
-import { calculateMatchMetrics, isEmptyNetEvent } from "./metricsEngine";
+import {
+  calculateMatchMetrics,
+  isEmptyNetEvent,
+  matchesPlayer,
+  matchesPlayerRef,
+  formatMinutesSeconds
+} from "./metricsEngine";
 import { generateGoalGridMatrix, generateCourtHeatmap } from "./heatmapEngine";
 
 /**
@@ -201,7 +207,13 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
     if (pList && Array.isArray(pList)) {
       pList.forEach((p) => {
         const key = `${p.number}_${p.name}`;
-        const isGk = p.isGoalkeeper === true || p.is_goalkeeper === true || p.is_goalkeeper === "true";
+        const matchGk = (gkList || []).find(
+          (gk) =>
+            String(gk.number) === String(p.number) ||
+            (gk.name && p.name && gk.name.trim().toLowerCase() === p.name.trim().toLowerCase())
+        );
+        const isGk = p.isGoalkeeper === true || p.is_goalkeeper === true || p.is_goalkeeper === "true" || Boolean(matchGk);
+
         if (!playerStatsMap[key]) {
           playerStatsMap[key] = {
             number: p.number,
@@ -220,10 +232,97 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
             penaltiesCommitted: 0,
             offensiveFouls: 0,
             offFoulsDrawn: 0,
+            twoMins: 0,
+            yellowCards: 0,
+            redCards: 0,
+            blueCards: 0,
+            secondsPlayed: 0,
             ratings: [],
-            is_goalkeeper: isGk
+            is_goalkeeper: isGk,
+            matches: [],
+            allShots: [],
+            allGkShotsFaced: []
           };
         }
+
+        const matchSaves = matchGk?.goalkeeperSaves ?? (p.goalkeeperSaves ?? p.saves ?? 0);
+        const matchFaced = matchGk?.goalkeeperShotsFaced ?? (p.goalkeeperShotsFaced ?? p.shotsFaced ?? 0);
+        const matchSavePct = matchFaced > 0 ? Math.round((matchSaves / matchFaced) * 100) : (matchGk?.goalkeeperSavePct ?? p.goalkeeperSavePct ?? 0);
+        const matchXSaves = parseFloat(matchGk?.goalkeeperXSaves ?? p.goalkeeperXSaves ?? 0) || 0;
+
+        // Player specific shots and events in this match
+        const playerMatchShots = [];
+        const playerMatchGkShotsFaced = [];
+        const playerMatchTurnovers = [];
+        const playerMatchSanctions = [];
+
+        (m.events || []).forEach((ev, evIdx) => {
+          const isTeamEv = isEventOfTeam(ev, teamNameLower, isHome, m);
+
+          if (isTeamEv) {
+            const isPlayerAction =
+              matchesPlayer(ev.player_id, ev.player_number, p) ||
+              (ev.shooter && matchesPlayerRef(ev.shooter, p)) ||
+              (ev.player_name && p.name && ev.player_name.trim().toLowerCase() === p.name.trim().toLowerCase());
+
+            if (ev.event_type === "shot" && isPlayerAction) {
+              const shotId = ev.id || ev.event_id || ev._id || `ev_${m._id || m.id || "m"}_${ev.match_time_seconds || 0}_${evIdx}_shot`;
+              playerMatchShots.push({
+                ...ev,
+                id: shotId,
+                event_id: shotId,
+                matchId: m._id || m.id,
+                matchDate: m.date,
+                opponent: oppTeamName,
+                timeFormatted: formatMinutesSeconds(ev.match_time_seconds || 0)
+              });
+            } else if (ev.event_type === "turnover" && (isPlayerAction || (ev.committed_by && matchesPlayerRef(ev.committed_by, p)))) {
+              playerMatchTurnovers.push({
+                ...ev,
+                timeFormatted: formatMinutesSeconds(ev.match_time_seconds || 0)
+              });
+            } else if (ev.event_type === "sanction" && isPlayerAction) {
+              playerMatchSanctions.push({
+                ...ev,
+                timeFormatted: formatMinutesSeconds(ev.match_time_seconds || 0)
+              });
+            }
+          }
+
+          if (isGk && !isTeamEv && ev.event_type === "shot" && !isEmptyNetEvent(ev)) {
+            let isGkTarget = false;
+            if (ev.goalkeeper_number !== undefined && ev.goalkeeper_number !== null && ev.goalkeeper_number !== 0 && ev.goalkeeper_number !== "0") {
+              isGkTarget = String(ev.goalkeeper_number) === String(p.number);
+            } else if (ev.goalkeeper_id) {
+              isGkTarget = matchesPlayer(ev.goalkeeper_id, ev.goalkeeper_number, p);
+            } else if (gkList && gkList.length === 1 && ev.goalkeeper_number !== null && ev.goalkeeper_number !== 0 && ev.goalkeeper_number !== "0") {
+              isGkTarget = true;
+            }
+            if (isGkTarget) {
+              const gkShotId = ev.id || ev.event_id || ev._id || `ev_${m._id || m.id || "m"}_${ev.match_time_seconds || 0}_${evIdx}_gkshot`;
+              playerMatchGkShotsFaced.push({
+                ...ev,
+                id: gkShotId,
+                event_id: gkShotId,
+                matchId: m._id || m.id,
+                matchDate: m.date,
+                opponent: oppTeamName,
+                timeFormatted: formatMinutesSeconds(ev.match_time_seconds || 0)
+              });
+            }
+          }
+        });
+
+        const playedInMatch =
+          (p.secondsPlayed > 0) ||
+          (p.shotsCount > 0) ||
+          (p.turnovers > 0) ||
+          (p.steals > 0) ||
+          (p.twoMins > 0) ||
+          (p.drawn7mCount > 0) ||
+          (p.penaltiesCommitted > 0) ||
+          (matchSaves > 0) ||
+          (matchFaced > 0);
 
         playerStatsMap[key].matchesPlayed += 1;
         playerStatsMap[key].shotsCount += p.shotsCount || 0;
@@ -236,8 +335,63 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
         playerStatsMap[key].penaltiesCommitted = (playerStatsMap[key].penaltiesCommitted || 0) + (p.penaltiesCommitted || 0);
         playerStatsMap[key].offensiveFouls = (playerStatsMap[key].offensiveFouls || 0) + (p.offensiveFouls || 0);
         playerStatsMap[key].offFoulsDrawn = (playerStatsMap[key].offFoulsDrawn || 0) + (p.offFoulsDrawn || 0);
-        if (isGk) playerStatsMap[key].is_goalkeeper = true;
+        playerStatsMap[key].twoMins = (playerStatsMap[key].twoMins || 0) + (p.twoMins || 0);
+        playerStatsMap[key].yellowCards = (playerStatsMap[key].yellowCards || 0) + (p.yellowCards || 0);
+        playerStatsMap[key].redCards = (playerStatsMap[key].redCards || 0) + (p.redCards || 0);
+        playerStatsMap[key].blueCards = (playerStatsMap[key].blueCards || 0) + (p.blueCards || 0);
+        playerStatsMap[key].secondsPlayed = (playerStatsMap[key].secondsPlayed || 0) + (p.secondsPlayed || 0);
+
+        if (isGk) {
+          playerStatsMap[key].is_goalkeeper = true;
+          playerStatsMap[key].saves += matchSaves;
+          playerStatsMap[key].shotsFaced += matchFaced;
+          playerStatsMap[key].goalkeeperXSaves += matchXSaves;
+          playerStatsMap[key].allGkShotsFaced.push(...playerMatchGkShotsFaced);
+        }
+
         if (p.rating) playerStatsMap[key].ratings.push(p.rating);
+        playerStatsMap[key].allShots.push(...playerMatchShots);
+
+        playerStatsMap[key].matches.push({
+          matchId: m._id || m.id,
+          date: m.date,
+          opponent: oppTeamName,
+          isHome,
+          teamGoals,
+          oppGoals,
+          score: `${teamGoals} - ${oppGoals}`,
+          result: teamGoals > oppGoals ? "W" : teamGoals === oppGoals ? "D" : "L",
+          played: playedInMatch,
+          secondsPlayed: p.secondsPlayed || 0,
+          minutesPlayed: p.minutesPlayed || 0,
+          minutesPlayedFormatted: p.minutesPlayedFormatted || formatMinutesSeconds(p.secondsPlayed || 0),
+          shotsCount: p.shotsCount || 0,
+          goals: p.goals || 0,
+          stops: p.stops || 0,
+          misses: p.misses || 0,
+          efficiency: p.efficiency || 0,
+          xg: parseFloat(p.xg) || 0,
+          turnovers: p.turnovers || 0,
+          steals: p.steals || 0,
+          drawn7mCount: p.drawn7mCount || 0,
+          penaltiesCommitted: p.penaltiesCommitted || 0,
+          offensiveFouls: p.offensiveFouls || 0,
+          offFoulsDrawn: p.offFoulsDrawn || 0,
+          twoMins: p.twoMins || 0,
+          yellowCards: p.yellowCards || 0,
+          redCards: p.redCards || 0,
+          blueCards: p.blueCards || 0,
+          saves: matchSaves,
+          shotsFaced: matchFaced,
+          savePct: matchSavePct,
+          goalkeeperXSaves: matchXSaves,
+          rating: parseFloat(p.rating) || 7.0,
+          ratingBreakdown: p.ratingBreakdown || {},
+          shots: playerMatchShots,
+          gkShotsFaced: playerMatchGkShotsFaced,
+          turnoversList: playerMatchTurnovers,
+          sanctionsList: playerMatchSanctions
+        });
       });
     }
 
@@ -248,12 +402,10 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
         const faced = gk.goalkeeperShotsFaced ?? gk.shotsFaced ?? 0;
         const xSaves = parseFloat(gk.goalkeeperXSaves ?? gk.expectedSaves ?? 0) || 0;
 
-        if (playerStatsMap[key]) {
-          playerStatsMap[key].saves += saves;
-          playerStatsMap[key].shotsFaced += faced;
-          playerStatsMap[key].goalkeeperXSaves += xSaves;
-          playerStatsMap[key].is_goalkeeper = true;
-        } else {
+        totalSaves += saves;
+        totalShotsFaced += faced;
+
+        if (!playerStatsMap[key]) {
           playerStatsMap[key] = {
             number: gk.number,
             name: gk.name,
@@ -267,13 +419,63 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
             saves,
             shotsFaced: faced,
             goalkeeperXSaves: xSaves,
+            drawn7mCount: 0,
+            penaltiesCommitted: 0,
+            offensiveFouls: 0,
+            offFoulsDrawn: 0,
+            twoMins: 0,
+            yellowCards: 0,
+            redCards: 0,
+            blueCards: 0,
+            secondsPlayed: 0,
             ratings: gk.rating ? [gk.rating] : [],
-            is_goalkeeper: true
+            is_goalkeeper: true,
+            matches: [
+              {
+                matchId: m._id || m.id,
+                date: m.date,
+                opponent: oppTeamName,
+                isHome,
+                teamGoals,
+                oppGoals,
+                score: `${teamGoals} - ${oppGoals}`,
+                result: teamGoals > oppGoals ? "W" : teamGoals === oppGoals ? "D" : "L",
+                played: saves > 0 || faced > 0,
+                secondsPlayed: 0,
+                minutesPlayed: 0,
+                minutesPlayedFormatted: "0'",
+                shotsCount: gk.shotsCount || 0,
+                goals: gk.goals || 0,
+                stops: 0,
+                misses: 0,
+                efficiency: 0,
+                xg: parseFloat(gk.xg) || 0,
+                turnovers: gk.turnovers || 0,
+                steals: gk.steals || 0,
+                drawn7mCount: 0,
+                penaltiesCommitted: 0,
+                offensiveFouls: 0,
+                offFoulsDrawn: 0,
+                twoMins: 0,
+                yellowCards: 0,
+                redCards: 0,
+                blueCards: 0,
+                saves,
+                shotsFaced: faced,
+                savePct: faced > 0 ? Math.round((saves / faced) * 100) : 0,
+                goalkeeperXSaves: xSaves,
+                rating: parseFloat(gk.rating) || 7.0,
+                ratingBreakdown: {},
+                shots: [],
+                gkShotsFaced: [],
+                turnoversList: [],
+                sanctionsList: []
+              }
+            ],
+            allShots: [],
+            allGkShotsFaced: []
           };
         }
-
-        totalSaves += saves;
-        totalShotsFaced += faced;
       });
     }
 
@@ -299,13 +501,79 @@ export function calculateTeamCumulativeStats(teamName, matchesList = []) {
       ? (p.ratings.reduce((a, b) => a + b, 0) / p.ratings.length).toFixed(1)
       : "7.0";
 
+    const sortedMatches = [...p.matches].sort((a, b) => {
+      const timeA = a.date ? new Date(a.date).getTime() : 0;
+      const timeB = b.date ? new Date(b.date).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    const playedMatchesCount = sortedMatches.filter((m) => m.played).length;
+    const effectiveMatchesCount = playedMatchesCount > 0 ? playedMatchesCount : sortedMatches.length;
+
+    // Shot phases breakdown
+    const shotPhases = { posicional: 0, oleada1: 0, oleada2: 0, penalti: 0 };
+    (p.allShots || []).forEach((s) => {
+      const st = (s.shot_type || "").toLowerCase();
+      if (st.includes("7m") || st.includes("penalti")) shotPhases.penalti++;
+      else if (st.includes("contraataque") || st.includes("1ª")) shotPhases.oleada1++;
+      else if (st.includes("2ª")) shotPhases.oleada2++;
+      else shotPhases.posicional++;
+    });
+
+    // Shot zones breakdown
+    const shotZones = { wing: 0, backcourt: 0, pivot: 0, sevenM: 0, fastbreak: 0, other: 0 };
+    (p.allShots || []).forEach((s) => {
+      const sz = (s.shot_zone || s.zone || "").toLowerCase();
+      const st = (s.shot_type || "").toLowerCase();
+      if (st.includes("7m") || sz.includes("7m")) shotZones.sevenM++;
+      else if (st.includes("contraataque") || sz.includes("contraataque")) shotZones.fastbreak++;
+      else if (sz.includes("extremo") || sz.includes("wing")) shotZones.wing++;
+      else if (sz.includes("pivote") || sz.includes("pivot")) shotZones.pivot++;
+      else if (sz.includes("9m") || sz.includes("primera") || sz.includes("backcourt")) shotZones.backcourt++;
+      else shotZones.other++;
+    });
+
+    // Goal zones distribution for the player
+    const goalZones = {
+      TL: 0, TC: 0, TR: 0,
+      ML: 0, MC: 0, MR: 0,
+      BL: 0, BC: 0, BR: 0,
+      OUT: 0, POST: 0
+    };
+    (p.allShots || []).forEach((s) => {
+      if (s.result === "Fuera") goalZones.OUT++;
+      else if (s.result === "Poste") goalZones.POST++;
+      else {
+        const gz = (s.goal_zone || s.target_zone || "").toUpperCase();
+        if (goalZones[gz] !== undefined) goalZones[gz]++;
+      }
+    });
+
+    const totalSecs = p.secondsPlayed || 0;
+    const avgSecsPerMatch = effectiveMatchesCount > 0 ? Math.round(totalSecs / effectiveMatchesCount) : 0;
+
     return {
       ...p,
+      matchesPlayed: effectiveMatchesCount,
+      totalMatchesInSquad: sortedMatches.length,
       efficiency: eff,
       savePct: gkSavePct,
       goalkeeperXSaves: Math.round(p.goalkeeperXSaves * 10) / 10,
       avgRating: parseFloat(avgRating),
-      xg: p.xg.toFixed(2)
+      bestRating: p.ratings.length > 0 ? Math.max(...p.ratings).toFixed(1) : "—",
+      worstRating: p.ratings.length > 0 ? Math.min(...p.ratings).toFixed(1) : "—",
+      xg: p.xg.toFixed(2),
+      avgGoals: effectiveMatchesCount > 0 ? (p.goals / effectiveMatchesCount).toFixed(1) : "0.0",
+      avgShots: effectiveMatchesCount > 0 ? (p.shotsCount / effectiveMatchesCount).toFixed(1) : "0.0",
+      avgTurnovers: effectiveMatchesCount > 0 ? (p.turnovers / effectiveMatchesCount).toFixed(1) : "0.0",
+      avgSaves: effectiveMatchesCount > 0 ? (p.saves / effectiveMatchesCount).toFixed(1) : "0.0",
+      totalMinutesPlayed: Math.round(totalSecs / 60),
+      totalMinutesFormatted: formatMinutesSeconds(totalSecs),
+      avgMinutesPlayedFormatted: formatMinutesSeconds(avgSecsPerMatch),
+      matches: sortedMatches,
+      shotPhases,
+      shotZones,
+      goalZones
     };
   }).sort((a, b) => (Number(a.number) || 0) - (Number(b.number) || 0));
 

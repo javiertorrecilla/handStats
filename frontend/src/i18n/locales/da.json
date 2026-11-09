@@ -35,6 +35,7 @@
   "nav": {
     "features": "Funktioner",
     "product": "Produkt",
+    "engines": "Beregning & Motorer",
     "how_it_works": "Sådan virker det",
     "testimonials": "Anmeldelser",
     "try_handstats": "Prøv HandStats",
@@ -51,7 +52,7 @@
     "btn_try": "Prøv HandStats Nu",
     "btn_demo": "Se Demonstration",
     "card_live": "LIVE · 48:15",
-    "card_live_tag": "1. DIVISION",
+    "card_live_tag": "ASOBAL",
     "card_possession": "Angreb",
     "card_xg_label": "xG MODEL // ASSOCIATIV",
     "card_xg_tag": "+1.8 vs xG",
@@ -72,7 +73,7 @@
     "items": [
       "Live Analyse",
       "xG & xSaves Modeller",
-      "3D Varmekort",
+      "Taktiske Varmekort",
       "0-10 Vurdering",
       "PDF Eksport",
       "Defensiv Ydeevne",
@@ -87,16 +88,21 @@
     ]
   },
   "landing_stats": {
-    "stat1_label": "Statistiske Pro-moduler",
-    "stat2_label": "xG Algoritmisk Nøjagtighed",
-    "stat3_label": "Analyserede Kampe",
-    "stat4_label": "24/7 Cloud Tilgængelighed"
+    "stat1_suffix": "Tryk",
+    "stat1_label": "LYNHURTIG DATAINDSAMLING PÅ BANEN",
+    "stat2_prefix": "+",
+    "stat2_suffix": "Punkter",
+    "stat2_label": "MILLIMETERPRÆCISION BASERET PÅ KOORDINATER",
+    "stat3_prefix": "Rating",
+    "stat3_label": "DYNAMISK SPILLERVURDERINGS-MODEL",
+    "stat4_suffix": "Håndbold",
+    "stat4_label": "UDVIKLET EKSKLUSIVT TIL HØJ YDEEVNE"
   },
   "product": {
     "kicker_num": "01",
     "kicker_title": "SUITE & VISUALISERINGER",
     "title": "En analysesuite designet til at vinde",
-    "subtitle": "Udforsk de værktøjer, som trænere og taktiske analytikere bruger til at omsætte data til sejre.",
+    "subtitle": "Udforsk de værktøjer, der er designet til trænere og taktiske analytikere til at omsætte data til sejre.",
     "tab_dashboard": "Oversigt Dashboard",
     "tab_shots": "Skudkort & xG",
     "tab_players": "Spillere & Ratings",
@@ -148,8 +154,42 @@
     "device_tablet_p3_bold": "Automatisk Cloud-synkronisering:",
     "device_tablet_p3_text": "Dine data overføres i realtid, så trænerteamet har adgang med det samme."
   },
-  "features": {
+  "engines": {
     "kicker_num": "02",
+    "kicker_title": "ANALYSE-MOTORER & BEREGNING",
+    "title": "Hvordan beregner HandStats kampstatistikkerne?",
+    "subtitle": "Vores platform tæller ikke overfladiske tal: den evaluerer enhver hændelse med fire matematiske motorer, der er skabt specielt til håndboldens biomekanik og tempo.",
+    "e1_tag": "MÅLSANDSYNLIGHED",
+    "e1_title": "Expected Goals (xG) Model",
+    "e1_formula": "xG = Basis(Zone) × Fase × Situation",
+    "e1_desc": "Beregner den matematiske sandsynlighed (0.00 til 1.00) for, at et skud resulterer i mål, baseret på skudafstand, vinkel, angrebsfase (direkte kontra vs. etableret angreb) og overtals-/undertalsspil (7v6, 6v5 eller tomt mål).",
+    "e1_pill1": "Fløje: 0.55 xG",
+    "e1_pill2": "6m Streg: 0.75 xG",
+    "e1_pill3": "7m Straffe: 0.85 xG",
+    "e2_tag": "MÅLVOGTER-EFFEKTIVITET",
+    "e2_title": "Expected Saves (xSaves) Model",
+    "e2_formula": "xSaves = (1 - xG) + Modifikator(3×3)",
+    "e2_desc": "Måler målvogterens reelle præstation ved at beregne afværgede mål ud over det forventede. Belønner redninger på frie chancer og analyserer dækningen i hver af de 9 målzoner.",
+    "e2_pill1": "Faktisk afværgede mål",
+    "e2_pill2": "Sværhedsgrad per zone",
+    "e2_pill3": "Korrigeret redningsprocent",
+    "e3_tag": "OBJEKTIV VURDERING",
+    "e3_title": "0.0 - 10.0 Rating-Algoritme",
+    "e3_formula": "Rating = 10 / (1 + e^(-k · NPS))",
+    "e3_desc": "Beregner Net Player Score (NPS). Belønner vanskelige mål (1 - xG), assists og tilkæmpede straffekast; sanktionerer tekniske fejl og udvisninger. En logistisk sigmoidkurve centrerer neutrale præstationer objektivt på 5.0.",
+    "e3_pill1": "Logistisk sigmoidfunktion",
+    "e3_pill2": "Vægtede fejl og udvisninger",
+    "e3_pill3": "Nul subjektiv bias",
+    "e4_tag": "RUMMELIG OPLØSNING",
+    "e4_title": "(X, Y)-Koordinater & Autokalibrering",
+    "e4_formula": "Bane (40×20m) ⟷ Mål (3×2m)",
+    "e4_desc": "Registrerer den kontinuerlige placering af hver aktion på 40×20m-banen og i 3×2m-målet. Fra 500 registrerede skud genkalibrerer den empiriske model automatisk basissandsynlighederne efter dit eget holds reelle præcision.",
+    "e4_pill1": "Kontinuerlig (X, Y)-registrering",
+    "e4_pill2": "9 målzoner",
+    "e4_pill3": "Progressiv autokalibrering"
+  },
+  "features": {
+    "kicker_num": "03",
     "kicker_title": "ANALYSEMODULER",
     "title": "Alt hvad dit hold har brug for",
     "subtitle": "Udviklet hånd i hånd med håndboldfagfolk til at dække alle spillets faser.",
@@ -167,7 +207,7 @@
     "f6_desc": "Del komplette efterkampsrapporter med et enkelt klik i professionelt PDF-format."
   },
   "how_it_works": {
-    "kicker_num": "03",
+    "kicker_num": "04",
     "kicker_title": "ARBEJDSGANG",
     "title": "I 3 enkle trin",
     "subtitle": "Uden komplicerede opsætninger eller svære indlæringskurver.",
@@ -199,7 +239,10 @@
     "btn": "Prøv HandStats Nu"
   },
   "footer": {
-    "rights": "HandStats. Alle rettigheder forbeholdes."
+    "rights": "HandStats. Alle rettigheder forbeholdes.",
+    "privacy": "Privatlivspolitik",
+    "terms": "Vilkår og Betingelser",
+    "manual": "Brugermanual"
   },
   "sidebar": {
     "my_matches": "Mine Kampe",
@@ -214,7 +257,9 @@
     "guest_role": "Demo ({{count}}/3 kampe)",
     "coach_role": "Træner / Analytiker",
     "open_nav": "Åbn navigationsmenu",
-    "close_menu": "Luk menu"
+    "close_menu": "Luk menu",
+    "user_manual": "Brugermanual",
+    "guided_tour": "Guidet tur"
   },
   "auth": {
     "back_to_landing": "Tilbage",
@@ -241,7 +286,13 @@
     "passwords_dont_match": "Adgangskoderne stemmer ikke overens.",
     "invalid_credentials": "Forkert e-mail eller adgangskode.",
     "user_not_found": "Brugeren findes ikke.",
-    "wrong_password": "Forkert adgangskode."
+    "wrong_password": "Forkert adgangskode.",
+    "legal_notice_prefix": "Ved at tilmelde dig eller logge ind accepterer du vores",
+    "legal_notice_and": "og",
+    "email_verified_success": "E-mail bekræftet! Går til kontrolpanelet...",
+    "verification_check_error": "Fejl ved kontrol af e-mailbekræftelse.",
+    "resend_fail": "Fejl ved genafsendelse af bekræftelses-e-mail.",
+    "create_error": "Fejl under udførelse af anmodning."
   },
   "matches": {
     "title": "Mine Kampe",
@@ -256,7 +307,9 @@
     "statistics": "Statistikker",
     "delete_confirm": "Vil du slette denne kamp?",
     "delete_error": "Fejl ved sletning af kamp.",
-    "create_error": "Fejl ved oprettelse af kamp."
+    "create_error": "Fejl ved oprettelse af kamp.",
+    "create_success": "Kamp oprettet korrekt.",
+    "delete_success": "Kamp slettet korrekt."
   },
   "create_match": {
     "title": "Ny Kamp",
@@ -338,6 +391,11 @@
     "all_team_goalkeepers": "Alle Holdets Målvogtere",
     "cumulative_court_title": "SÆSONOVERSIGT OVER SKUD OG REDNINGER — {{name}}",
     "roster_performance_title": "TRUPPENS SAMLEDE PRÆSTATIONER",
+    "interactive_players_title": "Individuelle Spillerkort:",
+    "interactive_players_desc": "Klik på en spiller for at åbne det fulde kort med sæsonstatistikker og detaljer pr. kamp.",
+    "click_to_view": "Klik for mere info",
+    "click_to_view_player": "Klik for at se spillerkort og kampe for {{name}}",
+    "no_matches_found": "Der blev ikke fundet kampe med de valgte filtre.",
     "kpis": {
       "matches_played": "SPILLEDE KAMPE",
       "goals_for_against": "MÅL SCOREDE / INDKASSEREDE",
@@ -354,7 +412,10 @@
       "poss_avg_sub": "Snit: {{val}} angreb / kamp",
       "def_eff_title": "FORSVARSEFFEKTIVITET",
       "def_eff_sub": "Baseret på mål indkasseret pr. angreb"
-    }
+    },
+    "invalid_dorsal": "Indtast et gyldigt rygnummer mellem 0 og 99.",
+    "save_error": "Fejl under lagring af hold.",
+    "delete_error": "Fejl under sletning af hold."
   },
   "settings": {
     "title": "Taktiske Parameterindstillinger",
@@ -416,7 +477,25 @@
     "xsaves_f3_code": "Afvigelse mod Samlet Effektivitet",
     "xsaves_explanation": "Forventede målvogterredninger beregnes som (1 - xG) + ZoneXSavesModifikator. Målvogterens 3x3-zonemodifikator vurderer målvogterens empiriske niveau i hvert felt af målet ved at trække den reelle redningsprocent i zonen fra den overordnede redningsprocent.",
     "reset_all": "Nulstil Alt",
-    "save_settings": "Gem Indstillinger"
+    "save_settings": "Gem Indstillinger",
+    "danger_zone_title": "Farezone",
+    "danger_zone_desc": "Uigenkaldelige handlinger for din konto og dine personlige data.",
+    "delete_account_btn": "Slet konto permanent",
+    "delete_account_info": "Alle dine kampe, gemte hold, spillervurderinger og indstillinger slettes permanent i henhold til GDPR.",
+    "delete_modal_title": "Slet konto og alle data?",
+    "delete_modal_warning": "Advarsel! Denne handling kan ikke fortrydes. Følgende slettes permanent fra serverne:",
+    "delete_item_matches": "Komplet kamphistorik og registrerede hændelser",
+    "delete_item_teams": "Gemte hold, trupper og rygnumre",
+    "delete_item_auth": "Loginoplysninger og brugerprofil",
+    "delete_type_confirm_label": "For at bekræfte skal du skrive \"ELIMINAR\" eller \"DELETE\" nedenfor:",
+    "delete_type_confirm_placeholder": "Skriv ELIMINAR",
+    "cancel": "Annuller",
+    "confirm_delete_btn": "Ja, slet min konto permanent",
+    "deleting": "Sletter konto...",
+    "account_deleted_success": "Din konto og alle dine data er blevet slettet.",
+    "delete_reauth_required": "Af sikkerhedsmæssige årsager skal du logge ind igen, før du sletter din konto.",
+    "delete_account_error": "Fejl under sletning af konto. Prøv venligst igen.",
+    "type_confirm_warning": "Skriv venligst ELIMINAR eller DELETE for at bekræfte."
   },
   "mesa_control": {
     "step1_player": "1. SPILLER",
@@ -531,9 +610,9 @@
     "rebound_attack_tag": "BEHOLDER BOLDEN",
     "rebound_attack_desc": "Angribende hold opsnapper returbolden og beholder besiddelsen",
     "alert_gk_only_sub": "I MÅLVOGTER-sektionen kan kun en målvogterindsættes. Vælg en målvogter.",
-    "alert_select_player_first": "Vælg venligst en spiller fra opstillingen først for at registrere handlingen.",
-    "alert_substitutes_sanctions_only": "Udskiftere kan kun modtage straffe (2 min, gult, rødt, blåt kort). Klik på en banespiller for at skifte ind.",
-    "alert_free_throw_defending_only": "Frikast kan kun tildeles en spiller fra det FORSVARENDE hold (uden boldbesiddelse).",
+    "alert_select_player_first": "Vælg først en spiller fra opstillingen for at registrere handlingen.",
+    "alert_substitutes_sanctions_only": "Udskiftere kan kun modtage sanktioner (2 min, Gult, Rødt, Blåt kort).",
+    "alert_free_throw_defending_only": "Frikast kan kun tildeles en FORSVARENDE spiller (uden boldbesiddelse).",
     "player_excluded_tooltip": "Udvist spiller (2 min) — Resterende tid: {{time}}",
     "action_cambio": "UDSKIFTNING",
     "filter_substitutions": "UDSKIFTNINGER",
@@ -542,7 +621,7 @@
     "adjust_minutes_title": "Juster spillede minutter",
     "adjust_minutes_desc": "Gennemgå eller juster manuelt de spillede minutter for hver spiller i denne kamp. Hvis feltet efterlades tomt, bruges den automatiske udskiftningsberegning.",
     "auto_calculated": "Beregnet",
-    "error_saving_minutes": "Fejl under lagring af minutter. Prøv venligst igen.",
+    "error_saving_minutes": "Fejl ved lagring af spilletid. Prøv venligst igen.",
     "tactical_btn": "Taktik",
     "tactical_title": "Taktiske Indstillinger",
     "atq_def_title": "Angreb / Forsvar Skifte",
@@ -560,7 +639,11 @@
     "action_gol_porteria_vacia": "MÅL TOMT MÅL",
     "empty_net_badge": "7v6 MARK",
     "empty_net_tooltip": "Tomt mål / Markspiller på banen",
-    "empty_net_court_skipped": "Tomt mål: klik direkte på målet"
+    "empty_net_court_skipped": "Tomt mål: klik direkte på målet",
+    "undo_error": "Handlingen kunne ikke fortrydes",
+    "alert_select_attacker_first": "Vælg først angrebsspilleren på banen ({{team}}) før registrering af {{action}}.",
+    "alert_select_attacker_wrong_team": "Den valgte spiller (#{{number}} {{name}}) tilhører det forsvarende hold. Vælg først en angrebsspiller ({{team}}) på banen.",
+    "alert_select_attacker_court_only": "Angrebsspilleren skal være på banen (ikke på bænken)."
   },
   "dashboard": {
     "select_team_banner": "-- VÆLG HOLD FOR AT SE STATISTIK: --",
@@ -701,7 +784,9 @@
     "gk_saves": "Målmandsredninger:",
     "legend_title": "Markør- og varmedensitetsforklaring",
     "miss_post": "Forbi / Stolpe",
-    "max_concentration": "Maksimal aktionskoncentration"
+    "max_concentration": "Maksimal aktionskoncentration",
+    "court_density_gk": "Modstanderens skudzoner på banen ({{count}} modtagne skud)",
+    "gk_save_eff": "Redningsprocent:"
   },
   "goalkeeper": {
     "select_gk": "VÆLG MÅLVOGTER:",
@@ -920,5 +1005,25 @@
     "section_dynamics_tag": "Kampdynamik",
     "section_players_title": "Spillerdetaljer — {{team}}",
     "section_players_sub": "Individuel banespillerstatistik, målmandspræstation og teknisk rating"
+  },
+  "toast": {
+    "error": "Fejl",
+    "success": "Gennemført",
+    "warning": "Advarsel",
+    "info": "Information",
+    "close": "Luk",
+    "system_notifications": "Systemmeddelelser"
+  },
+  "pdf": {
+    "download_success": "Officiel PDF downloadet med succes.",
+    "manual_download_success": "Brugermanual i PDF downloadet med succes.",
+    "report_download_success": "Taktisk kamprapport i PDF downloadet med succes.",
+    "download_error": "Fejl under oprettelse af PDF-dokumentet.",
+    "generating": "Genererer PDF-dokument..."
+  },
+  "player_card": {
+    "goals_shots_field": "Mål / skud (mark)",
+    "xg_field": "xG (mark)",
+    "court_tab_gk": "Skud- og målkort"
   }
 }

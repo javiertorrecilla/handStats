@@ -36,6 +36,7 @@
   "nav": {
     "features": "Funciones",
     "product": "Producto",
+    "engines": "Cálculo & Motores",
     "how_it_works": "Cómo Funciona",
     "testimonials": "Opiniones",
     "try_handstats": "Probar HandStats",
@@ -52,7 +53,7 @@
     "btn_try": "Probar HandStats Ahora",
     "btn_demo": "Ver Demostración",
     "card_live": "DIRECTO · 48:15",
-    "card_live_tag": "1ª NACIONAL",
+    "card_live_tag": "ASOBAL",
     "card_possession": "Posesión",
     "card_xg_label": "MODELO xG // ASOCIATIVO",
     "card_xg_tag": "+1.8 vs xG",
@@ -73,7 +74,7 @@
     "items": [
       "Análisis en Directo",
       "Modelos xG & xSaves",
-      "Mapas de Calor 3D",
+      "Mapas de Calor Tácticos",
       "Valoración 0-10",
       "Exportación PDF",
       "Rendimiento Defensivo",
@@ -88,16 +89,21 @@
     ]
   },
   "landing_stats": {
-    "stat1_label": "Módulos Estadísticos Pro",
-    "stat2_label": "Precisión Algorítmica xG",
-    "stat3_label": "Partidos Procesados",
-    "stat4_label": "Disponibilidad Cloud 24/7"
+    "stat1_suffix": "Toques",
+    "stat1_label": "CAPTURA ULTRAVELOZ DE DATOS EN PISTA",
+    "stat2_prefix": "+",
+    "stat2_suffix": "Puntos",
+    "stat2_label": "PRECISIÓN MILIMÉTRICA BASADA EN COORDENADAS",
+    "stat3_prefix": "Rating",
+    "stat3_label": "MODELO DE VALORACIÓN DINÁMICA DE JUGADORES",
+    "stat4_suffix": "Balonmano",
+    "stat4_label": "DISEÑADO EXCLUSIVAMENTE PARA ALTO RENDIMIENTO"
   },
   "product": {
     "kicker_num": "01",
     "kicker_title": "SUITE & VISUALIZACIONES",
     "title": "Una suite analítica diseñada para ganar",
-    "subtitle": "Explora las herramientas que utilizan entrenadores y analistas tácticos para transformar datos en victorias.",
+    "subtitle": "Explora las herramientas diseñadas para que entrenadores y analistas tácticos transformen datos en victorias.",
     "tab_dashboard": "Dashboard General",
     "tab_shots": "Campograma & xG",
     "tab_players": "Jugadores & Ratings",
@@ -163,8 +169,42 @@
     "matrix_col_desktop": "Versión Escritorio / PC",
     "matrix_col_tablet": "Versión Tablet / Banquillo"
   },
-  "features": {
+  "engines": {
     "kicker_num": "02",
+    "kicker_title": "MOTORES ANALÍTICOS & CÁLCULO",
+    "title": "¿Cómo calcula HandStats las estadísticas?",
+    "subtitle": "Nuestra plataforma no cuenta números superficiales: procesa cada acción con cuatro motores matemáticos adaptados específicamente a la biomecánica y ritmo del balonmano.",
+    "e1_tag": "PROBABILIDAD DE GOL",
+    "e1_title": "Modelo Expected Goals (xG)",
+    "e1_formula": "xG = Base(Zona) × Fase × Situación",
+    "e1_desc": "Calcula la probabilidad matemática (0.00 a 1.00) de que un lanzamiento acabe en gol según la distancia a portería, ángulo de tiro, fase de ataque (contraataque directo vs posicional) y situación numérica (7v6, 6v5 o portería vacía).",
+    "e1_pill1": "Extremos: 0.55 xG",
+    "e1_pill2": "6m Centro: 0.75 xG",
+    "e1_pill3": "7m Penalti: 0.85 xG",
+    "e2_tag": "EFICIENCIA DE GUARDAMETA",
+    "e2_title": "Modelo Expected Saves (xSaves)",
+    "e2_formula": "xSaves = (1 - xG) + Modificador(3×3)",
+    "e2_desc": "Evalúa el mérito técnico del portero calculando los goles evitados por encima de lo esperado. Pondera lanzamientos a bocajarro detenidos y analiza la efectividad en cada uno de los 9 cuadrantes de la portería.",
+    "e2_pill1": "Goles prevenidos reales",
+    "e2_pill2": "Dificultad por cuadrante",
+    "e2_pill3": "Porcentaje corregido",
+    "e3_tag": "VALORACIÓN OBJETIVA",
+    "e3_title": "Algoritmo de Rating 0.0 - 10.0",
+    "e3_formula": "Rating = 10 / (1 + e^(-k · NPS))",
+    "e3_desc": "Calcula el Impacto Neto del Jugador (NPS). Premia goles meritorios (1 - xG), asistencias y 7m provocados; penaliza pérdidas clasificadas y sanciones escalonadas. Una curva logística sigmoide centra la nota neutra en 5.0 con rigor objetivo.",
+    "e3_pill1": "Curva logística sigmoide",
+    "e3_pill2": "Pérdidas y sanciones ponderadas",
+    "e3_pill3": "Cero sesgos subjetivos",
+    "e4_tag": "RESOLUCIÓN ESPACIAL",
+    "e4_title": "Coordenadas (X, Y) y Autocalibración",
+    "e4_formula": "Pista (40×20m) ⟷ Portería (3×2m)",
+    "e4_desc": "Registra la ubicación espacial continua de cada acción en la pista y en los cuadrantes de portería. Al acumular volumen de lanzamientos, el motor empírico autocalibra progresivamente las probabilidades según el rendimiento de tu propio equipo.",
+    "e4_pill1": "Resolución continua (X, Y)",
+    "e4_pill2": "9 cuadrantes de red",
+    "e4_pill3": "Autocalibración progresiva"
+  },
+  "features": {
+    "kicker_num": "03",
     "kicker_title": "MÓDULOS DE ANÁLISIS",
     "title": "Todo lo que tu equipo necesita",
     "subtitle": "Diseñado mano a mano con profesionales del balonmano para cubrir cada fase del partido.",
@@ -182,7 +222,7 @@
     "f6_desc": "Comparte informes completos post-partido con un solo clic en formato PDF profesional de alto impacto visual."
   },
   "how_it_works": {
-    "kicker_num": "03",
+    "kicker_num": "04",
     "kicker_title": "METODOLOGÍA DE TRABAJO",
     "title": "En 3 sencillos pasos",
     "subtitle": "Sin configuraciones complejas ni curvas de aprendizaje tediosas.",
@@ -214,7 +254,10 @@
     "btn": "Probar HandStats Ahora"
   },
   "footer": {
-    "rights": "HandStats. Todos los derechos reservados."
+    "rights": "HandStats. Todos los derechos reservados.",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos y Condiciones",
+    "manual": "Manual de Usuario"
   },
   "sidebar": {
     "my_matches": "Mis Partidos",
@@ -229,7 +272,9 @@
     "guest_role": "Demo ({{count}}/3 partidos)",
     "coach_role": "Entrenador / Analista",
     "open_nav": "Abrir menú de navegación",
-    "close_menu": "Cerrar menú"
+    "close_menu": "Cerrar menú",
+    "user_manual": "Manual de Usuario",
+    "guided_tour": "Tour Guiado"
   },
   "auth": {
     "back_to_landing": "Volver",
@@ -252,11 +297,44 @@
     "password_hint": "Mínimo 6 caracteres",
     "register_btn": "Crear cuenta",
     "registering": "Creando cuenta...",
+    "login_success": "Sesión iniciada correctamente.",
+    "register_success": "Cuenta creada correctamente.",
     "fill_all_fields": "Completa todos los campos.",
     "passwords_dont_match": "Las contraseñas no coinciden.",
     "invalid_credentials": "Correo o contraseña incorrectos.",
     "user_not_found": "El usuario no existe.",
-    "wrong_password": "Contraseña incorrecta."
+    "wrong_password": "Contraseña incorrecta.",
+    "forgot_password_question": "¿Has olvidado tu contraseña?",
+    "forgot_password_title": "Recuperar contraseña",
+    "forgot_password_desc": "Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+    "send_reset_link": "Enviar enlace de recuperación",
+    "sending_reset_link": "Enviando enlace...",
+    "reset_email_sent_title": "¡Enlace de recuperación enviado!",
+    "reset_email_sent_desc": "Hemos enviado un correo a {{email}} con instrucciones para restablecer tu contraseña.",
+    "back_to_login": "Volver a Iniciar sesión",
+    "resend_reset_link": "¿No lo has recibido? Reenviar",
+    "email_not_found": "No existe ninguna cuenta asociada a este correo electrónico.",
+    "email_already_in_use": "Ya existe una cuenta registrada con este correo electrónico.",
+    "weak_password": "La contraseña debe tener al menos 6 caracteres.",
+    "too_many_requests": "Demasiadas solicitudes. Por favor, espera unos minutos.",
+    "verify_email_title": "Verifica tu correo electrónico",
+    "verify_email_subtitle": "Hemos enviado un enlace de confirmación a tu dirección de correo.",
+    "verify_email_instructions": "Para garantizar la seguridad de tu cuenta y proteger tus estadísticas de balonmano, confirma tu correo electrónico antes de continuar.",
+    "verify_email_sent_to": "Correo enviado a:",
+    "check_verification_btn": "Ya he verificado mi correo",
+    "checking_verification": "Comprobando...",
+    "resend_verification_btn": "Reenviar correo de verificación",
+    "resend_cooldown": "Reenviar en {{seconds}}s",
+    "resend_success": "Correo de verificación reenviado con éxito. Revisa tu bandeja de entrada o spam.",
+    "not_verified_yet": "Tu correo aún no figura como verificado. Si ya hiciste clic en el enlace, espera unos segundos y pulsa de nuevo.",
+    "logout_or_switch": "Cerrar sesión / Usar otra cuenta",
+    "spam_tip": "¿No ves el correo? Revisa tu carpeta de correo no deseado (spam) o promociones.",
+    "legal_notice_prefix": "Al registrarte o acceder, aceptas nuestros",
+    "legal_notice_and": "y la",
+    "email_verified_success": "¡Correo verificado con éxito! Accediendo a tu panel...",
+    "verification_check_error": "Error al verificar el estado del correo.",
+    "resend_fail": "Error al reenviar el correo de verificación.",
+    "create_error": "Error al procesar la solicitud."
   },
   "matches": {
     "title": "Mis Partidos",
@@ -271,7 +349,9 @@
     "statistics": "Estadísticas",
     "delete_confirm": "¿Eliminar este partido?",
     "delete_error": "Error al eliminar el partido.",
-    "create_error": "Error al crear el partido."
+    "create_error": "Error al crear el partido.",
+    "create_success": "Partido creado correctamente.",
+    "delete_success": "Partido eliminado correctamente."
   },
   "create_match": {
     "title": "Nuevo Partido",
@@ -353,6 +433,11 @@
     "all_team_goalkeepers": "Todos los Porteros del Equipo",
     "cumulative_court_title": "MAPA ACUMULADO DE LANZAMIENTOS Y PARADAS DE PORTERÍA DE LA TEMPORADA — {{name}}",
     "roster_performance_title": "RENDIMIENTO ACUMULADO DE LA PLANTILLA",
+    "interactive_players_title": "Fichas Individuales:",
+    "interactive_players_desc": "Pulsa en cualquier jugador para abrir su ficha completa con estadísticas de la temporada y el desglose de cada partido jugado.",
+    "click_to_view": "Clic para más info",
+    "click_to_view_player": "Haz clic para ver la ficha completa y partidos de {{name}}",
+    "no_matches_found": "No se encontraron partidos registrados con los filtros seleccionados.",
     "kpis": {
       "matches_played": "PARTIDOS JUGADOS",
       "goals_for_against": "GOLES A FAVOR / CONTRA",
@@ -369,7 +454,10 @@
       "poss_avg_sub": "Media: {{val}} pos. / partido",
       "def_eff_title": "EFICACIA DEFENSIVA",
       "def_eff_sub": "Basada en goles encajados/posesión"
-    }
+    },
+    "invalid_dorsal": "Introduce un dorsal válido entre 0 y 99.",
+    "save_error": "Error al guardar el equipo.",
+    "delete_error": "Error al eliminar el equipo."
   },
   "settings": {
     "title": "Ajustes de Parámetros Tácticos",
@@ -431,7 +519,25 @@
     "xsaves_f3_code": "Desviación vs Eficiencia Global",
     "xsaves_explanation": "Las paradas esperadas del portero se calculan como (1 - xG) + ModificadorZonaXSave. El Modificador de Portería por Zona 3×3 evalúa el rendimiento empírico del portero en cada cuadrante de la portería restando su porcentaje de paradas reales en ese cuadrante respecto a su efectividad global.",
     "reset_all": "Restablecer Todo",
-    "save_settings": "Guardar Ajustes"
+    "save_settings": "Guardar Ajustes",
+    "danger_zone_title": "Zona de Peligro",
+    "danger_zone_desc": "Acciones irreversibles sobre tu cuenta y tus datos personales.",
+    "delete_account_btn": "Eliminar Cuenta Definitivamente",
+    "delete_account_info": "Se borrarán todos tus partidos registrados, equipos guardados, notas de jugadores y configuraciones de forma permanente bajo el RGPD.",
+    "delete_modal_title": "¿Eliminar cuenta y todos los datos?",
+    "delete_modal_warning": "¡Atención! Esta acción no se puede deshacer. Se eliminarán permanentemente de los servidores:",
+    "delete_item_matches": "Historial completo de partidos y eventos tomados en mesa",
+    "delete_item_teams": "Equipos guardados, plantillas y dorsales de jugadores",
+    "delete_item_auth": "Credenciales de acceso y perfil de usuario",
+    "delete_type_confirm_label": "Para confirmar, escribe \"ELIMINAR\" en el campo inferior:",
+    "delete_type_confirm_placeholder": "Escribe ELIMINAR",
+    "cancel": "Cancelar",
+    "confirm_delete_btn": "Sí, eliminar mi cuenta definitivamente",
+    "deleting": "Eliminando cuenta...",
+    "account_deleted_success": "Tu cuenta y todos tus datos han sido eliminados correctamente.",
+    "delete_reauth_required": "Por motivos de seguridad, debes cerrar sesión y volver a entrar antes de eliminar tu cuenta.",
+    "delete_account_error": "Error al eliminar la cuenta. Inténtalo de nuevo.",
+    "type_confirm_warning": "Por favor, escribe ELIMINAR para confirmar."
   },
   "mesa_control": {
     "court_actions_tab": "Pista / Acciones",
@@ -576,7 +682,11 @@
     "action_gol_porteria_vacia": "GOL P. VACÍA",
     "empty_net_badge": "7v6 CAMPO",
     "empty_net_tooltip": "Portería vacía / Jugador de campo en pista",
-    "empty_net_court_skipped": "Portería vacía: haz clic directamente en la portería"
+    "empty_net_court_skipped": "Portería vacía: haz clic directamente en la portería",
+    "undo_error": "No se pudo deshacer la acción",
+    "alert_select_attacker_first": "Por favor, selecciona primero al jugador atacante en pista ({{team}}) antes de marcar {{action}}.",
+    "alert_select_attacker_wrong_team": "El jugador seleccionado (#{{number}} {{name}}) pertenece al equipo defensor. Para registrar {{action}}, selecciona primero a un jugador del equipo atacante ({{team}}) en pista.",
+    "alert_select_attacker_court_only": "El jugador atacante debe ser un jugador en pista (no del banquillo)."
   },
   "dashboard": {
     "select_team_banner": "-- SELECCIONAR EQUIPO PARA VER ESTADÍSTICAS: --",
@@ -717,7 +827,9 @@
     "gk_saves": "Paradas del Portero:",
     "legend_title": "Leyenda de Marcadores & Densidad Térmica",
     "miss_post": "Fallo / Poste",
-    "max_concentration": "Máxima Concentración de Acciones"
+    "max_concentration": "Máxima Concentración de Acciones",
+    "court_density_gk": "Zonas de Lanzamiento del Rival en Pista ({{count}} Tiros Recibidos)",
+    "gk_save_eff": "Eficacia de Paradas:"
   },
   "goalkeeper": {
     "select_gk": "SELECCIONAR PORTERO:",
@@ -743,6 +855,20 @@
     "col_rating": "Rating",
     "no_gk_stats": "No hay estadísticas de portero registradas para este equipo.",
     "heatmap_title": "MAPA DE CALOR DE LANZAMIENTOS RECIBIDOS Y RENDIMIENTO EN PORTERÍA — {{name}}"
+  },
+  "player_card": {
+    "general_tab": "Resumen General",
+    "matches_tab": "Partidos Jugados",
+    "court_tab_field": "Mapa de Lanzamientos",
+    "court_tab_gk": "Mapa de Lanzamientos y Portería",
+    "rating_title": "Rating Global (0 - 10)",
+    "nps_title": "NPS Puntos Netos",
+    "base_rating_note": "Nota base 5.0 (neutra) + Transformación Sigmoide",
+    "roles_section": "7 Metros y Faltas en Ataque (Provocador vs Infractor)",
+    "general_stats": "Rendimiento General",
+    "no_shots_in_match": "No se registraron tiros directos de este jugador en este encuentro.",
+    "goals_shots_field": "Goles / Tiros Campo",
+    "xg_field": "xG Campo"
   },
   "players_table": {
     "title": "ESTADÍSTICAS INDIVIDUALES DE JUGADORES Y PORTEROS — {{team}}",
@@ -975,5 +1101,48 @@
     "btn_view_landing": "Ver presentación web (Landing informativa)",
     "btn_back_to_guard": "Ver compatibilidad",
     "landing_mobile_banner": "HandStats está diseñado exclusivamente para Tablets y Ordenadores (PC / Mac). Para usar la plataforma, accede desde una tablet o PC."
+  },
+  "not_found": {
+    "badge_var": "VAR · JUGADA REVISADA",
+    "scoreboard_league": "LIGA HANDSTATS PRO // TEMPORADA REGULAR",
+    "scoreboard_timeout": "2º T · TIEMPO MUERTO",
+    "team_local": "LOCAL",
+    "team_away": "VISITANTE",
+    "out_of_bounds": "OUT OF BOUNDS",
+    "page_lost": "PÁGINA PERDIDA",
+    "ticker_infraction": "INFRACCIÓN: PASOS O BALÓN FUERA DE BANDA",
+    "ticker_path": "RUTA INEXISTENTE:",
+    "goal_title": "¡GOLAZO DESDE 9 METROS!",
+    "goal_desc": "Posesión recuperada con éxito. xG recalculado a 1.00.",
+    "btn_shoot": "⚡ Chutar a portería (Recuperar posesión)",
+    "btn_shoot_again": "¡Lanzar otro tiro a portería!",
+    "report_title": "REPORTE DEL ANALISTA TÁCTICO // EVENTO #404",
+    "status_finished": "REVISIÓN FINALIZADA",
+    "xg_label": "Goles Esperados (xG)",
+    "xg_detail": "Tiro fuera de los límites de pista",
+    "efficiency_label": "Eficacia de Ruta",
+    "possession_label": "Posesión de Balón",
+    "possession_turnover": "PERDIDA",
+    "card_label": "Sanción Arbitral",
+    "card_red": "🟥 ROJA",
+    "btn_back_matches": "Volver al banquillo (Mis Partidos)",
+    "btn_go_home": "Ir al Inicio (HandStats)",
+    "btn_create_match": "Crear Nuevo Partido",
+    "btn_previous_play": "Pista Anterior (Volver)"
+  },
+  "toast": {
+    "error": "Error",
+    "success": "Completado",
+    "warning": "Atención",
+    "info": "Información",
+    "close": "Cerrar",
+    "system_notifications": "Notificaciones del sistema"
+  },
+  "pdf": {
+    "download_success": "PDF oficial descargado con éxito.",
+    "manual_download_success": "Manual de usuario en PDF descargado con éxito.",
+    "report_download_success": "Informe táctico en PDF descargado con éxito.",
+    "download_error": "Error al generar el documento PDF.",
+    "generating": "Generando documento PDF..."
   }
 }

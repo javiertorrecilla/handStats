@@ -561,3 +561,31 @@
     right: auto;
     width: 100%;
 }
+
+/* ---- Sidebar Tour Trigger & Badge ---- */
+.sidebar-tour-trigger {
+    border: 1px dashed var(--border-color);
+    margin-top: 6px;
+    background: var(--bg-inset, rgba(255, 255, 255, 0.03));
+}
+
+.sidebar-tour-trigger:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle, rgba(234, 88, 12, 0.1));
+}
+
+.sidebar-tour-trigger .sidebar-item-svg {
+    color: var(--color-primary);
+}
+
+.sidebar-tour-badge {
+    background: var(--color-primary-subtle, rgba(234, 88, 12, 0.15));
+    border: 1px solid var(--color-primary-subtle, rgba(234, 88, 12, 0.3));
+    color: var(--color-primary, #ea580c);
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+}

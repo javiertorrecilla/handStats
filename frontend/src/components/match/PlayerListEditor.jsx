@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "../../context/ToastContext";
 
 export default function PlayerListEditor({
   players,
@@ -18,7 +19,7 @@ export default function PlayerListEditor({
 
     const numberVal = parseInt(number, 10);
     if (players.some((p) => p.number === numberVal)) {
-      alert(t("create_match.dorsal_exists"));
+      toast.error(t("create_match.dorsal_exists"));
       return;
     }
 

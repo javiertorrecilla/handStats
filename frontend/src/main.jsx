@@ -6,6 +6,7 @@ import App from "./App";
 
 import { AuthProvider } from "./context/AuthContext";
 import { MatchProvider } from "./context/MatchContext";
+import { ToastProvider } from "./context/ToastContext";
 
 import "./i18n/i18n";
 import "./index.css";
@@ -15,11 +16,13 @@ ReactDOM.createRoot(
 ).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <MatchProvider>
-          <App />
-        </MatchProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <MatchProvider>
+            <App />
+          </MatchProvider>
+        </AuthProvider>
+      </ToastProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
