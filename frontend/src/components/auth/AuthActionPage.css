@@ -1,0 +1,295 @@
+/* ==========================================================
+   AUTH ACTION PAGE — HANDSTATS DESIGN SYSTEM v2.0
+   Página unificada de verificación de correo y restablecimiento
+   de contraseña integrada en HandStats Pro (Desktop, Tablet y Móvil)
+   ========================================================== */
+
+.auth-action-container {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-24, 24px);
+  background: var(--bg-primary, #f8fafc);
+  background-image:
+    radial-gradient(ellipse at 50% 10%, var(--color-primary-subtle, rgba(234, 88, 12, 0.1)) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+  position: relative;
+  transition: background-color var(--duration-slow, 0.25s) var(--easing, ease);
+}
+
+.auth-action-top-actions {
+  position: absolute;
+  top: var(--space-20, 20px);
+  right: var(--space-24, 24px);
+  display: flex;
+  align-items: center;
+  gap: var(--space-12, 12px);
+  z-index: 10;
+}
+
+.auth-action-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-primary, #0f172a);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.auth-action-theme-btn:hover {
+  border-color: var(--color-primary, #ea580c);
+  transform: translateY(-1px);
+}
+
+.auth-action-card {
+  width: 100%;
+  max-width: 470px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-xl, 20px);
+  padding: 36px 32px 28px;
+  box-shadow: var(--shadow-xl, 0 20px 50px rgba(15, 23, 42, 0.1));
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  animation: slideUp 0.28s ease;
+}
+
+.auth-action-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary, #ea580c) 0%, #f97316 55%, #10b981 100%);
+}
+
+.auth-action-logo-wrap {
+  margin-bottom: 20px;
+}
+
+.auth-action-logo {
+  max-width: 138px;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 6px 14px var(--color-primary-ring, rgba(234, 88, 12, 0.2)));
+}
+
+.auth-action-badge-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.auth-action-icon-circle {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-action-icon-circle.loading {
+  background: var(--color-primary-subtle, rgba(234, 88, 12, 0.12));
+  color: var(--color-primary, #ea580c);
+}
+
+.auth-action-icon-circle.success {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.auth-action-icon-circle.security {
+  background: var(--color-primary-subtle, rgba(234, 88, 12, 0.12));
+  color: var(--color-primary, #ea580c);
+  border: 2px solid rgba(234, 88, 12, 0.25);
+}
+
+.auth-action-icon-circle.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 2px solid rgba(239, 68, 68, 0.28);
+}
+
+.auth-action-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--bg-inset, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-secondary, #475569);
+}
+
+.auth-action-pill.success {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #059669;
+}
+
+.auth-action-pill.error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #dc2626;
+}
+
+.auth-action-title {
+  margin: 0 0 10px 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.auth-action-desc {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary, #475569);
+}
+
+.auth-action-email-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--bg-inset, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  margin-bottom: 22px;
+  max-width: 100%;
+  word-break: break-all;
+}
+
+.auth-action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+  margin-top: 8px;
+}
+
+.auth-action-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-action-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #475569);
+}
+
+.auth-action-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-action-input-wrap input {
+  width: 100%;
+  padding: 11px 42px 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-inset, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-action-input-wrap input:focus {
+  outline: none;
+  border-color: var(--color-primary, #ea580c);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle, rgba(234, 88, 12, 0.14));
+}
+
+.auth-action-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-action-eye-btn:hover {
+  color: var(--text-primary, #0f172a);
+}
+
+.auth-action-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #dc2626;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.auth-action-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.auth-action-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(234, 88, 12, 0.22);
+  border-top-color: var(--color-primary, #ea580c);
+  border-radius: 50%;
+  animation: authActionSpin 0.8s linear infinite;
+}
+
+@keyframes authActionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 540px) {
+  .auth-action-container {
+    padding: 72px 16px 24px;
+  }
+
+  .auth-action-top-actions {
+    top: 14px;
+    right: 16px;
+  }
+
+  .auth-action-card {
+    padding: 28px 20px 22px;
+  }
+}
+

@@ -10,6 +10,7 @@ import { matchService } from "./services/handstatsService";
 import userService from "./services/userService";
 
 import AuthPage from "./components/auth/AuthPage";
+import AuthActionPage from "./components/auth/AuthActionPage";
 import EmailVerificationGate from "./components/auth/EmailVerificationGate";
 import LandingPage from "./components/landing/LandingPage";
 import Sidebar from "./components/layout/SideBar";
@@ -172,7 +173,12 @@ function App() {
 
   // Comprobación de onboarding guiado para nuevos usuarios
   useEffect(() => {
-    if (user && !location.pathname.startsWith("/matches/") && location.pathname !== "/manual") {
+    if (
+      user &&
+      !location.pathname.startsWith("/matches/") &&
+      location.pathname !== "/manual" &&
+      location.pathname !== "/auth/action"
+    ) {
       const hasSeenTour = localStorage.getItem("hs_onboarding_completed");
       if (!hasSeenTour) {
         const timer = setTimeout(() => {
@@ -352,10 +358,20 @@ function App() {
     );
   }
 
-  const knownRoutes = ["/", "/matches", "/matches/new", "/teams", "/settings", "/privacy", "/terms", "/manual"];
+  const knownRoutes = ["/", "/matches", "/matches/new", "/teams", "/settings", "/privacy", "/terms", "/manual", "/auth/action"];
   const isKnownMatchRoute = location.pathname.startsWith("/matches/");
   const isKnownRoute = knownRoutes.includes(location.pathname) || isKnownMatchRoute;
   const isNotFoundView = !isKnownRoute;
+
+  if (location.pathname === "/auth/action") {
+    return (
+      <AuthActionPage
+        theme={theme}
+        toggleTheme={toggleTheme}
+        onOpenAppLogin={() => setShowLanding(false)}
+      />
+    );
+  }
 
   if (!user) {
     if (location.pathname === "/manual") {

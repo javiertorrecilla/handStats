@@ -14,13 +14,28 @@ import {
   signInWithPopup,
   sendPasswordResetEmail,
   sendEmailVerification,
+  updateProfile,
   deleteUser,
 } from "firebase/auth";
 
 import { auth } from "../firebase/firebase";
+import i18n from "../i18n/i18n";
 import userService from "../services/userService";
+import authEmailService from "../services/authEmailService";
 
 const AuthContext = createContext();
+
+function getCurrentAuthLang() {
+  return (i18n.language || "es").slice(0, 2);
+}
+
+function getActionCodeSettings() {
+  if (typeof window === "undefined") return undefined;
+  return {
+    url: `${window.location.origin}/auth/action`,
+    handleCodeInApp: false,
+  };
+}
 
 export function AuthProvider({ children }) {
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -116,6 +131,40 @@ export function AuthProvider({ children }) {
     );
   };
 
+  const triggerVerificationEmail = async (targetUser, preferredName) => {
+    const lang = getCurrentAuthLang();
+    const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+
+    try {
+      const idToken = await targetUser.getIdToken();
+      const customResult = await authEmailService.sendCustomVerificationEmail({
+        idToken,
+        name: preferredName || targetUser.displayName || undefined,
+        lang,
+        origin,
+      });
+      if (customResult?.handled) {
+        return customResult;
+      }
+    } catch (customErr) {
+      if (customErr?.code === "auth/too-many-requests") {
+        throw customErr;
+      }
+      console.warn("Usando envío nativo de Firebase como respaldo para verificación:", customErr);
+    }
+
+    auth.languageCode = lang;
+    const actionSettings = getActionCodeSettings();
+    try {
+      return await sendEmailVerification(targetUser, actionSettings);
+    } catch (fbErr) {
+      if (fbErr?.code === "auth/unauthorized-continue-uri" || fbErr?.code === "auth/invalid-continue-uri") {
+        return sendEmailVerification(targetUser);
+      }
+      throw fbErr;
+    }
+  };
+
   // ==========================
   // REGISTER
   // ==========================
@@ -131,11 +180,12 @@ export function AuthProvider({ children }) {
       password
     );
 
-    // Enviar correo de verificación inmediatamente
-    try {
-      await sendEmailVerification(credential.user);
-    } catch (verifErr) {
-      console.warn("No se pudo enviar el correo de verificación automático:", verifErr);
+    if (name && name.trim()) {
+      try {
+        await updateProfile(credential.user, { displayName: name.trim() });
+      } catch (profileErr) {
+        console.warn("No se pudo actualizar displayName en Firebase:", profileErr);
+      }
     }
 
     // Crear usuario en MongoDB directamente
@@ -152,6 +202,13 @@ export function AuthProvider({ children }) {
       ...mongoUser,
     });
 
+    // Enviar correo de verificación personalizado inmediatamente
+    try {
+      await triggerVerificationEmail(credential.user, name);
+    } catch (verifErr) {
+      console.warn("No se pudo enviar el correo de verificación automático:", verifErr);
+    }
+
     return credential;
   };
 
@@ -160,7 +217,28 @@ export function AuthProvider({ children }) {
   // ==========================
 
   const resetPassword = async (email) => {
-    return sendPasswordResetEmail(auth, email);
+    const lang = getCurrentAuthLang();
+    const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+
+    const customResult = await authEmailService.sendCustomPasswordResetEmail({
+      email,
+      lang,
+      origin,
+    });
+    if (customResult?.handled) {
+      return customResult;
+    }
+
+    auth.languageCode = lang;
+    const actionSettings = getActionCodeSettings();
+    try {
+      return await sendPasswordResetEmail(auth, email, actionSettings);
+    } catch (fbErr) {
+      if (fbErr?.code === "auth/unauthorized-continue-uri" || fbErr?.code === "auth/invalid-continue-uri") {
+        return sendPasswordResetEmail(auth, email);
+      }
+      throw fbErr;
+    }
   };
 
   // ==========================
@@ -172,7 +250,7 @@ export function AuthProvider({ children }) {
     if (!current) {
       throw new Error("No hay usuario autenticado.");
     }
-    return sendEmailVerification(current);
+    return triggerVerificationEmail(current, user?.name || user?.displayName);
   };
 
   const checkEmailVerified = async () => {

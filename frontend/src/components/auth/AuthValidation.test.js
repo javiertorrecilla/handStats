@@ -1,5 +1,10 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import {
+  mapActionCodeErrorKey,
+  parseAuthActionSearch,
+  validateResetPasswordFields,
+} from "./authActionUtils.js";
 
 /**
  * Lógica pura de validación y control de acceso por verificación de correo
@@ -149,5 +154,53 @@ describe("Auth - Mapeo de Códigos de Error de Recuperación y Registro", () => 
       mapAuthError("auth/weak-password"),
       "La contraseña debe tener al menos 6 caracteres."
     );
+  });
+});
+
+describe("AuthActionPage (/auth/action) - Utilidades de enlaces e i18n", () => {
+  it("Debe extraer mode, oobCode y lang válido desde la URL", () => {
+    const parsed = parseAuthActionSearch("?mode=resetPassword&oobCode=ABC_123&lang=de-DE");
+    assert.equal(parsed.mode, "resetPassword");
+    assert.equal(parsed.oobCode, "ABC_123");
+    assert.equal(parsed.lang, "de");
+
+    const invalidLang = parseAuthActionSearch("?mode=verifyEmail&oobCode=XYZ&lang=xx");
+    assert.equal(invalidLang.lang, null);
+  });
+
+  it("Debe validar longitud mínima y coincidencia al restablecer contraseña", () => {
+    assert.equal(validateResetPasswordFields("", "123456"), "auth.fill_all_fields");
+    assert.equal(validateResetPasswordFields("12345", "12345"), "auth_action.password_min_length");
+    assert.equal(validateResetPasswordFields("abc123", "abc124"), "auth_action.passwords_mismatch");
+    assert.equal(validateResetPasswordFields("HandStats2026!", "HandStats2026!"), null);
+  });
+
+  it("Debe mapear códigos de error de Firebase Action Code", () => {
+    assert.equal(mapActionCodeErrorKey("auth/expired-action-code"), "auth_action.error_expired");
+    assert.equal(mapActionCodeErrorKey("auth/invalid-action-code"), "auth_action.error_invalid");
+    assert.equal(mapActionCodeErrorKey("unknown"), "auth_action.error_generic");
+  });
+
+  it("Debe incluir las claves de auth_action en los 6 archivos locales de i18n", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const langs = ["es", "en", "de", "fr", "da", "pl"];
+    const requiredKeys = [
+      "verify_success_title",
+      "reset_form_title",
+      "save_password_btn",
+      "reset_success_title",
+      "error_expired",
+      "passwords_mismatch",
+    ];
+
+    for (const lang of langs) {
+      const p = path.resolve(process.cwd(), `src/i18n/locales/${lang}.json`);
+      const data = JSON.parse(fs.readFileSync(p, "utf-8"));
+      assert.ok(data.auth_action, `Falta auth_action en ${lang}.json`);
+      for (const key of requiredKeys) {
+        assert.ok(data.auth_action[key], `Falta auth_action.${key} en ${lang}.json`);
+      }
+    }
   });
 });

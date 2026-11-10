@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import matches, users, pdf_routes
+from app.routes import auth_emails, matches, users, pdf_routes
 
 app = FastAPI(
     title="HandStats API",
@@ -29,12 +29,14 @@ app.add_middleware(
 app.include_router(matches.router)
 app.include_router(users.router)
 app.include_router(pdf_routes.router)
+app.include_router(auth_emails.router)
 
 # Rutas bajo el prefijo /api (para llamadas directas y Vercel Serverless)
 api_router = APIRouter(prefix="/api")
 api_router.include_router(matches.router)
 api_router.include_router(users.router)
 api_router.include_router(pdf_routes.router)
+api_router.include_router(auth_emails.router)
 app.include_router(api_router)
 
 # ==========================================================
