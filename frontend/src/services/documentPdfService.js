@@ -647,35 +647,80 @@ export function generateUserManualPdf(lang = "es") {
 
 /**
  * ==========================================================
- * DESCARGA DIRECTA DE ARCHIVOS PDF
+ * DESCARGA DIRECTA DE ARCHIVOS PDF OFICIALES (public/docs)
  * ==========================================================
  */
 
-export async function downloadDocumentPdf(docType, lang = "es") {
-  const currentLang = (lang || "es").slice(0, 2);
-  let pdf;
-  let filename = `HandStats_Documento_${currentLang}.pdf`;
+export const OFFICIAL_PDF_DOCS = {
+  privacy: {
+    path: "docs/HandStats-Pro_Politica-de-Privacidad.pdf",
+    filename: "HandStats-Pro_Politica-de-Privacidad.pdf"
+  },
+  terms: {
+    path: "docs/HandStats-Pro_Terminos-y-Condiciones.pdf",
+    filename: "HandStats-Pro_Terminos-y-Condiciones.pdf"
+  },
+  manual: {
+    path: "docs/HandStats-Pro_Manual-de-Usuario.pdf",
+    filename: "HandStats-Pro_Manual-de-Usuario.pdf"
+  }
+};
 
-  switch (docType) {
-    case "privacy":
-      pdf = generatePrivacyPolicyPdf(currentLang);
-      filename = `HandStats_Politica_de_Privacidad_${currentLang.toUpperCase()}.pdf`;
-      break;
-
-    case "terms":
-      pdf = generateTermsPdf(currentLang);
-      filename = `HandStats_Terminos_y_Condiciones_${currentLang.toUpperCase()}.pdf`;
-      break;
-
-    case "manual":
-      pdf = generateUserManualPdf(currentLang);
-      filename = `HandStats_Manual_de_Usuario_${currentLang.toUpperCase()}.pdf`;
-      break;
-
-    default:
-      throw new Error(`Tipo de documento desconocido: ${docType}`);
+/**
+ * Resuelve la URL pública y el nombre de archivo del PDF oficial para cada sección.
+ */
+export function getOfficialPdfConfig(docType) {
+  const docConfig = OFFICIAL_PDF_DOCS[docType];
+  if (!docConfig) {
+    throw new Error(`Tipo de documento desconocido: ${docType}`);
   }
 
-  pdf.save(filename);
-  return { success: true, filename };
+  const baseUrl =
+    typeof import.meta !== "undefined" && import.meta.env?.BASE_URL
+      ? import.meta.env.BASE_URL
+      : "/";
+  const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+
+  return {
+    url: `${normalizedBase}${docConfig.path}`,
+    filename: docConfig.filename
+  };
+}
+
+/**
+ * Descarga directamente el documento PDF oficial almacenado en public/docs.
+ */
+export async function downloadDocumentPdf(docType, _lang = "es") {
+  const { url, filename } = getOfficialPdfConfig(docType);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`No se pudo descargar el PDF oficial (${response.status}): ${url}`);
+  }
+
+  const contentType = response.headers?.get?.("content-type") || "";
+  if (contentType.toLowerCase().includes("text/html")) {
+    throw new Error(`El recurso devuelto no es un PDF válido: ${url}`);
+  }
+
+  const blob = await response.blob();
+  if (!blob || blob.size === 0) {
+    throw new Error(`El archivo PDF descargado está vacío: ${url}`);
+  }
+
+  const blobUrl = URL.createObjectURL(blob);
+  try {
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    link.rel = "noopener noreferrer";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  }
+
+  return { success: true, filename, url };
 }

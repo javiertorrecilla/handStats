@@ -1,6 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
+  OFFICIAL_PDF_DOCS,
+  getOfficialPdfConfig,
+  downloadDocumentPdf,
   generatePrivacyPolicyPdf,
   generateTermsPdf,
   generateUserManualPdf
@@ -73,6 +76,113 @@ describe("documentPdfService - Generación de Documentos PDF Oficiales", () => {
         assert.ok(content.pdf[key], `El archivo ${lang}.json debe definir pdf.${key}`);
         assert.ok(typeof content.pdf[key] === "string" && content.pdf[key].length > 0);
       }
+    }
+  });
+
+  it("Debe asociar cada sección con su archivo PDF real en public/docs/", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+
+    const expected = {
+      manual: {
+        url: "/docs/HandStats-Pro_Manual-de-Usuario.pdf",
+        filename: "HandStats-Pro_Manual-de-Usuario.pdf"
+      },
+      privacy: {
+        url: "/docs/HandStats-Pro_Politica-de-Privacidad.pdf",
+        filename: "HandStats-Pro_Politica-de-Privacidad.pdf"
+      },
+      terms: {
+        url: "/docs/HandStats-Pro_Terminos-y-Condiciones.pdf",
+        filename: "HandStats-Pro_Terminos-y-Condiciones.pdf"
+      }
+    };
+
+    for (const [docType, exp] of Object.entries(expected)) {
+      const cfg = getOfficialPdfConfig(docType);
+      assert.deepEqual(cfg, exp);
+
+      const diskPath = path.resolve(process.cwd(), "public", OFFICIAL_PDF_DOCS[docType].path);
+      assert.ok(fs.existsSync(diskPath), `Debe existir el PDF físico en ${diskPath}`);
+      const head = fs.readFileSync(diskPath).subarray(0, 5).toString("utf-8");
+      assert.equal(head, "%PDF-", `El archivo ${diskPath} debe ser un PDF válido`);
+    }
+  });
+
+  it("downloadDocumentPdf debe descargar el archivo estático de public/docs y fallar ante errores", async () => {
+    await assert.rejects(() => downloadDocumentPdf("unknown"), /Tipo de documento desconocido/);
+
+    const originalFetch = globalThis.fetch;
+    const originalDocument = globalThis.document;
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+
+    try {
+      const clickedLinks = [];
+      URL.createObjectURL = () => "blob:mock-pdf-url";
+      URL.revokeObjectURL = () => {};
+      globalThis.document = {
+        createElement: () => ({ style: {} }),
+        body: {
+          appendChild: () => {},
+          removeChild: () => {}
+        }
+      };
+      globalThis.document.createElement = () => {
+        const el = {
+          style: {},
+          click() {
+            clickedLinks.push({ href: this.href, download: this.download });
+          }
+        };
+        return el;
+      };
+
+      const fetchedUrls = [];
+      globalThis.fetch = async (url) => {
+        fetchedUrls.push(url);
+        return {
+          ok: true,
+          headers: { get: () => "application/pdf" },
+          blob: async () => new Blob(["%PDF-1.4"], { type: "application/pdf" })
+        };
+      };
+
+      const resManual = await downloadDocumentPdf("manual");
+      assert.equal(resManual.url, "/docs/HandStats-Pro_Manual-de-Usuario.pdf");
+      assert.equal(resManual.filename, "HandStats-Pro_Manual-de-Usuario.pdf");
+
+      const resPrivacy = await downloadDocumentPdf("privacy");
+      assert.equal(resPrivacy.url, "/docs/HandStats-Pro_Politica-de-Privacidad.pdf");
+      assert.equal(resPrivacy.filename, "HandStats-Pro_Politica-de-Privacidad.pdf");
+
+      const resTerms = await downloadDocumentPdf("terms");
+      assert.equal(resTerms.url, "/docs/HandStats-Pro_Terminos-y-Condiciones.pdf");
+      assert.equal(resTerms.filename, "HandStats-Pro_Terminos-y-Condiciones.pdf");
+
+      assert.deepEqual(fetchedUrls, [
+        "/docs/HandStats-Pro_Manual-de-Usuario.pdf",
+        "/docs/HandStats-Pro_Politica-de-Privacidad.pdf",
+        "/docs/HandStats-Pro_Terminos-y-Condiciones.pdf"
+      ]);
+
+      assert.equal(clickedLinks.length, 3);
+      assert.equal(clickedLinks[0].download, "HandStats-Pro_Manual-de-Usuario.pdf");
+      assert.equal(clickedLinks[1].download, "HandStats-Pro_Politica-de-Privacidad.pdf");
+      assert.equal(clickedLinks[2].download, "HandStats-Pro_Terminos-y-Condiciones.pdf");
+
+      // Error si el servidor devuelve HTML fallback en lugar de PDF
+      globalThis.fetch = async () => ({
+        ok: true,
+        headers: { get: () => "text/html; charset=utf-8" },
+        blob: async () => new Blob(["<html></html>"], { type: "text/html" })
+      });
+      await assert.rejects(() => downloadDocumentPdf("manual"), /no es un PDF válido/);
+    } finally {
+      globalThis.fetch = originalFetch;
+      globalThis.document = originalDocument;
+      URL.createObjectURL = originalCreateObjectURL;
+      URL.revokeObjectURL = originalRevokeObjectURL;
     }
   });
 });

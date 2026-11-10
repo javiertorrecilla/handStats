@@ -5,6 +5,7 @@ import logoHorizontal from "../../assets/logoHorizontal.png";
 import LanguageSelector from "../common/LanguageSelector";
 import { legalNav, termsContent } from "./legalContent";
 import { downloadDocumentPdf } from "../../services/documentPdfService";
+import { IconDownload } from "../../stats/components/common/Icons";
 import { toast } from "../../context/ToastContext";
 import "./LegalPages.css";
 
@@ -25,14 +26,6 @@ const IconSun = () => (
 const IconMoon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
-const IconPrint = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="6 9 6 2 18 2 18 9" />
-    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-    <rect x="6" y="14" width="12" height="8" />
   </svg>
 );
 
@@ -244,7 +237,7 @@ export default function TermsPage({ theme = "light", toggleTheme, onBack, user }
       toast.success(t("pdf.terms_download_success", nav.pdfDownloadSuccess || "Términos y Condiciones en PDF descargados con éxito"));
     } catch (err) {
       console.error("Error al descargar PDF de los términos:", err);
-      toast.error(t("pdf.download_error", nav.pdfDownloadError || "Error al generar el documento PDF"));
+      toast.error(t("pdf.download_error", nav.pdfDownloadError || "Error al descargar el documento PDF"));
     } finally {
       setDownloading(false);
     }
@@ -320,9 +313,9 @@ export default function TermsPage({ theme = "light", toggleTheme, onBack, user }
               disabled={downloading}
               title={nav.downloadPdf || nav.printPdf}
             >
-              <IconPrint />
+              <IconDownload size={15} />
               <span className="btn-text-full">
-                {downloading ? t("pdf.generating", nav.downloading || "Generando PDF...") : (nav.downloadPdf || nav.printPdf || "Descargar PDF")}
+                {downloading ? t("pdf.generating", nav.downloading || "Descargando PDF...") : (nav.downloadPdf || nav.printPdf || "Descargar PDF")}
               </span>
             </button>
 

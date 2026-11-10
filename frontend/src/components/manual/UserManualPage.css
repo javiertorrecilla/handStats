@@ -110,9 +110,14 @@
   color: var(--text-secondary, #475569);
 }
 
-.manual-action-btn:hover {
+.manual-action-btn:hover:not(:disabled) {
   background: var(--bg-inset, #f1f5f9);
   color: var(--text-primary, #0f172a);
+}
+
+.manual-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .manual-action-btn.tour-btn {

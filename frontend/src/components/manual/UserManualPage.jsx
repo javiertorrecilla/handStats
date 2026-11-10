@@ -6,6 +6,7 @@ import LanguageSelector from "../common/LanguageSelector";
 import OnboardingTourModal from "../onboarding/OnboardingTourModal";
 import { manualNav, manualChapters } from "./manualContent";
 import { downloadDocumentPdf } from "../../services/documentPdfService";
+import { IconDownload } from "../../stats/components/common/Icons";
 import { toast } from "../../context/ToastContext";
 import "./UserManualPage.css";
 
@@ -26,14 +27,6 @@ const IconSun = () => (
 const IconMoon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
-const IconPrint = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 6 2 18 2 18 9" />
-    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-    <rect x="6" y="14" width="12" height="8" />
   </svg>
 );
 
@@ -187,7 +180,7 @@ export default function UserManualPage({
       toast.success(t("pdf.manual_download_success", nav.pdfDownloadSuccess || "Manual en PDF descargado con éxito"));
     } catch (err) {
       console.error("Error al descargar PDF del manual:", err);
-      toast.error(t("pdf.download_error", nav.pdfDownloadError || "Error al generar el PDF del manual"));
+      toast.error(t("pdf.download_error", nav.pdfDownloadError || "Error al descargar el PDF del manual"));
     } finally {
       setDownloading(false);
     }
@@ -273,11 +266,11 @@ export default function UserManualPage({
               className="manual-action-btn print-btn"
               onClick={handleDownloadPdf}
               disabled={downloading}
-              title={nav.printBtn}
+              title={nav.downloadPdf || nav.printBtn}
             >
-              <IconPrint />
+              <IconDownload size={15} />
               <span className="btn-text-full">
-                {downloading ? t("pdf.generating", nav.generatingPdf || "Generando PDF...") : nav.printBtn}
+                {downloading ? t("pdf.generating", nav.generatingPdf || "Descargando PDF...") : (nav.downloadPdf || nav.printBtn)}
               </span>
             </button>
 
