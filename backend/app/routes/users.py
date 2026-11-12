@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from bson import ObjectId
 
 from app.database import user_collection
-from app.models import User, SavedTeam
+from app.models import User, SavedTeam, DashboardPreferences
 
 router = APIRouter(
     prefix="/users",
@@ -38,6 +38,7 @@ async def create_user(user: User):
     )
 
     created["_id"] = str(created["_id"])
+    created.pop("password_hash", None)
 
     return created
 
@@ -59,6 +60,7 @@ async def get_user(uid: str):
         )
 
     user["_id"] = str(user["_id"])
+    user.pop("password_hash", None)
 
     return user
 
@@ -205,7 +207,7 @@ async def delete_saved_team(user_id: str, team_name: str):
 
 @router.delete("/{user_id}")
 async def delete_user_account(user_id: str):
-    from app.database import match_collection
+    from app.database import auth_tokens_collection, match_collection
 
     user = None
     if ObjectId.is_valid(user_id):
@@ -225,11 +227,55 @@ async def delete_user_account(user_id: str):
         match_delete_res = await match_collection.delete_many({"user_id": firebase_uid})
         deleted_matches = match_delete_res.deleted_count
 
-    # 2. Eliminar el documento de usuario (equipos guardados, configuración, etc.)
+    # 2. Eliminar tokens de verificación/recuperación asociados y el documento de usuario
+    await auth_tokens_collection.delete_many(
+        {"$or": [{"user_id": str(user["_id"])}, {"email": user.get("email")}]}
+    )
     await user_collection.delete_one({"_id": user["_id"]})
 
     return {
         "status": "Cuenta y datos eliminados correctamente",
         "deleted_matches_count": deleted_matches
+    }
+
+
+# ==========================================================
+# PREFERENCIAS DE DASHBOARD Y ESTADÍSTICAS PERSONALIZADAS
+# ==========================================================
+
+async def _find_user_by_any_id(user_id: str):
+    if ObjectId.is_valid(user_id):
+        found = await user_collection.find_one({"_id": ObjectId(user_id)})
+        if found:
+            return found
+    return await user_collection.find_one({"firebase_uid": user_id})
+
+
+@router.get("/{user_id}/dashboard-preferences")
+async def get_dashboard_preferences(user_id: str):
+    user = await _find_user_by_any_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return {
+        "dashboard_preferences": user.get("dashboard_preferences")
+    }
+
+
+@router.put("/{user_id}/dashboard-preferences")
+async def update_dashboard_preferences(user_id: str, prefs: DashboardPreferences):
+    user = await _find_user_by_any_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    payload = prefs.model_dump(exclude_none=True)
+    await user_collection.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"dashboard_preferences": payload}}
+    )
+
+    return {
+        "status": "Preferencias de dashboard guardadas correctamente",
+        "dashboard_preferences": payload
     }
 

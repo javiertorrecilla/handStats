@@ -1824,7 +1824,7 @@
    - Tramo 1: < 25%       -> Rojo (#EF4444)
    - Tramo 2: 25% - 34.9% -> Ámbar / Naranja (#F59E0B)
    - Tramo 3: 35% - 39.9% -> Verde Lima Claro (#A3E635 / #65A30D)
-   - Tramo 4: >= 40%      -> Verde principal HandStats (#44D878 / #15803D)
+   - Tramo 4: >= 40%      -> Verde principal Handtix (#44D878 / #15803D)
    ========================================================== */
 
 /* Modo Oscuro (Por defecto) */
@@ -1883,7 +1883,7 @@
    - Tramo 2: 51% – 57%   -> Naranja (#F97316)
    - Tramo 3: 58% – 64%   -> Amarillo / Ámbar (#F59E0B)
    - Tramo 4: 65% – 75%   -> Verde Lima Claro (#A3E635 / #65A30D)
-   - Tramo 5: > 75%       -> Verde principal HandStats (#44D878 / #15803D)
+   - Tramo 5: > 75%       -> Verde principal Handtix (#44D878 / #15803D)
    ========================================================== */
 
 /* Modo Oscuro (Por defecto) */
@@ -1954,7 +1954,7 @@
    - Tramo 2: 5 a < 6   -> Naranja (#F97316 / #C2410C)
    - Tramo 3: 6 a < 7   -> Amarillo (#F59E0B / #B45309)
    - Tramo 4: 7 a < 8   -> Verde Lima (#A3E635 / #65A30D)
-   - Tramo 5: 8 a < 9   -> Verde HandStats (#44D878 / #15803D)
+   - Tramo 5: 8 a < 9   -> Verde Handtix (#44D878 / #15803D)
    - Tramo 6: 9 a 10    -> Púrpura MVP (#A855F7 / #7E22CE)
    ========================================================== */
 

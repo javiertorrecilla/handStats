@@ -529,7 +529,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <header className={`landing-nav-wrapper ${navScrolled ? "scrolled" : ""}`}>
         <div className="landing-nav-bar">
           <a href="#hero" className="landing-nav-brand" onClick={(e) => { e.preventDefault(); scrollTo("hero"); }}>
-            <img src={logoHorizontal} alt="HandStats — Analyze. Improve. Win." />
+            <img src={logoHorizontal} alt="Handtix — Analyze. Improve. Win." />
           </a>
 
           <nav className="landing-nav-menu">
@@ -554,7 +554,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             )}
 
             <button className="btn-nav-try" onClick={handleTry}>
-              <span>{t("nav.try_handstats")}</span>
+              <span>{t("nav.try_handtix")}</span>
               <IconArrowRight />
             </button>
 
@@ -600,7 +600,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
         )}
 
         <button className="btn-hero-primary" onClick={handleTry} style={{ width: "100%", justifyContent: "center" }}>
-          <span>{t("nav.try_handstats_now")}</span>
+          <span>{t("nav.try_handtix_now")}</span>
           <IconArrowRight />
         </button>
       </div>
@@ -869,7 +869,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
               </div>
               <div className="browser-url-pill">
                 <IconLock />
-                <span>handstats.app/analytics/{activeTabId}</span>
+                <span>handtix.app/analytics/{activeTabId}</span>
               </div>
               <div style={{ width: 48 }} />
             </div>
@@ -1001,7 +1001,7 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
             <div className="device-matrix-container">
               <div className="device-matrix-header">
                 <h4 className="device-matrix-title">{t("product.matrix_title", "Matriz Comparativa de Capacidades")}</h4>
-                <p className="device-matrix-subtitle">{t("product.matrix_subtitle", "Diferencias técnicas y operativas entre ambas interfaces de HandStats")}</p>
+                <p className="device-matrix-subtitle">{t("product.matrix_subtitle", "Diferencias técnicas y operativas entre ambas interfaces de Handtix")}</p>
                 <div className="device-matrix-swipe-hint">
                   <span>← {t("product.matrix_swipe", "Desliza para comparar")} →</span>
                 </div>
@@ -1121,19 +1121,11 @@ export default function LandingPage({ onTryApp, theme = "dark", toggleTheme }) {
       <footer className="landing-footer-main">
         <div className="footer-content-row">
           <div className="footer-brand-side">
-            <img src={logoHorizontal} alt="HandStats" />
+            <img src={logoHorizontal} alt="Handtix" />
             <span className="footer-tagline">Analyze. Improve. Win.</span>
           </div>
 
           <div className="footer-legal-links">
-            <button
-              type="button"
-              className="footer-legal-btn"
-              onClick={() => navigate("/manual")}
-            >
-              {t("footer.manual", "Manual de Usuario")}
-            </button>
-            <span className="footer-legal-sep">·</span>
             <button
               type="button"
               className="footer-legal-btn"

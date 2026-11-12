@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — HEATMAP ENGINE
+   HANDTIX ANALYTICS — HEATMAP ENGINE
    Generador de densidad espacial continua para cancha y portería
    ========================================================== */
 

@@ -1,6 +1,6 @@
 /**
  * playerRatingEngine.js
- * Módulo para el cálculo de la nota individual de jugadores (Rating 0.0 - 10.0) en HandStats.
+ * Módulo para el cálculo de la nota individual de jugadores (Rating 0.0 - 10.0) en Handtix.
  * 
  * Basado en:
  * - Impacto Neto del Jugador (Net Performance Score - NPS)

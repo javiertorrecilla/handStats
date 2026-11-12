@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — SETTINGS SERVICE
+   HANDTIX ANALYTICS — SETTINGS SERVICE
    Gestor de parámetros configurables para xG, xSaves, alertas, ritmo y rating
    Con soporte de autocalibración empírica por tiros, paradas y modificador zonal de portería 3x3
    ========================================================== */
@@ -51,12 +51,14 @@ export const DEFAULT_SETTINGS = {
   ratingGkConcededPenalty: 0.2
 };
 
-const STORAGE_KEY = "handstats_settings";
+const STORAGE_KEY = "handtix_settings";
 
 export const getSettings = () => {
   try {
     if (typeof localStorage === "undefined") return { ...DEFAULT_SETTINGS };
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved =
+      localStorage.getItem(STORAGE_KEY) ||
+      localStorage.getItem("handstats_settings");
     if (!saved) return { ...DEFAULT_SETTINGS };
     const parsed = JSON.parse(saved);
     return { ...DEFAULT_SETTINGS, ...parsed };
@@ -73,7 +75,7 @@ export const saveSettings = (newSettings) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
     }
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("handstats_settings_updated"));
+      window.dispatchEvent(new Event("handtix_settings_updated"));
     }
     return merged;
   } catch (e) {
@@ -88,7 +90,7 @@ export const resetSettings = () => {
       localStorage.removeItem(STORAGE_KEY);
     }
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("handstats_settings_updated"));
+      window.dispatchEvent(new Event("handtix_settings_updated"));
     }
     return { ...DEFAULT_SETTINGS };
   } catch (e) {

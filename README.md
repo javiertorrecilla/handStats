@@ -1,6 +1,6 @@
-# 🤾‍♂️ HandStats — Plataforma Profesional de Análisis Estadístico para Balonmano
+# 🤾‍♂️ Handtix — Plataforma Profesional de Análisis Estadístico para Balonmano
 
-**HandStats** es una plataforma avanzada e integral para el análisis estadístico en tiempo real, seguimiento de rendimiento y valoración cuantitativa de jugadores en balonmano.
+**Handtix** es una plataforma avanzada e integral para el análisis estadístico en tiempo real, seguimiento de rendimiento y valoración cuantitativa de jugadores en balonmano.
 
 ---
 

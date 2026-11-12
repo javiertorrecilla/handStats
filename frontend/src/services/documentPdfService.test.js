@@ -86,15 +86,15 @@ describe("documentPdfService - Generación de Documentos PDF Oficiales", () => {
     const expected = {
       manual: {
         url: "/docs/HandStats-Pro_Manual-de-Usuario.pdf",
-        filename: "HandStats-Pro_Manual-de-Usuario.pdf"
+        filename: "Handtix-Pro_Manual-de-Usuario.pdf"
       },
       privacy: {
         url: "/docs/HandStats-Pro_Politica-de-Privacidad.pdf",
-        filename: "HandStats-Pro_Politica-de-Privacidad.pdf"
+        filename: "Handtix-Pro_Politica-de-Privacidad.pdf"
       },
       terms: {
         url: "/docs/HandStats-Pro_Terminos-y-Condiciones.pdf",
-        filename: "HandStats-Pro_Terminos-y-Condiciones.pdf"
+        filename: "Handtix-Pro_Terminos-y-Condiciones.pdf"
       }
     };
 
@@ -150,15 +150,15 @@ describe("documentPdfService - Generación de Documentos PDF Oficiales", () => {
 
       const resManual = await downloadDocumentPdf("manual");
       assert.equal(resManual.url, "/docs/HandStats-Pro_Manual-de-Usuario.pdf");
-      assert.equal(resManual.filename, "HandStats-Pro_Manual-de-Usuario.pdf");
+      assert.equal(resManual.filename, "Handtix-Pro_Manual-de-Usuario.pdf");
 
       const resPrivacy = await downloadDocumentPdf("privacy");
       assert.equal(resPrivacy.url, "/docs/HandStats-Pro_Politica-de-Privacidad.pdf");
-      assert.equal(resPrivacy.filename, "HandStats-Pro_Politica-de-Privacidad.pdf");
+      assert.equal(resPrivacy.filename, "Handtix-Pro_Politica-de-Privacidad.pdf");
 
       const resTerms = await downloadDocumentPdf("terms");
       assert.equal(resTerms.url, "/docs/HandStats-Pro_Terminos-y-Condiciones.pdf");
-      assert.equal(resTerms.filename, "HandStats-Pro_Terminos-y-Condiciones.pdf");
+      assert.equal(resTerms.filename, "Handtix-Pro_Terminos-y-Condiciones.pdf");
 
       assert.deepEqual(fetchedUrls, [
         "/docs/HandStats-Pro_Manual-de-Usuario.pdf",
@@ -167,9 +167,9 @@ describe("documentPdfService - Generación de Documentos PDF Oficiales", () => {
       ]);
 
       assert.equal(clickedLinks.length, 3);
-      assert.equal(clickedLinks[0].download, "HandStats-Pro_Manual-de-Usuario.pdf");
-      assert.equal(clickedLinks[1].download, "HandStats-Pro_Politica-de-Privacidad.pdf");
-      assert.equal(clickedLinks[2].download, "HandStats-Pro_Terminos-y-Condiciones.pdf");
+      assert.equal(clickedLinks[0].download, "Handtix-Pro_Manual-de-Usuario.pdf");
+      assert.equal(clickedLinks[1].download, "Handtix-Pro_Politica-de-Privacidad.pdf");
+      assert.equal(clickedLinks[2].download, "Handtix-Pro_Terminos-y-Condiciones.pdf");
 
       // Error si el servidor devuelve HTML fallback en lugar de PDF
       globalThis.fetch = async () => ({

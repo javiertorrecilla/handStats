@@ -73,7 +73,7 @@ function AuthPage({
 
       <div className="auth-card">
         <header className="auth-header">
-          <img src={logoCuadrado} alt="HandStats — Analyze. Improve. Win." className="auth-brand-logo" />
+          <img src={logoCuadrado} alt="Handtix — Analyze. Improve. Win." className="auth-brand-logo" />
         </header>
 
         {mode === "forgot" ? (

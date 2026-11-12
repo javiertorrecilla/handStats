@@ -8,7 +8,7 @@ export { checkIsMobileDevice };
 
 /**
  * DeviceGuard Component
- * Prevents using HandStats on mobile phones, reserving access exclusively
+ * Prevents using Handtix on mobile phones, reserving access exclusively
  * to Tablets (iPad/Android) and Desktop/Laptops (PC/Mac).
  */
 export function DeviceGuard({
@@ -89,7 +89,7 @@ export function DeviceGuard({
             <span className="dg-banner-text">
               {t(
                 "device_guard.landing_mobile_banner",
-                "HandStats está diseñado exclusivamente para Tablets y Ordenadores (PC / Mac). Para usar la plataforma, accede desde una tablet o PC."
+                "Handtix está diseñado exclusivamente para Tablets y Ordenadores (PC / Mac). Para usar la plataforma, accede desde una tablet o PC."
               )}
             </span>
           </div>
@@ -124,9 +124,9 @@ export function DeviceGuard({
         {/* Brand Header */}
         <header className="dg-header">
           <div className="dg-brand-row">
-            <img src={isotipo} alt="HandStats" className="dg-brand-logo" />
+            <img src={isotipo} alt="Handtix" className="dg-brand-logo" />
             <div className="dg-brand-info">
-              <span className="dg-brand-name">HANDSTATS</span>
+              <span className="dg-brand-name">HANDTIX</span>
               <span className="dg-brand-tag">PRO MATCH SUITE</span>
             </div>
           </div>
@@ -141,7 +141,7 @@ export function DeviceGuard({
           <h1 className="dg-title">
             {t(
               "device_guard.title",
-              "HandStats está disponible exclusivamente para Tablets y Ordenadores"
+              "Handtix está disponible exclusivamente para Tablets y Ordenadores"
             )}
           </h1>
           <p className="dg-subtitle">

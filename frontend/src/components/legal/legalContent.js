@@ -1,5 +1,5 @@
 /**
- * Diccionario de contenidos jurídicos internacionalizados para HandStats.
+ * Diccionario de contenidos jurídicos internacionalizados para Handtix.
  * Idiomas soportados: Español (es), English (en), Deutsch (de), Français (fr), Dansk (da), Polski (pl).
  */
 
@@ -175,19 +175,19 @@ export const privacyContent = {
     updatedDate: "21 de octubre de 2026",
     version: "2.0",
     scopeText: "Unión Europea / Internacional",
-    highlightTitle: "Compromiso de Privacidad HandStats",
-    highlightText: "En HandStats protegemos con el máximo rigor los datos de clubes, entrenadores y jugadores de balonmano. Cumplimos con el Reglamento General de Protección de Datos (RGPD UE 2016/679) y la LOPDGDD. Nunca vendemos tus datos estadísticos ni los compartimos con casas de apuestas ni con terceros con fines publicitarios.",
+    highlightTitle: "Compromiso de Privacidad Handtix",
+    highlightText: "En Handtix protegemos con el máximo rigor los datos de clubes, entrenadores y jugadores de balonmano. Cumplimos con el Reglamento General de Protección de Datos (RGPD UE 2016/679) y la LOPDGDD. Nunca vendemos tus datos estadísticos ni los compartimos con casas de apuestas ni con terceros con fines publicitarios.",
     sections: [
       {
         id: "responsable",
         number: 1,
         title: "Responsable del Tratamiento",
-        intro: "El responsable del tratamiento de los datos personales recopilados a través de la plataforma HandStats es:",
+        intro: "El responsable del tratamiento de los datos personales recopilados a través de la plataforma Handtix es:",
         cardInfo: [
-          { label: "Denominación del Servicio", value: "HandStats Analytics Platform" },
+          { label: "Denominación del Servicio", value: "Handtix Analytics Platform" },
           { label: "Finalidad", value: "Suite de análisis táctico y cuantitativo de balonmano de alta competición" },
-          { label: "Correo Electrónico de Contacto", value: "privacidad@handstats.pro / soporte@handstats.pro" },
-          { label: "Delegado de Protección de Datos (DPO)", value: "dpo@handstats.pro" },
+          { label: "Correo Electrónico de Contacto", value: "privacidad@handtix.pro / soporte@handtix.pro" },
+          { label: "Delegado de Protección de Datos (DPO)", value: "dpo@handtix.pro" },
         ],
       },
       {
@@ -220,7 +220,7 @@ export const privacyContent = {
         title: "Base Jurídica (Legitimación)",
         intro: "El tratamiento de tus datos personales se fundamenta en:",
         items: [
-          { bold: "Ejecución del contrato o servicio:", text: "Necesario para prestarte el acceso a HandStats y guardar tus equipos y análisis de partidos." },
+          { bold: "Ejecución del contrato o servicio:", text: "Necesario para prestarte el acceso a Handtix y guardar tus equipos y análisis de partidos." },
           { bold: "Consentimiento expreso:", text: "Otorgado al registrarte en la plataforma o al verificar tu correo electrónico." },
           { bold: "Interés legítimo:", text: "Para asegurar la estabilidad y seguridad de la infraestructura y prevenir accesos fraudulentos." },
         ],
@@ -230,7 +230,7 @@ export const privacyContent = {
         number: 5,
         title: "Plazo de Conservación de los Datos",
         paragraphs: [
-          "Conservaremos tus datos personales mientras mantengas tu cuenta activa en HandStats. En caso de solicitar la eliminación de tu cuenta, tus datos personales serán suprimidos de forma definitiva de nuestras bases de datos de producción en un plazo máximo de 30 días, salvo obligación legal.",
+          "Conservaremos tus datos personales mientras mantengas tu cuenta activa en Handtix. En caso de solicitar la eliminación de tu cuenta, tus datos personales serán suprimidos de forma definitiva de nuestras bases de datos de producción en un plazo máximo de 30 días, salvo obligación legal.",
           "En el caso de partidos analizados bajo el modo de Invitado, la información se almacena temporalmente y no se vincula a ninguna identidad personal permanente.",
         ],
       },
@@ -238,7 +238,7 @@ export const privacyContent = {
         id: "destinatarios",
         number: 6,
         title: "Destinatarios y Proveedores de Servicio",
-        intro: "HandStats emplea proveedores cloud de primer nivel que cumplen con los estándares de seguridad ISO/IEC 27001 y las cláusulas contractuales tipo de la UE:",
+        intro: "Handtix emplea proveedores cloud de primer nivel que cumplen con los estándares de seguridad ISO/IEC 27001 y las cláusulas contractuales tipo de la UE:",
         items: [
           { bold: "Google Cloud Platform / Firebase:", text: "Servicios de autenticación segura de usuarios y gestión de sesiones con encriptación en tránsito y en reposo." },
           { bold: "MongoDB Atlas:", text: "Base de datos segura alojada en centros de datos con certificación de seguridad en la nube." },
@@ -259,7 +259,7 @@ export const privacyContent = {
           { bold: "Portabilidad:", text: "Descargar tus estadísticas e informes en formatos estándares (JSON, PDF)." },
           { bold: "Oposición:", text: "Oponerte al tratamiento de tus datos por motivos relacionados con tu situación particular." },
         ],
-        extra: "Para ejercer cualquiera de estos derechos, puedes escribirnos en cualquier momento a privacidad@handstats.pro adjuntando copia de tu documento identificativo.",
+        extra: "Para ejercer cualquiera de estos derechos, puedes escribirnos en cualquier momento a privacidad@handtix.pro adjuntando copia de tu documento identificativo.",
       },
       {
         id: "seguridad",
@@ -277,10 +277,10 @@ export const privacyContent = {
         id: "contacto",
         number: 9,
         title: "Contacto y Reclamaciones",
-        intro: "Si tienes cualquier duda relativa a esta Política de Privacidad o al tratamiento de tus datos en HandStats, puedes contactar con nuestro equipo a través de:",
+        intro: "Si tienes cualquier duda relativa a esta Política de Privacidad o al tratamiento de tus datos en Handtix, puedes contactar con nuestro equipo a través de:",
         cardInfo: [
-          { label: "Email", value: "privacidad@handstats.pro" },
-          { label: "Atención al usuario", value: "soporte@handstats.pro" },
+          { label: "Email", value: "privacidad@handtix.pro" },
+          { label: "Atención al usuario", value: "soporte@handtix.pro" },
           { label: "Autoridad de Control", value: "Agencia Española de Protección de Datos (AEPD) — www.aepd.es" },
         ],
       },
@@ -292,19 +292,19 @@ export const privacyContent = {
     updatedDate: "October 21, 2026",
     version: "2.0",
     scopeText: "European Union / International",
-    highlightTitle: "HandStats Privacy Commitment",
-    highlightText: "At HandStats we protect handball club, coach, and player data with the highest technical standards. We comply with the General Data Protection Regulation (EU GDPR 2016/679). We never sell your sports statistics or share them with betting companies or advertisers.",
+    highlightTitle: "Handtix Privacy Commitment",
+    highlightText: "At Handtix we protect handball club, coach, and player data with the highest technical standards. We comply with the General Data Protection Regulation (EU GDPR 2016/679). We never sell your sports statistics or share them with betting companies or advertisers.",
     sections: [
       {
         id: "responsable",
         number: 1,
         title: "Data Controller",
-        intro: "The data controller responsible for personal data processed through HandStats is:",
+        intro: "The data controller responsible for personal data processed through Handtix is:",
         cardInfo: [
-          { label: "Service Name", value: "HandStats Analytics Platform" },
+          { label: "Service Name", value: "Handtix Analytics Platform" },
           { label: "Purpose", value: "Professional handball match analysis and statistical suite" },
-          { label: "Contact Email", value: "privacidad@handstats.pro / soporte@handstats.pro" },
-          { label: "Data Protection Officer (DPO)", value: "dpo@handstats.pro" },
+          { label: "Contact Email", value: "privacidad@handtix.pro / soporte@handtix.pro" },
+          { label: "Data Protection Officer (DPO)", value: "dpo@handtix.pro" },
         ],
       },
       {
@@ -337,7 +337,7 @@ export const privacyContent = {
         title: "Legal Basis for Processing",
         intro: "We process your personal data under the following GDPR legal bases:",
         items: [
-          { bold: "Contract performance:", text: "Necessary to provide you with HandStats services and store your matches and teams." },
+          { bold: "Contract performance:", text: "Necessary to provide you with Handtix services and store your matches and teams." },
           { bold: "Consent:", text: "Explicitly given when registering or confirming your email address." },
           { bold: "Legitimate interest:", text: "To protect infrastructure security, prevent abuse, and maintain service reliability." },
         ],
@@ -347,7 +347,7 @@ export const privacyContent = {
         number: 5,
         title: "Data Retention Period",
         paragraphs: [
-          "We retain your personal data as long as your HandStats account remains active. If you request account deletion, all personal data is permanently wiped from production within 30 days.",
+          "We retain your personal data as long as your Handtix account remains active. If you request account deletion, all personal data is permanently wiped from production within 30 days.",
           "Guest mode match data is stored temporarily on your browser and is never tied to any permanent personal identity.",
         ],
       },
@@ -355,7 +355,7 @@ export const privacyContent = {
         id: "destinatarios",
         number: 6,
         title: "Service Providers and Data Processors",
-        intro: "HandStats relies on industry-leading cloud infrastructure complying with ISO/IEC 27001 standards and EU Standard Contractual Clauses:",
+        intro: "Handtix relies on industry-leading cloud infrastructure complying with ISO/IEC 27001 standards and EU Standard Contractual Clauses:",
         items: [
           { bold: "Google Cloud Platform / Firebase:", text: "Secure authentication and session management with encryption in transit and at rest." },
           { bold: "MongoDB Atlas:", text: "Secure, encrypted cloud databases located in certified EU data centers." },
@@ -376,7 +376,7 @@ export const privacyContent = {
           { bold: "Data Portability:", text: "Export your statistics and match reports in standard formats (JSON, PDF)." },
           { bold: "Objection:", text: "Object to processing based on legitimate interests." },
         ],
-        extra: "To exercise any of these rights, contact us at privacidad@handstats.pro with proof of identity.",
+        extra: "To exercise any of these rights, contact us at privacidad@handtix.pro with proof of identity.",
       },
       {
         id: "seguridad",
@@ -396,8 +396,8 @@ export const privacyContent = {
         title: "Contact and Regulatory Authority",
         intro: "If you have questions regarding this Privacy Policy or your personal data:",
         cardInfo: [
-          { label: "Email", value: "privacidad@handstats.pro" },
-          { label: "Customer Support", value: "soporte@handstats.pro" },
+          { label: "Email", value: "privacidad@handtix.pro" },
+          { label: "Customer Support", value: "soporte@handtix.pro" },
           { label: "Supervisory Authority", value: "Spanish Data Protection Agency (AEPD) — www.aepd.es" },
         ],
       },
@@ -409,19 +409,19 @@ export const privacyContent = {
     updatedDate: "21. Oktober 2026",
     version: "2.0",
     scopeText: "Europäische Union / International",
-    highlightTitle: "HandStats Datenschutzversprechen",
-    highlightText: "Bei HandStats schützen wir die Daten von Handballvereinen, Trainern und Spielern nach höchsten Sicherheitsstandards. Wir entsprechen der EU-Datenschutz-Grundverordnung (DSGVO). Ihre Spieldaten werden niemals an Wettanbieter oder Werbetreibende verkauft.",
+    highlightTitle: "Handtix Datenschutzversprechen",
+    highlightText: "Bei Handtix schützen wir die Daten von Handballvereinen, Trainern und Spielern nach höchsten Sicherheitsstandards. Wir entsprechen der EU-Datenschutz-Grundverordnung (DSGVO). Ihre Spieldaten werden niemals an Wettanbieter oder Werbetreibende verkauft.",
     sections: [
       {
         id: "responsable",
         number: 1,
         title: "Verantwortlicher für die Datenverarbeitung",
-        intro: "Verantwortlich für die Datenverarbeitung auf der Plattform HandStats ist:",
+        intro: "Verantwortlich für die Datenverarbeitung auf der Plattform Handtix ist:",
         cardInfo: [
-          { label: "Dienstbezeichnung", value: "HandStats Analytics Platform" },
+          { label: "Dienstbezeichnung", value: "Handtix Analytics Platform" },
           { label: "Zweck", value: "Handball-Spielanalyse und taktische Statistik-Suite" },
-          { label: "Kontakt-E-Mail", value: "privacidad@handstats.pro / soporte@handstats.pro" },
-          { label: "Datenschutzbeauftragter (DPO)", value: "dpo@handstats.pro" },
+          { label: "Kontakt-E-Mail", value: "privacidad@handtix.pro / soporte@handtix.pro" },
+          { label: "Datenschutzbeauftragter (DPO)", value: "dpo@handtix.pro" },
         ],
       },
       {
@@ -454,7 +454,7 @@ export const privacyContent = {
         title: "Rechtsgrundlage der Verarbeitung",
         intro: "Die Verarbeitung Ihrer personenbezogenen Daten basiert auf:",
         items: [
-          { bold: "Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):", text: "Erforderlich für den Zugriff auf HandStats und die Speicherung Ihrer Spiele und Teams." },
+          { bold: "Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO):", text: "Erforderlich für den Zugriff auf Handtix und die Speicherung Ihrer Spiele und Teams." },
           { bold: "Einwilligung (Art. 6 Abs. 1 lit. a DSGVO):", text: "Ausdrücklich bei Registrierung oder Bestätigung der E-Mail erteilt." },
           { bold: "Berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO):", text: "Zur Gewährleistung der IT-Sicherheit und Abwehr von Missbrauch." },
         ],
@@ -464,7 +464,7 @@ export const privacyContent = {
         number: 5,
         title: "Speicherdauer",
         paragraphs: [
-          "Wir speichern Ihre Daten, solange Ihr HandStats-Konto aktiv ist. Bei Löschung Ihres Kontos werden alle personenbezogenen Daten innerhalb von maximal 30 Tagen endgültig gelöscht.",
+          "Wir speichern Ihre Daten, solange Ihr Handtix-Konto aktiv ist. Bei Löschung Ihres Kontos werden alle personenbezogenen Daten innerhalb von maximal 30 Tagen endgültig gelöscht.",
           "Im Gastmodus werden Spieldaten nur temporär im Browser gespeichert und keinem dauerhaften Benutzerprofil zugeordnet.",
         ],
       },
@@ -472,7 +472,7 @@ export const privacyContent = {
         id: "destinatarios",
         number: 6,
         title: "Empfänger und Dienstleister",
-        intro: "HandStats nutzt zertifizierte Cloud-Infrastrukturen gemäß ISO/IEC 27001 und EU-Standardvertragsklauseln:",
+        intro: "Handtix nutzt zertifizierte Cloud-Infrastrukturen gemäß ISO/IEC 27001 und EU-Standardvertragsklauseln:",
         items: [
           { bold: "Google Cloud Platform / Firebase:", text: "Sichere Authentifizierung und Sitzungsverwaltung mit Ende-zu-Ende-Verschlüsselung." },
           { bold: "MongoDB Atlas:", text: "Sichere Datenbanken in europäischen Rechenzentren." },
@@ -493,7 +493,7 @@ export const privacyContent = {
           { bold: "Datenübertragbarkeit (Art. 20):", text: "Export Ihrer Spieldaten in Standardformaten (JSON, PDF)." },
           { bold: "Widerspruch (Art. 21):", text: "Widerspruch gegen die Verarbeitung aus berechtigten Gründen." },
         ],
-        extra: "Zur Ausübung Ihrer Rechte wenden Sie sich an privacidad@handstats.pro.",
+        extra: "Zur Ausübung Ihrer Rechte wenden Sie sich an privacidad@handtix.pro.",
       },
       {
         id: "seguridad",
@@ -513,8 +513,8 @@ export const privacyContent = {
         title: "Kontakt und Aufsichtsbehörde",
         intro: "Bei Fragen zu dieser Datenschutzerklärung oder Ihren Rechten:",
         cardInfo: [
-          { label: "E-Mail", value: "privacidad@handstats.pro" },
-          { label: "Support", value: "soporte@handstats.pro" },
+          { label: "E-Mail", value: "privacidad@handtix.pro" },
+          { label: "Support", value: "soporte@handtix.pro" },
           { label: "Aufsichtsbehörde", value: "Spanische Datenschutzbehörde (AEPD) — www.aepd.es" },
         ],
       },
@@ -526,19 +526,19 @@ export const privacyContent = {
     updatedDate: "21 octobre 2026",
     version: "2.0",
     scopeText: "Union Européenne / International",
-    highlightTitle: "Engagement de Confidentialité HandStats",
-    highlightText: "Chez HandStats, nous protégeons les données des clubs, entraîneurs et joueurs de handball avec la plus grande rigueur technique. Nous respectons le RGPD (UE 2016/679). Nous ne vendons jamais vos données statistiques et ne les partageons avec aucun organisme de paris ni annonceur.",
+    highlightTitle: "Engagement de Confidentialité Handtix",
+    highlightText: "Chez Handtix, nous protégeons les données des clubs, entraîneurs et joueurs de handball avec la plus grande rigueur technique. Nous respectons le RGPD (UE 2016/679). Nous ne vendons jamais vos données statistiques et ne les partageons avec aucun organisme de paris ni annonceur.",
     sections: [
       {
         id: "responsable",
         number: 1,
         title: "Responsable du Traitement",
-        intro: "Le responsable du traitement des données personnelles collectées sur HandStats est :",
+        intro: "Le responsable du traitement des données personnelles collectées sur Handtix est :",
         cardInfo: [
-          { label: "Nom du Service", value: "HandStats Analytics Platform" },
+          { label: "Nom du Service", value: "Handtix Analytics Platform" },
           { label: "Finalité", value: "Suite d'analyse tactique et quantitative de handball de haut niveau" },
-          { label: "E-mail de Contact", value: "privacidad@handstats.pro / soporte@handstats.pro" },
-          { label: "Délégué à la Protection des Données (DPO)", value: "dpo@handstats.pro" },
+          { label: "E-mail de Contact", value: "privacidad@handtix.pro / soporte@handtix.pro" },
+          { label: "Délégué à la Protection des Données (DPO)", value: "dpo@handtix.pro" },
         ],
       },
       {
@@ -571,7 +571,7 @@ export const privacyContent = {
         title: "Base Juridique",
         intro: "Le traitement de vos données repose sur les bases suivantes du RGPD :",
         items: [
-          { bold: "Exécution du contrat ou service :", text: "Indispensable pour vous fournir l'accès à HandStats et enregistrer vos matchs." },
+          { bold: "Exécution du contrat ou service :", text: "Indispensable pour vous fournir l'accès à Handtix et enregistrer vos matchs." },
           { bold: "Consentement explicite :", text: "Donné lors de votre inscription ou confirmation d'e-mail." },
           { bold: "Intérêt légitime :", text: "Pour garantir la sécurité et la continuité des infrastructures." },
         ],
@@ -581,7 +581,7 @@ export const privacyContent = {
         number: 5,
         title: "Durée de Conservation",
         paragraphs: [
-          "Nous conservons vos données tant que votre compte HandStats est actif. En cas de demande de suppression, vos données sont définitivement effacées sous 30 jours.",
+          "Nous conservons vos données tant que votre compte Handtix est actif. En cas de demande de suppression, vos données sont définitivement effacées sous 30 jours.",
           "En mode Invité, les données sont stockées temporairement dans votre navigateur et ne sont associées à aucune identité permanente.",
         ],
       },
@@ -589,7 +589,7 @@ export const privacyContent = {
         id: "destinatarios",
         number: 6,
         title: "Destinataires et Sous-traitants",
-        intro: "HandStats utilise des infrastructures cloud certifiées ISO/IEC 27001 et conformes aux clauses contractuelles types de l'UE :",
+        intro: "Handtix utilise des infrastructures cloud certifiées ISO/IEC 27001 et conformes aux clauses contractuelles types de l'UE :",
         items: [
           { bold: "Google Cloud Platform / Firebase :", text: "Authentification sécurisée et gestion des sessions avec chiffrement en transit et au repos." },
           { bold: "MongoDB Atlas :", text: "Bases de données hébergées dans des centres de données européens sécurisés." },
@@ -610,7 +610,7 @@ export const privacyContent = {
           { bold: "Portabilité :", text: "Télécharger vos rapports de match aux formats standards (JSON, PDF)." },
           { bold: "Opposition :", text: "Vous opposer au traitement pour des motifs légitimes." },
         ],
-        extra: "Pour exercer vos droits, écrivez-nous à privacidad@handstats.pro.",
+        extra: "Pour exercer vos droits, écrivez-nous à privacidad@handtix.pro.",
       },
       {
         id: "seguridad",
@@ -630,8 +630,8 @@ export const privacyContent = {
         title: "Contact et Autorité de Contrôle",
         intro: "Pour toute question relative à cette politique :",
         cardInfo: [
-          { label: "E-mail", value: "privacidad@handstats.pro" },
-          { label: "Support", value: "soporte@handstats.pro" },
+          { label: "E-mail", value: "privacidad@handtix.pro" },
+          { label: "Support", value: "soporte@handtix.pro" },
           { label: "Autorité de contrôle", value: "Agence Espagnole de Protection des Données (AEPD) — www.aepd.es" },
         ],
       },
@@ -643,19 +643,19 @@ export const privacyContent = {
     updatedDate: "21. oktober 2026",
     version: "2.0",
     scopeText: "Den Europæiske Union / Internationalt",
-    highlightTitle: "HandStats Privatlivsløfte",
-    highlightText: "Hos HandStats beskytter vi håndboldklubbers, træneres og spilleres data efter de højeste standarder. Vi overholder EU's generelle forordning om databeskyttelse (GDPR 2016/679). Vi sælger aldrig dine kampstatistikker til spiludbydere eller annoncører.",
+    highlightTitle: "Handtix Privatlivsløfte",
+    highlightText: "Hos Handtix beskytter vi håndboldklubbers, træneres og spilleres data efter de højeste standarder. Vi overholder EU's generelle forordning om databeskyttelse (GDPR 2016/679). Vi sælger aldrig dine kampstatistikker til spiludbydere eller annoncører.",
     sections: [
       {
         id: "responsable",
         number: 1,
         title: "Dataansvarlig",
-        intro: "Den dataansvarlige for personoplysninger indsamlet på HandStats er:",
+        intro: "Den dataansvarlige for personoplysninger indsamlet på Handtix er:",
         cardInfo: [
-          { label: "Tjenestenavn", value: "HandStats Analytics Platform" },
+          { label: "Tjenestenavn", value: "Handtix Analytics Platform" },
           { label: "Formål", value: "Taktisk og kvantitativ håndboldanalyse til elite- og breddeidræt" },
-          { label: "Kontakt-e-mail", value: "privacidad@handstats.pro / soporte@handstats.pro" },
-          { label: "Databeskyttelsesrådgiver (DPO)", value: "dpo@handstats.pro" },
+          { label: "Kontakt-e-mail", value: "privacidad@handtix.pro / soporte@handtix.pro" },
+          { label: "Databeskyttelsesrådgiver (DPO)", value: "dpo@handtix.pro" },
         ],
       },
       {
@@ -688,7 +688,7 @@ export const privacyContent = {
         title: "Retsgrundlag",
         intro: "Behandlingen af dine personoplysninger baserer sig på:",
         items: [
-          { bold: "Opfyldelse af kontrakt (GDPR art. 6, stk. 1, litra b):", text: "Nødvendigt for at levere adgang til HandStats og gemme dine kampe." },
+          { bold: "Opfyldelse af kontrakt (GDPR art. 6, stk. 1, litra b):", text: "Nødvendigt for at levere adgang til Handtix og gemme dine kampe." },
           { bold: "Samtykke (GDPR art. 6, stk. 1, litra a):", text: "Givet ved oprettelse af konto eller bekræftelse af e-mail." },
           { bold: "Legitim interesse (GDPR art. 6, stk. 1, litra f):", text: "For at sikre infrastrukturens stabilitet og forhindre misbrug." },
         ],
@@ -698,7 +698,7 @@ export const privacyContent = {
         number: 5,
         title: "Opbevaringsperiode",
         paragraphs: [
-          "Vi opbevarer dine oplysninger, så længe din HandStats-konto er aktiv. Ved anmodning om sletning fjernes data permanent inden for 30 dage.",
+          "Vi opbevarer dine oplysninger, så længe din Handtix-konto er aktiv. Ved anmodning om sletning fjernes data permanent inden for 30 dage.",
           "I Gæstetilstand gemmes data midlertidigt i din browser og knyttes ikke til nogen permanent profil.",
         ],
       },
@@ -706,7 +706,7 @@ export const privacyContent = {
         id: "destinatarios",
         number: 6,
         title: "Tjenesteudbydere og Databehandlere",
-        intro: "HandStats benytter ISO/IEC 27001-certificerede skytjenester i EU:",
+        intro: "Handtix benytter ISO/IEC 27001-certificerede skytjenester i EU:",
         items: [
           { bold: "Google Cloud Platform / Firebase:", text: "Sikker brugergodkendelse og sessionsstyring med kryptering under overførsel og i hvile." },
           { bold: "MongoDB Atlas:", text: "Krypteret databaseserver i europæiske datacentre." },
@@ -727,7 +727,7 @@ export const privacyContent = {
           { bold: "Dataportabilitet:", text: "Downloade dine statistikker i standardformater (JSON, PDF)." },
           { bold: "Indsigelse:", text: "Gøre indsigelse mod legitim behandling." },
         ],
-        extra: "Skriv til privacidad@handstats.pro for at udøve dine rettigheder.",
+        extra: "Skriv til privacidad@handtix.pro for at udøve dine rettigheder.",
       },
       {
         id: "seguridad",
@@ -747,8 +747,8 @@ export const privacyContent = {
         title: "Kontakt og Tilsynsmyndighed",
         intro: "Ved spørgsmål om denne privatlivspolitik:",
         cardInfo: [
-          { label: "E-mail", value: "privacidad@handstats.pro" },
-          { label: "Support", value: "soporte@handstats.pro" },
+          { label: "E-mail", value: "privacidad@handtix.pro" },
+          { label: "Support", value: "soporte@handtix.pro" },
           { label: "Tilsynsmyndighed", value: "Det Spanske Datatilsyn (AEPD) — www.aepd.es" },
         ],
       },
@@ -760,19 +760,19 @@ export const privacyContent = {
     updatedDate: "21 października 2026",
     version: "2.0",
     scopeText: "Unia Europejska / Międzynarodowy",
-    highlightTitle: "Zobowiązanie do Ochrony Prywatności HandStats",
-    highlightText: "W HandStats chronimy dane klubów, trenerów i zawodników piłki ręcznej zgodnie z najwyższymi standardami bezpieczeństwa. Działamy w pełnej zgodności z RODO (UE 2016/679). Nigdy nie sprzedajemy Twoich statystyk bukmacherom ani agencjom reklamowym.",
+    highlightTitle: "Zobowiązanie do Ochrony Prywatności Handtix",
+    highlightText: "W Handtix chronimy dane klubów, trenerów i zawodników piłki ręcznej zgodnie z najwyższymi standardami bezpieczeństwa. Działamy w pełnej zgodności z RODO (UE 2016/679). Nigdy nie sprzedajemy Twoich statystyk bukmacherom ani agencjom reklamowym.",
     sections: [
       {
         id: "responsable",
         number: 1,
         title: "Administrator Danych Osobowych",
-        intro: "Administratorem danych osobowych gromadzonych w serwisie HandStats jest:",
+        intro: "Administratorem danych osobowych gromadzonych w serwisie Handtix jest:",
         cardInfo: [
-          { label: "Nazwa Usługi", value: "HandStats Analytics Platform" },
+          { label: "Nazwa Usługi", value: "Handtix Analytics Platform" },
           { label: "Cel", value: "Zaawansowana analityka taktyczna i statystyczna meczów piłki ręcznej" },
-          { label: "E-mail kontaktowy", value: "privacidad@handstats.pro / soporte@handstats.pro" },
-          { label: "Inspektor Ochrony Danych (IOD/DPO)", value: "dpo@handstats.pro" },
+          { label: "E-mail kontaktowy", value: "privacidad@handtix.pro / soporte@handtix.pro" },
+          { label: "Inspektor Ochrony Danych (IOD/DPO)", value: "dpo@handtix.pro" },
         ],
       },
       {
@@ -805,7 +805,7 @@ export const privacyContent = {
         title: "Podstawa Prawna",
         intro: "Przetwarzanie Twoich danych opiera się na przepisach RODO:",
         items: [
-          { bold: "Realizacja umowy (art. 6 ust. 1 lit. b RODO):", text: "Niezbędna do korzystania z platformy HandStats i zapisywania meczów." },
+          { bold: "Realizacja umowy (art. 6 ust. 1 lit. b RODO):", text: "Niezbędna do korzystania z platformy Handtix i zapisywania meczów." },
           { bold: "Zgoda użytkownika (art. 6 ust. 1 lit. a RODO):", text: "Wyrażona podczas rejestracji lub weryfikacji adresu e-mail." },
           { bold: "Prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO):", text: "W celu ochrony bezpieczeństwa serwera i zapobiegania nadużyciom." },
         ],
@@ -823,7 +823,7 @@ export const privacyContent = {
         id: "destinatarios",
         number: 6,
         title: "Odbiorcy Danych i Dostawcy Chmurowi",
-        intro: "HandStats korzysta z infrastruktury chmurowej spełniającej normy ISO/IEC 27001 oraz standardowe klauzule umowne UE:",
+        intro: "Handtix korzysta z infrastruktury chmurowej spełniającej normy ISO/IEC 27001 oraz standardowe klauzule umowne UE:",
         items: [
           { bold: "Google Cloud Platform / Firebase:", text: "Bezpieczna autoryzacja użytkowników i obsługa sesji z pełnym szyfrowaniem." },
           { bold: "MongoDB Atlas:", text: "Bazy danych ulokowane w bezpiecznych centrach danych na terenie UE." },
@@ -844,7 +844,7 @@ export const privacyContent = {
           { bold: "Przenoszenie danych:", text: "Pobranie statystyk w formatach standardowych (JSON, PDF)." },
           { bold: "Sprzeciw:", text: "Prawo do sprzeciwu wobec przetwarzania." },
         ],
-        extra: "Aby skorzystać ze swoich praw, napisz do nas na adres: privacidad@handstats.pro.",
+        extra: "Aby skorzystać ze swoich praw, napisz do nas na adres: privacidad@handtix.pro.",
       },
       {
         id: "seguridad",
@@ -864,8 +864,8 @@ export const privacyContent = {
         title: "Kontakt i Organ Nadzorczy",
         intro: "W przypadku pytań dotyczących polityki prywatności:",
         cardInfo: [
-          { label: "E-mail", value: "privacidad@handstats.pro" },
-          { label: "Wsparcie techniczne", value: "soporte@handstats.pro" },
+          { label: "E-mail", value: "privacidad@handtix.pro" },
+          { label: "Wsparcie techniczne", value: "soporte@handtix.pro" },
           { label: "Organ nadzorczy", value: "Hiszpańska Agencja Ochrony Danych (AEPD) — www.aepd.es" },
         ],
       },
@@ -879,16 +879,16 @@ export const termsContent = {
     title: "Términos y Condiciones de Uso",
     updatedDate: "21 de octubre de 2026",
     version: "2.0",
-    platformText: "HandStats Pro Suite",
+    platformText: "Handtix Pro Suite",
     highlightTitle: "Resumen General para Entrenadores y Clubes",
-    highlightText: "Al utilizar HandStats aceptas estas condiciones. Eres el propietario exclusivo de todos los datos estadísticos y análisis de tus partidos. HandStats te otorga una licencia no exclusiva para utilizar su software, algoritmos (modelos xG, xSaves y valoración) y herramientas tácticas en tus competiciones de balonmano.",
+    highlightText: "Al utilizar Handtix aceptas estas condiciones. Eres el propietario exclusivo de todos los datos estadísticos y análisis de tus partidos. Handtix te otorga una licencia no exclusiva para utilizar su software, algoritmos (modelos xG, xSaves y valoración) y herramientas tácticas en tus competiciones de balonmano.",
     sections: [
       {
         id: "aceptacion",
         number: 1,
         title: "Aceptación de los Términos",
         paragraphs: [
-          "El acceso y utilización de la plataforma web HandStats (incluyendo todas sus herramientas de mesa de control, cálculo estadístico y servicios asociados) atribuye la condición de Usuario e implica la aceptación plena y sin reservas de todas las disposiciones incluidas en estos Términos y Condiciones.",
+          "El acceso y utilización de la plataforma web Handtix (incluyendo todas sus herramientas de mesa de control, cálculo estadístico y servicios asociados) atribuye la condición de Usuario e implica la aceptación plena y sin reservas de todas las disposiciones incluidas en estos Términos y Condiciones.",
           "Si no estás de acuerdo con cualquiera de estas condiciones, debes abstenerte de utilizar la plataforma.",
         ],
       },
@@ -896,7 +896,7 @@ export const termsContent = {
         id: "servicio",
         number: 2,
         title: "Descripción del Servicio",
-        intro: "HandStats es una plataforma tecnológica especializada en el análisis cuantitativo, biomecánico y táctico de partidos de balonmano. El servicio incluye:",
+        intro: "Handtix es una plataforma tecnológica especializada en el análisis cuantitativo, biomecánico y táctico de partidos de balonmano. El servicio incluye:",
         items: [
           { text: "Mesa de control interactiva para toma de eventos en tiempo real (lanzamientos, goles, paradas, zonas de tiro, 7 metros, faltas en ataque y sanciones disciplinarias)." },
           { text: "Cálculo de métricas cuantitativas avanzadas (modelo de Goles Esperados - xG, modelo de Paradas Esperadas - xSaves, Net Player Score - NPS y ritmos de posesión)." },
@@ -914,14 +914,14 @@ export const termsContent = {
           { text: "El usuario se compromete a proporcionar información veraz, exacta y actualizada durante el registro." },
           { text: "Es obligatorio verificar la dirección de correo electrónico para activar la cuenta de forma definitiva." },
           { text: "El usuario es el único responsable de mantener la confidencialidad de sus credenciales de acceso." },
-          { text: "En caso de sospecha de acceso no autorizado, debe restablecer su contraseña de inmediato o contactar a soporte@handstats.pro." },
+          { text: "En caso de sospecha de acceso no autorizado, debe restablecer su contraseña de inmediato o contactar a soporte@handtix.pro." },
         ],
       },
       {
         id: "invitado",
         number: 4,
         title: "Modalidad de Invitado (Guest Mode)",
-        intro: "HandStats permite a nuevos usuarios probar la herramienta sin registro previo mediante el \"Modo Invitado\":",
+        intro: "Handtix permite a nuevos usuarios probar la herramienta sin registro previo mediante el \"Modo Invitado\":",
         items: [
           { text: "El modo invitado está limitado a un máximo de tres (3) partidos de prueba." },
           { text: "Los datos generados en modo invitado pueden no persistir permanentemente en la nube si se borran los datos del navegador." },
@@ -934,10 +934,10 @@ export const termsContent = {
         title: "Uso Aceptable y Prohibiciones",
         intro: "El usuario se compromete a no realizar ninguna de las siguientes conductas:",
         items: [
-          { text: "Descompilar, realizar ingeniería inversa o intentar extraer el código fuente de los algoritmos de HandStats." },
+          { text: "Descompilar, realizar ingeniería inversa o intentar extraer el código fuente de los algoritmos de Handtix." },
           { text: "Utilizar bots, scripts automatizados o scraping masivo para sobrecargar los servidores." },
           { text: "Introducir intencionadamente virus, troyanos o código malicioso en la plataforma." },
-          { text: "Utilizar HandStats con fines ilícitos, apuestas fraudulentas o actividades que vulneren la integridad deportiva." },
+          { text: "Utilizar Handtix con fines ilícitos, apuestas fraudulentas o actividades que vulneren la integridad deportiva." },
           { text: "Suplantar la identidad de otros entrenadores, clubes o árbitros." },
         ],
       },
@@ -946,7 +946,7 @@ export const termsContent = {
         number: 6,
         title: "Propiedad Intelectual del Software y Algoritmos",
         paragraphs: [
-          "Todos los derechos de propiedad intelectual e industrial sobre HandStats, su código fuente, arquitectura de software, bases de datos, algoritmos matemáticos (modelos de probabilidad de gol xG, valoraciones ponderadas por severidad disciplinaria, mapas de calor SVG), logotipos, isotipos y diseño visual son propiedad exclusiva de HandStats.",
+          "Todos los derechos de propiedad intelectual e industrial sobre Handtix, su código fuente, arquitectura de software, bases de datos, algoritmos matemáticos (modelos de probabilidad de gol xG, valoraciones ponderadas por severidad disciplinaria, mapas de calor SVG), logotipos, isotipos y diseño visual son propiedad exclusiva de Handtix.",
           "Se otorga al usuario una licencia limitada, no exclusiva, intransferible y revocable para utilizar el software con fines de análisis deportivo conforme a estos Términos.",
         ],
       },
@@ -956,17 +956,17 @@ export const termsContent = {
         title: "Propiedad de los Datos Estadísticos del Usuario",
         paragraphs: [
           "Tus datos son tuyos: Los datos brutos de partido registrados por ti (nombres de jugadores de tu club, alineaciones, tiros tomados durante los encuentros y notas tácticas) son propiedad de tu club o persona.",
-          "HandStats no reclama ningún derecho de propiedad sobre tus partidos y te garantiza el derecho a exportar tus estadísticas en cualquier momento.",
+          "Handtix no reclama ningún derecho de propiedad sobre tus partidos y te garantiza el derecho a exportar tus estadísticas en cualquier momento.",
         ],
       },
       {
         id: "garantias",
         number: 8,
         title: "Disponibilidad del Servicio y Exclusión de Garantías",
-        intro: "HandStats se esfuerza por ofrecer la máxima disponibilidad y estabilidad técnica para su uso durante partidos en directo. No obstante:",
+        intro: "Handtix se esfuerza por ofrecer la máxima disponibilidad y estabilidad técnica para su uso durante partidos en directo. No obstante:",
         items: [
           { text: "El servicio se proporciona \"tal cual\" y según disponibilidad." },
-          { text: "HandStats no garantiza que el servicio esté completamente libre de errores imprevistos derivados de fallos en la conexión a internet del usuario o navegadores desactualizados." },
+          { text: "Handtix no garantiza que el servicio esté completamente libre de errores imprevistos derivados de fallos en la conexión a internet del usuario o navegadores desactualizados." },
           { text: "Se recomienda disponer de conexión a internet estable durante el uso de la mesa de control en directo." },
         ],
       },
@@ -975,8 +975,8 @@ export const termsContent = {
         number: 9,
         title: "Baja, Cancelación y Suspensión de Cuentas",
         paragraphs: [
-          "El usuario puede cancelar y solicitar la eliminación de su cuenta en cualquier momento dirigiéndose al panel de ajustes o mediante correo a soporte@handstats.pro.",
-          "HandStats se reserva el derecho de suspender o revocar el acceso a cualquier cuenta que incumpla reiteradamente estos Términos o comprometa la estabilidad del servicio para otros usuarios.",
+          "El usuario puede cancelar y solicitar la eliminación de su cuenta en cualquier momento dirigiéndose al panel de ajustes o mediante correo a soporte@handtix.pro.",
+          "Handtix se reserva el derecho de suspender o revocar el acceso a cualquier cuenta que incumpla reiteradamente estos Términos o comprometa la estabilidad del servicio para otros usuarios.",
         ],
       },
       {
@@ -987,7 +987,7 @@ export const termsContent = {
           "Estos Términos y Condiciones se rigen e interpretan con arreglo a la legislación española y la normativa de la Unión Europea. Para la resolución de cualquier controversia judicial, las partes se someten a los juzgados y tribunales competentes conforme a la normativa de consumidores y usuarios.",
         ],
         cardInfo: [
-          { label: "Soporte Legal y Notificaciones", value: "legal@handstats.pro" },
+          { label: "Soporte Legal y Notificaciones", value: "legal@handtix.pro" },
           { label: "Resolución de litigios en línea (ODR de la UE)", value: "ec.europa.eu/consumers/odr" },
         ],
       },
@@ -998,16 +998,16 @@ export const termsContent = {
     title: "Terms and Conditions of Use",
     updatedDate: "October 21, 2026",
     version: "2.0",
-    platformText: "HandStats Pro Suite",
+    platformText: "Handtix Pro Suite",
     highlightTitle: "General Summary for Coaches and Clubs",
-    highlightText: "By using HandStats you agree to these terms. You are the exclusive owner of all match data and tactical analysis recorded for your teams. HandStats grants you a non-exclusive license to use its software, analytics models (xG, xSaves, and player rating algorithms), and game management tools in your handball competitions.",
+    highlightText: "By using Handtix you agree to these terms. You are the exclusive owner of all match data and tactical analysis recorded for your teams. Handtix grants you a non-exclusive license to use its software, analytics models (xG, xSaves, and player rating algorithms), and game management tools in your handball competitions.",
     sections: [
       {
         id: "aceptacion",
         number: 1,
         title: "Acceptance of Terms",
         paragraphs: [
-          "Access to and use of HandStats (including the live match desk, statistical computation engine, and export services) constitutes acceptance of these Terms and Conditions without reservation.",
+          "Access to and use of Handtix (including the live match desk, statistical computation engine, and export services) constitutes acceptance of these Terms and Conditions without reservation.",
           "If you do not agree with any of these terms, please discontinue using the platform.",
         ],
       },
@@ -1015,7 +1015,7 @@ export const termsContent = {
         id: "servicio",
         number: 2,
         title: "Service Description",
-        intro: "HandStats is a specialized sports analytics platform for quantitative and biomechanical handball performance analysis. It includes:",
+        intro: "Handtix is a specialized sports analytics platform for quantitative and biomechanical handball performance analysis. It includes:",
         items: [
           { text: "Interactive live match control desk for event recording (shots, goals, saves, shot zones, 7m penalty throws, offensive fouls, and sanctions)." },
           { text: "Advanced quantitative models (associative expected goals - xG, goalkeeper expected saves - xSaves, Net Player Score - NPS, and possession tempo)." },
@@ -1033,14 +1033,14 @@ export const termsContent = {
           { text: "Users agree to provide truthful and accurate information upon registration." },
           { text: "Email verification is required to permanently activate your account." },
           { text: "Users are solely responsible for maintaining the confidentiality of their login credentials." },
-          { text: "In case of suspected unauthorized access, reset your password immediately or email soporte@handstats.pro." },
+          { text: "In case of suspected unauthorized access, reset your password immediately or email soporte@handtix.pro." },
         ],
       },
       {
         id: "invitado",
         number: 4,
         title: "Guest Mode",
-        intro: "HandStats allows new coaches to test the software without prior sign-up via \"Guest Mode\":",
+        intro: "Handtix allows new coaches to test the software without prior sign-up via \"Guest Mode\":",
         items: [
           { text: "Guest mode is limited to a maximum of three (3) test matches." },
           { text: "Data in guest mode is stored locally in the browser and will not persist if browser storage is cleared." },
@@ -1053,10 +1053,10 @@ export const termsContent = {
         title: "Acceptable Use and Restrictions",
         intro: "Users agree not to engage in any of the following activities:",
         items: [
-          { text: "Decompiling, reverse engineering, or extracting source code from HandStats algorithms." },
+          { text: "Decompiling, reverse engineering, or extracting source code from Handtix algorithms." },
           { text: "Using automated bots or web scraping to overload our server infrastructure." },
           { text: "Knowingly injecting malicious code, trojans, or viruses into the platform." },
-          { text: "Using HandStats for illicit purposes, fraudulent betting, or violating sporting integrity." },
+          { text: "Using Handtix for illicit purposes, fraudulent betting, or violating sporting integrity." },
           { text: "Impersonating other coaches, clubs, or federations." },
         ],
       },
@@ -1065,7 +1065,7 @@ export const termsContent = {
         number: 6,
         title: "Intellectual Property of Software and Algorithms",
         paragraphs: [
-          "All intellectual property rights in HandStats, its source code, architecture, proprietary algorithms (xG probability models, goalkeeper xSaves formulas, disciplinary score adjustments, SVG heatmaps), brand logos, and visual design belong exclusively to HandStats.",
+          "All intellectual property rights in Handtix, its source code, architecture, proprietary algorithms (xG probability models, goalkeeper xSaves formulas, disciplinary score adjustments, SVG heatmaps), brand logos, and visual design belong exclusively to Handtix.",
           "Users receive a limited, revocable, non-exclusive, and non-transferable license to use the software for handball match analysis in accordance with these Terms.",
         ],
       },
@@ -1075,17 +1075,17 @@ export const termsContent = {
         title: "Ownership of User Match Data",
         paragraphs: [
           "Your data belongs to you: Raw match statistics, player names, team rosters, and tactical notes recorded by you remain the exclusive property of your club or person.",
-          "HandStats claims no ownership over your match data and guarantees your right to export your statistics at any time.",
+          "Handtix claims no ownership over your match data and guarantees your right to export your statistics at any time.",
         ],
       },
       {
         id: "garantias",
         number: 8,
         title: "Service Availability and Disclaimers",
-        intro: "HandStats strives for maximum uptime and reliability during live match usage. However:",
+        intro: "Handtix strives for maximum uptime and reliability during live match usage. However:",
         items: [
           { text: "The service is provided \"as is\" and \"as available\"." },
-          { text: "HandStats does not warrant uninterrupted service in case of third-party network outages or outdated client browsers." },
+          { text: "Handtix does not warrant uninterrupted service in case of third-party network outages or outdated client browsers." },
           { text: "A stable internet connection is recommended during live control desk operation." },
         ],
       },
@@ -1094,8 +1094,8 @@ export const termsContent = {
         number: 9,
         title: "Account Cancellation and Suspension",
         paragraphs: [
-          "Users may cancel their account and request deletion at any time via the Settings page or by emailing soporte@handstats.pro.",
-          "HandStats reserves the right to suspend accounts that repeatedly violate these Terms or compromise server integrity for other users.",
+          "Users may cancel their account and request deletion at any time via the Settings page or by emailing soporte@handtix.pro.",
+          "Handtix reserves the right to suspend accounts that repeatedly violate these Terms or compromise server integrity for other users.",
         ],
       },
       {
@@ -1106,7 +1106,7 @@ export const termsContent = {
           "These Terms are governed by and construed in accordance with the laws of Spain and the European Union. Any disputes shall be subject to the competent courts pursuant to applicable consumer protection legislation.",
         ],
         cardInfo: [
-          { label: "Legal Inquiries", value: "legal@handstats.pro" },
+          { label: "Legal Inquiries", value: "legal@handtix.pro" },
           { label: "EU Online Dispute Resolution (ODR)", value: "ec.europa.eu/consumers/odr" },
         ],
       },
@@ -1117,16 +1117,16 @@ export const termsContent = {
     title: "Allgemeine Geschäftsbedingungen",
     updatedDate: "21. Oktober 2026",
     version: "2.0",
-    platformText: "HandStats Pro Suite",
+    platformText: "Handtix Pro Suite",
     highlightTitle: "Allgemeine Übersicht für Trainer und Vereine",
-    highlightText: "Mit der Nutzung von HandStats akzeptieren Sie diese Bedingungen. Sie bleiben alleiniger Eigentümer aller aufgezeichneten Spieldaten Ihres Teams. HandStats gewährt Ihnen eine Lizenz zur Nutzung der Software, Analysemodelle (xG, xSaves) und Taktik-Tools für Ihre Handball-Wettkämpfe.",
+    highlightText: "Mit der Nutzung von Handtix akzeptieren Sie diese Bedingungen. Sie bleiben alleiniger Eigentümer aller aufgezeichneten Spieldaten Ihres Teams. Handtix gewährt Ihnen eine Lizenz zur Nutzung der Software, Analysemodelle (xG, xSaves) und Taktik-Tools für Ihre Handball-Wettkämpfe.",
     sections: [
       {
         id: "aceptacion",
         number: 1,
         title: "Geltung der Bedingungen",
         paragraphs: [
-          "Der Zugriff auf und die Nutzung der Plattform HandStats begründen die Nutzerstellung und bedeuten die uneingeschränkte Annahme dieser Geschäftsbedingungen.",
+          "Der Zugriff auf und die Nutzung der Plattform Handtix begründen die Nutzerstellung und bedeuten die uneingeschränkte Annahme dieser Geschäftsbedingungen.",
           "Sollten Sie mit einzelnen Bestimmungen nicht einverstanden sein, ist die Nutzung der Plattform zu unterlassen.",
         ],
       },
@@ -1134,7 +1134,7 @@ export const termsContent = {
         id: "servicio",
         number: 2,
         title: "Leistungsbeschreibung",
-        intro: "HandStats ist eine spezialisierte Sportanalyse-Plattform für quantitative und biomechanische Handballanalysen. Der Dienst umfasst:",
+        intro: "Handtix ist eine spezialisierte Sportanalyse-Plattform für quantitative und biomechanische Handballanalysen. Der Dienst umfasst:",
         items: [
           { text: "Interaktives Kampfgericht zur Echtzeit-Erfassung von Aktionen (Würfe, Tore, Paraden, Wurfzonen, 7m, Stürmerfouls und Strafen)." },
           { text: "Erweiterte quantitative Modelle (xG, Torwart-xSaves, Net Player Score - NPS, Ballbesitzrhythmus)." },
@@ -1152,14 +1152,14 @@ export const termsContent = {
           { text: "Nutzer verpflichten sich zu wahrheitsgemäßen Angaben bei der Registrierung." },
           { text: "Die E-Mail-Bestätigung ist zur dauerhaften Kontoaktivierung zwingend erforderlich." },
           { text: "Der Nutzer trägt die Verantwortung für die Geheimhaltung seiner Zugangsdaten." },
-          { text: "Bei Verdacht auf unbefugten Zugriff ist das Passwort sofort zurückzusetzen oder soporte@handstats.pro zu kontaktieren." },
+          { text: "Bei Verdacht auf unbefugten Zugriff ist das Passwort sofort zurückzusetzen oder soporte@handtix.pro zu kontaktieren." },
         ],
       },
       {
         id: "invitado",
         number: 4,
         title: "Gastmodus (Guest Mode)",
-        intro: "HandStats ermöglicht es Trainern, das System ohne vorherige Registrierung zu testen:",
+        intro: "Handtix ermöglicht es Trainern, das System ohne vorherige Registrierung zu testen:",
         items: [
           { text: "Der Gastmodus ist auf maximal drei (3) Testspiele begrenzt." },
           { text: "Daten im Gastmodus werden nur lokal im Browser zwischengespeichert." },
@@ -1172,7 +1172,7 @@ export const termsContent = {
         title: "Zulässige Nutzung und Verbote",
         intro: "Folgende Handlungen sind dem Nutzer untersagt:",
         items: [
-          { text: "Dekompilierung oder Reverse Engineering der Algorithmen von HandStats." },
+          { text: "Dekompilierung oder Reverse Engineering der Algorithmen von Handtix." },
           { text: "Nutzung automatisierter Bots oder Scraping-Tools zur Serverüberlastung." },
           { text: "Vorsätzliches Einschleusen von Schadcode oder Viren." },
           { text: "Nutzung für illegale Zwecke, Wettbetrug oder Schädigung der sportlichen Integrität." },
@@ -1184,7 +1184,7 @@ export const termsContent = {
         number: 6,
         title: "Geistiges Eigentum an Software und Algorithmen",
         paragraphs: [
-          "Alle Schutzrechte an HandStats, dem Quellcode, den Algorithmen (xG-Modelle, Strafgewichtung, SVG-Heatmaps) und dem visuellen Design verbleiben exklusiv bei HandStats.",
+          "Alle Schutzrechte an Handtix, dem Quellcode, den Algorithmen (xG-Modelle, Strafgewichtung, SVG-Heatmaps) und dem visuellen Design verbleiben exklusiv bei Handtix.",
           "Der Nutzer erhält ein einfaches, nicht übertragbares Recht zur Nutzung der Plattform für Handball-Sportanalysen.",
         ],
       },
@@ -1194,14 +1194,14 @@ export const termsContent = {
         title: "Eigentum an Ihren Spieldaten",
         paragraphs: [
           "Ihre Daten gehören Ihnen: Alle von Ihnen erfassten Spieldaten, Spielernamen und Kader bleiben ausschließliches Eigentum Ihres Vereins.",
-          "HandStats erhebt keinen Eigentumsanspruch auf Ihre Spieldaten und garantiert den jederzeitigen Export Ihrer Statistiken.",
+          "Handtix erhebt keinen Eigentumsanspruch auf Ihre Spieldaten und garantiert den jederzeitigen Export Ihrer Statistiken.",
         ],
       },
       {
         id: "garantias",
         number: 8,
         title: "Verfügbarkeit und Gewährleistung",
-        intro: "HandStats ist um maximale Stabilität bei Live-Spielen bemüht. Dennoch gilt:",
+        intro: "Handtix ist um maximale Stabilität bei Live-Spielen bemüht. Dennoch gilt:",
         items: [
           { text: "Die Bereitstellung erfolgt im Ist-Zustand nach Maßgabe der technischen Verfügbarkeit." },
           { text: "Ausfälle durch Internetstörungen des Nutzers oder veraltete Browser liegen außerhalb unseres Einflussbereichs." },
@@ -1213,8 +1213,8 @@ export const termsContent = {
         number: 9,
         title: "Kündigung und Kontolöschung",
         paragraphs: [
-          "Sie können Ihr Konto jederzeit in den Einstellungen oder per E-Mail an soporte@handstats.pro kündigen.",
-          "HandStats behält sich vor, Konten bei schwerwiegenden Verstößen gegen diese Bedingungen vorübergehend oder dauerhaft zu sperren.",
+          "Sie können Ihr Konto jederzeit in den Einstellungen oder per E-Mail an soporte@handtix.pro kündigen.",
+          "Handtix behält sich vor, Konten bei schwerwiegenden Verstößen gegen diese Bedingungen vorübergehend oder dauerhaft zu sperren.",
         ],
       },
       {
@@ -1225,7 +1225,7 @@ export const termsContent = {
           "Es gilt das Recht des Königreichs Spanien und der Europäischen Union. Gerichtsstand richtet sich nach den gesetzlichen Bestimmungen des Verbraucherschutzes.",
         ],
         cardInfo: [
-          { label: "Rechtliche Hinweise", value: "legal@handstats.pro" },
+          { label: "Rechtliche Hinweise", value: "legal@handtix.pro" },
           { label: "Online-Streitbeilegung (OS-Plattform der EU)", value: "ec.europa.eu/consumers/odr" },
         ],
       },
@@ -1236,16 +1236,16 @@ export const termsContent = {
     title: "Conditions Générales d'Utilisation",
     updatedDate: "21 octobre 2026",
     version: "2.0",
-    platformText: "HandStats Pro Suite",
+    platformText: "Handtix Pro Suite",
     highlightTitle: "Résumé pour Entraîneurs et Clubs",
-    highlightText: "En utilisant HandStats, vous acceptez ces conditions. Vous restez l'unique propriétaire de l'ensemble des données de vos matchs. HandStats vous accorde une licence d'utilisation de ses algorithmes (xG, xSaves) et outils d'analyse pour vos compétitions de handball.",
+    highlightText: "En utilisant Handtix, vous acceptez ces conditions. Vous restez l'unique propriétaire de l'ensemble des données de vos matchs. Handtix vous accorde une licence d'utilisation de ses algorithmes (xG, xSaves) et outils d'analyse pour vos compétitions de handball.",
     sections: [
       {
         id: "aceptacion",
         number: 1,
         title: "Acceptation des Conditions",
         paragraphs: [
-          "L'accès et l'utilisation de HandStats impliquent l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation.",
+          "L'accès et l'utilisation de Handtix impliquent l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation.",
           "Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser la plateforme.",
         ],
       },
@@ -1253,7 +1253,7 @@ export const termsContent = {
         id: "servicio",
         number: 2,
         title: "Description du Service",
-        intro: "HandStats est une suite d'analyse sportive quantitative et biomécanique pour le handball. Le service comprend :",
+        intro: "Handtix est une suite d'analyse sportive quantitative et biomécanique pour le handball. Le service comprend :",
         items: [
           { text: "Table de marque interactive en temps réel (tirs, buts, arrêts, zones, 7m, fautes d'attaque et sanctions)." },
           { text: "Calcul de métriques avancées (xG associatif, xSaves gardien, score NPS, rythme de possession)." },
@@ -1271,14 +1271,14 @@ export const termsContent = {
           { text: "L'utilisateur s'engage à fournir des données exactes et à jour." },
           { text: "La confirmation de l'e-mail est nécessaire pour valider le compte." },
           { text: "L'utilisateur est seul responsable de la confidentialité de ses identifiants." },
-          { text: "En cas d'accès suspect, modifiez votre mot de passe immédiatement ou contactez soporte@handstats.pro." },
+          { text: "En cas d'accès suspect, modifiez votre mot de passe immédiatement ou contactez soporte@handtix.pro." },
         ],
       },
       {
         id: "invitado",
         number: 4,
         title: "Mode Invité (Guest Mode)",
-        intro: "HandStats propose un mode d'essai gratuit sans inscription préalable :",
+        intro: "Handtix propose un mode d'essai gratuit sans inscription préalable :",
         items: [
           { text: "Le mode invité est limité à trois (3) matchs d'essai." },
           { text: "Les données sont stockées localement dans votre navigateur." },
@@ -1303,7 +1303,7 @@ export const termsContent = {
         number: 6,
         title: "Propriété Intellectuelle du Logiciel",
         paragraphs: [
-          "Tous les droits de propriété intellectuelle sur HandStats (code source, algorithmes xG/xSaves, cartes thermiques SVG, charte graphique et logos) sont la propriété exclusive de HandStats.",
+          "Tous les droits de propriété intellectuelle sur Handtix (code source, algorithmes xG/xSaves, cartes thermiques SVG, charte graphique et logos) sont la propriété exclusive de Handtix.",
           "Une licence d'utilisation non exclusive et révocable est consentie pour l'analyse de matchs conformément aux présentes conditions.",
         ],
       },
@@ -1313,14 +1313,14 @@ export const termsContent = {
         title: "Propriété de vos Données de Match",
         paragraphs: [
           "Vos données vous appartiennent : les statistiques enregistrées, les noms de vos joueurs et vos tactiques restent l'entière propriété de votre club.",
-          "HandStats ne revendique aucun droit sur vos matchs et garantit l'exportation libre de vos données à tout moment.",
+          "Handtix ne revendique aucun droit sur vos matchs et garantit l'exportation libre de vos données à tout moment.",
         ],
       },
       {
         id: "garantias",
         number: 8,
         title: "Disponibilité et Garanties",
-        intro: "HandStats s'efforce de garantir la plus haute stabilité en direct. Cependant :",
+        intro: "Handtix s'efforce de garantir la plus haute stabilité en direct. Cependant :",
         items: [
           { text: "Le service est fourni \"en l'état\" selon les disponibilités techniques." },
           { text: "Les interruptions liées à la connexion internet locale ou à des navigateurs obsolètes ne sauraient engager notre responsabilité." },
@@ -1332,8 +1332,8 @@ export const termsContent = {
         number: 9,
         title: "Résiliation et Suspension",
         paragraphs: [
-          "Vous pouvez supprimer votre compte à tout moment depuis les paramètres ou par e-mail à soporte@handstats.pro.",
-          "HandStats se réserve le droit de suspendre l'accès en cas de non-respect manifeste des présentes conditions.",
+          "Vous pouvez supprimer votre compte à tout moment depuis les paramètres ou par e-mail à soporte@handtix.pro.",
+          "Handtix se réserve le droit de suspendre l'accès en cas de non-respect manifeste des présentes conditions.",
         ],
       },
       {
@@ -1344,7 +1344,7 @@ export const termsContent = {
           "Les présentes conditions sont soumises au droit espagnol et à la réglementation de l'Union Européenne.",
         ],
         cardInfo: [
-          { label: "Contact Juridique", value: "legal@handstats.pro" },
+          { label: "Contact Juridique", value: "legal@handtix.pro" },
           { label: "Plateforme européenne de règlement en ligne des litiges", value: "ec.europa.eu/consumers/odr" },
         ],
       },
@@ -1355,16 +1355,16 @@ export const termsContent = {
     title: "Vilkår og Betingelser",
     updatedDate: "21. oktober 2026",
     version: "2.0",
-    platformText: "HandStats Pro Suite",
+    platformText: "Handtix Pro Suite",
     highlightTitle: "Generelt Overblik for Trænere og Klubber",
-    highlightText: "Ved at benytte HandStats accepterer du disse vilkår. Du er eneejer af alle kampdata og statistiske analyser for dine hold. HandStats tildeler dig en ikke-eksklusiv licens til at anvende softwaren, de avancerede modeller (xG, xSaves) og de taktiske værktøjer.",
+    highlightText: "Ved at benytte Handtix accepterer du disse vilkår. Du er eneejer af alle kampdata og statistiske analyser for dine hold. Handtix tildeler dig en ikke-eksklusiv licens til at anvende softwaren, de avancerede modeller (xG, xSaves) og de taktiske værktøjer.",
     sections: [
       {
         id: "aceptacion",
         number: 1,
         title: "Accept af Vilkår",
         paragraphs: [
-          "Adgang til og brug af HandStats (herunder live-sekretariatet og statistikmodulet) forudsætter fuld accept af disse vilkår og betingelser.",
+          "Adgang til og brug af Handtix (herunder live-sekretariatet og statistikmodulet) forudsætter fuld accept af disse vilkår og betingelser.",
           "Hvis du ikke kan acceptere vilkårene, skal du afstå fra at benytte platformen.",
         ],
       },
@@ -1372,7 +1372,7 @@ export const termsContent = {
         id: "servicio",
         number: 2,
         title: "Tjenestens Omfang",
-        intro: "HandStats er en specialiseret analyseplatform til håndbold. Tjenesten indeholder:",
+        intro: "Handtix er en specialiseret analyseplatform til håndbold. Tjenesten indeholder:",
         items: [
           { text: "Interaktivt live-sekretariat til kampregistrering (skud, mål, redninger, 7m, angrebsfejl og sanktioner)." },
           { text: "Avancerede matematiske modeller (xG, målmands-xSaves, Net Player Score - NPS, angrebsrytme)." },
@@ -1397,7 +1397,7 @@ export const termsContent = {
         id: "invitado",
         number: 4,
         title: "Gæstetilstand (Guest Mode)",
-        intro: "HandStats tilbyder nye brugere at afprøve systemet uden oprettelse:",
+        intro: "Handtix tilbyder nye brugere at afprøve systemet uden oprettelse:",
         items: [
           { text: "Gæstetilstanden er begrænset til højst tre (3) testkampe." },
           { text: "Data i gæstetilstand gemmes lokalt i din browser og synkroniseres ikke permanent." },
@@ -1410,7 +1410,7 @@ export const termsContent = {
         title: "Acceptabel Brug og Forbud",
         intro: "Følgende handlinger er ikke tilladt:",
         items: [
-          { text: "Dekomponering eller reverse engineering af algoritmerne i HandStats." },
+          { text: "Dekomponering eller reverse engineering af algoritmerne i Handtix." },
           { text: "Brug af automatiserede bots eller dataskrabning mod serverne." },
           { text: "Tilsigtet overførsel af virus eller skadelig kode." },
           { text: "Brug til ulovlige væddemål eller handlinger, der skader sportslig integritet." },
@@ -1422,7 +1422,7 @@ export const termsContent = {
         number: 6,
         title: "Immaterielle Rettigheder til Softwaren",
         paragraphs: [
-          "Alle immaterielle rettigheder til HandStats (kildekode, xG-beregninger, varmekort, logoer og visuelt design) tilhører alene HandStats.",
+          "Alle immaterielle rettigheder til Handtix (kildekode, xG-beregninger, varmekort, logoer og visuelt design) tilhører alene Handtix.",
           "Brugeren tildeles en begrænset, genkaldelig og ikke-overdragelig licens til at benytte softwaren til håndboldanalyse.",
         ],
       },
@@ -1432,14 +1432,14 @@ export const termsContent = {
         title: "Ejerskab over Dine Kampdata",
         paragraphs: [
           "Dine data tilhører dig: Alle registrerede kampe, spillernavne og taktiske notater er din klubs eller din egen ejendom.",
-          "HandStats gør ikke krav på dine kampdata og sikrer dig retten til frit at eksportere dine statistikker når som helst.",
+          "Handtix gør ikke krav på dine kampdata og sikrer dig retten til frit at eksportere dine statistikker når som helst.",
         ],
       },
       {
         id: "garantias",
         number: 8,
         title: "Tilgængelighed og Ansvarsfraskrivelse",
-        intro: "HandStats bestræber sig på maksimal stabilitet under live-kampe. Dog gælder:",
+        intro: "Handtix bestræber sig på maksimal stabilitet under live-kampe. Dog gælder:",
         items: [
           { text: "Tjenesten leveres \"som den er og forefindes\"." },
           { text: "Vi kan ikke holdes ansvarlige for udfald, der skyldes brugerens internetforbindelse eller forældede browsere." },
@@ -1451,8 +1451,8 @@ export const termsContent = {
         number: 9,
         title: "Opsigelse og Kontolukning",
         paragraphs: [
-          "Du kan til enhver tid slette din konto i indstillingerne eller ved at skrive til soporte@handstats.pro.",
-          "HandStats forbeholder sig retten til at suspendere konti, der gentagne gange overtræder disse betingelser.",
+          "Du kan til enhver tid slette din konto i indstillingerne eller ved at skrive til soporte@handtix.pro.",
+          "Handtix forbeholder sig retten til at suspendere konti, der gentagne gange overtræder disse betingelser.",
         ],
       },
       {
@@ -1463,7 +1463,7 @@ export const termsContent = {
           "Disse vilkår er underlagt spansk ret og EU-lovgivning.",
         ],
         cardInfo: [
-          { label: "Juridisk kontakt", value: "legal@handstats.pro" },
+          { label: "Juridisk kontakt", value: "legal@handtix.pro" },
           { label: "EU's online klageportal (ODR)", value: "ec.europa.eu/consumers/odr" },
         ],
       },
@@ -1474,16 +1474,16 @@ export const termsContent = {
     title: "Regulamin i Warunki Korzystania",
     updatedDate: "21 października 2026",
     version: "2.0",
-    platformText: "HandStats Pro Suite",
+    platformText: "Handtix Pro Suite",
     highlightTitle: "Podsumowanie dla Trenerów i Klubów",
-    highlightText: "Korzystając z HandStats, akceptujesz niniejszy regulamin. Jesteś wyłącznym właścicielem wszystkich danych meczowych i analiz swoich drużyn. HandStats udziela licencji na korzystanie z oprogramowania, zaawansowanych algorytmów (modele xG, xSaves) oraz narzędzi taktycznych w rozgrywkach piłki ręcznej.",
+    highlightText: "Korzystając z Handtix, akceptujesz niniejszy regulamin. Jesteś wyłącznym właścicielem wszystkich danych meczowych i analiz swoich drużyn. Handtix udziela licencji na korzystanie z oprogramowania, zaawansowanych algorytmów (modele xG, xSaves) oraz narzędzi taktycznych w rozgrywkach piłki ręcznej.",
     sections: [
       {
         id: "aceptacion",
         number: 1,
         title: "Akceptacja Regulaminu",
         paragraphs: [
-          "Dostęp do serwisu HandStats i korzystanie z niego (w tym z protokołu meczowego na żywo i modułu statystyk) oznacza pełną i bezwarunkową akceptację niniejszych Warunków.",
+          "Dostęp do serwisu Handtix i korzystanie z niego (w tym z protokołu meczowego na żywo i modułu statystyk) oznacza pełną i bezwarunkową akceptację niniejszych Warunków.",
           "W przypadku braku zgody na którykolwiek z punktów, prosimy o zaprzestanie korzystania z platformy.",
         ],
       },
@@ -1491,7 +1491,7 @@ export const termsContent = {
         id: "servicio",
         number: 2,
         title: "Opis Świadczonych Usług",
-        intro: "HandStats to wyspecjalizowana platforma analityczna dedykowana piłce ręcznej. Usługa obejmuje:",
+        intro: "Handtix to wyspecjalizowana platforma analityczna dedykowana piłce ręcznej. Usługa obejmuje:",
         items: [
           { text: "Interaktywny panel meczowy do rejestracji zdarzeń w czasie rzeczywistym (rzuty, bramki, obrony, strefy rzutów, rzuty karne 7m, faule w ataku, kary)." },
           { text: "Zaawansowane modele statystyczne (asocjacyjne xG, xSaves bramkarzy, wskaźnik NPS, rytm posiadania piłki)." },
@@ -1509,14 +1509,14 @@ export const termsContent = {
           { text: "Użytkownik zobowiązuje się do podawania prawdziwych i aktualnych informacji." },
           { text: "Weryfikacja adresu e-mail jest wymagana do trwałej aktywacji konta." },
           { text: "Użytkownik ponosi wyłączną odpowiedzialność za zachowanie poufności swoich danych logowania." },
-          { text: "W przypadku podejrzenia nieuprawnionego dostępu należy natychmiast zmienić hasło lub napisać na soporte@handstats.pro." },
+          { text: "W przypadku podejrzenia nieuprawnionego dostępu należy natychmiast zmienić hasło lub napisać na soporte@handtix.pro." },
         ],
       },
       {
         id: "invitado",
         number: 4,
         title: "Tryb Gościa (Guest Mode)",
-        intro: "HandStats umożliwia bezpłatne przetestowanie aplikacji bez rejestracji:",
+        intro: "Handtix umożliwia bezpłatne przetestowanie aplikacji bez rejestracji:",
         items: [
           { text: "Tryb gościa jest ograniczony do maksymalnie trzech (3) meczów próbnych." },
           { text: "Dane w trybie gościa zapisywane są lokalnie w przeglądarce i nie są trwale powiązane z chmurą." },
@@ -1529,7 +1529,7 @@ export const termsContent = {
         title: "Dozwolony Użytek i Zakazy",
         intro: "Zabrania się użytkownikom podejmowania następujących działań:",
         items: [
-          { text: "Dekomplikacji, inżynierii wstecznej lub prób wyodrębnienia kodu źródłowego algorytmów HandStats." },
+          { text: "Dekomplikacji, inżynierii wstecznej lub prób wyodrębnienia kodu źródłowego algorytmów Handtix." },
           { text: "Używania botów lub technik scrapingu obciążających infrastrukturę serwerową." },
           { text: "Wprowadzania wirusów lub złośliwego oprogramowania." },
           { text: "Wykorzystywania serwisu do celów nielegalnych, oszustw bukmacherskich lub naruszania zasad fair play." },
@@ -1541,7 +1541,7 @@ export const termsContent = {
         number: 6,
         title: "Własność Intelektualna Oprogramowania",
         paragraphs: [
-          "Wszelkie prawa własności intelektualnej do HandStats (kod źródłowy, algorytmy xG, formuły oceny, mapy ciepła, znaki towarowe i design) należą wyłącznie do HandStats.",
+          "Wszelkie prawa własności intelektualnej do Handtix (kod źródłowy, algorytmy xG, formuły oceny, mapy ciepła, znaki towarowe i design) należą wyłącznie do Handtix.",
           "Użytkownik otrzymuje ograniczoną, odwołalną i niewyłączną licencję na korzystanie z serwisu do analizy sportowej.",
         ],
       },
@@ -1551,7 +1551,7 @@ export const termsContent = {
         title: "Własność Danych Meczowych Użytkownika",
         paragraphs: [
           "Twoje dane należą do Ciebie: Surowe dane meczowe zarejestrowane przez Ciebie (składy, rzuty, notatki) są wyłączną własnością Twojego klubu lub Twoją.",
-          "HandStats nie rości sobie żadnych praw do Twoich meczów i gwarantuje prawo do ich swobodnego eksportu w dowolnym momencie.",
+          "Handtix nie rości sobie żadnych praw do Twoich meczów i gwarantuje prawo do ich swobodnego eksportu w dowolnym momencie.",
         ],
       },
       {
@@ -1570,8 +1570,8 @@ export const termsContent = {
         number: 9,
         title: "Zamknięcie Konta i Rozwiązanie Umowy",
         paragraphs: [
-          "Użytkownik może w każdej chwili usunąć swoje konto w zakładce Ustawienia lub wysyłając e-mail na soporte@handstats.pro.",
-          "HandStats zastrzega sobie prawo do zablokowania konta w przypadku rażącego naruszenia niniejszego regulaminu.",
+          "Użytkownik może w każdej chwili usunąć swoje konto w zakładce Ustawienia lub wysyłając e-mail na soporte@handtix.pro.",
+          "Handtix zastrzega sobie prawo do zablokowania konta w przypadku rażącego naruszenia niniejszego regulaminu.",
         ],
       },
       {
@@ -1582,7 +1582,7 @@ export const termsContent = {
           "Niniejszy regulamin podlega prawu hiszpańskiemu oraz przepisom Unii Europejskiej.",
         ],
         cardInfo: [
-          { label: "Wsparcie prawne", value: "legal@handstats.pro" },
+          { label: "Wsparcie prawne", value: "legal@handtix.pro" },
           { label: "Internetowe rozstrzyganie sporów (ODR UE)", value: "ec.europa.eu/consumers/odr" },
         ],
       },

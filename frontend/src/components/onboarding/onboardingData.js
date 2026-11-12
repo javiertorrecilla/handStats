@@ -1,13 +1,13 @@
 /**
  * onboardingData.js
- * Contenido e internacionalización para el Tour Guiado Interactivo de HandStats Pro.
+ * Contenido e internacionalización para el Tour Guiado Interactivo de Handtix Pro.
  * Soporta 6 idiomas: Español (es), English (en), Deutsch (de), Français (fr), Dansk (da), Polski (pl).
  */
 
 export const tourTranslations = {
   es: {
     badge: "TOUR GUIADO",
-    title: "Descubre HandStats Pro",
+    title: "Descubre Handtix Pro",
     stepOf: "Paso {{current}} de {{total}}",
     btnPrev: "Anterior",
     btnNext: "Siguiente",
@@ -20,10 +20,10 @@ export const tourTranslations = {
       {
         id: "welcome",
         category: "INTRODUCCIÓN",
-        title: "Bienvenido a HandStats Pro",
+        title: "Bienvenido a Handtix Pro",
         subtitle: "La suite de analítica y biomecánica en tiempo real para balonmano de élite.",
         description:
-          "HandStats transforma la toma de decisiones en el banquillo. Diseñado como un instrumento táctico de alta precisión, te permite registrar partidos en vivo a pie de pista, extraer actas federativas oficiales al instante y consultar modelos predictivos de última generación.",
+          "Handtix transforma la toma de decisiones en el banquillo. Diseñado como un instrumento táctico de alta precisión, te permite registrar partidos en vivo a pie de pista, extraer actas federativas oficiales al instante y consultar modelos predictivos de última generación.",
         highlights: [
           "Captura ergonómica de jugadas en menos de 3 segundos",
           "Modelos biomecánicos xG, xSaves y valoración neta NPS",
@@ -116,7 +116,7 @@ export const tourTranslations = {
   },
   en: {
     badge: "GUIDED TOUR",
-    title: "Discover HandStats Pro",
+    title: "Discover Handtix Pro",
     stepOf: "Step {{current}} of {{total}}",
     btnPrev: "Previous",
     btnNext: "Next",
@@ -129,10 +129,10 @@ export const tourTranslations = {
       {
         id: "welcome",
         category: "INTRODUCTION",
-        title: "Welcome to HandStats Pro",
+        title: "Welcome to Handtix Pro",
         subtitle: "The real-time analytics and biomechanics suite for elite handball.",
         description:
-          "HandStats transforms bench decision-making. Engineered as a high-precision tactical tool, it empowers you to record live courtside matches, parse official federation match sheets instantly, and leverage next-gen predictive models.",
+          "Handtix transforms bench decision-making. Engineered as a high-precision tactical tool, it empowers you to record live courtside matches, parse official federation match sheets instantly, and leverage next-gen predictive models.",
         highlights: [
           "Ergonomic 4-touch event logging in under 3 seconds",
           "Biomechanic models: xG, xSaves and Net Player Score (NPS)",
@@ -148,7 +148,7 @@ export const tourTranslations = {
         title: "Quick Setup & PDF Match Sheet Parsing",
         subtitle: "Configure matches manually or digitize official federation PDFs in 2 clicks.",
         description:
-          "Set up opponent, date, arena, and period durations. Thanks to the smart PDF parser, upload the official match sheet and HandStats automatically imports complete rosters, shirt numbers, and team staff without tedious typing.",
+          "Set up opponent, date, arena, and period durations. Thanks to the smart PDF parser, upload the official match sheet and Handtix automatically imports complete rosters, shirt numbers, and team staff without tedious typing.",
         highlights: [
           "Automatic OCR/PDF parsing of official federation match sheets",
           "Standard period presets (2x30 min, extra time, youth categories)",
@@ -211,7 +211,7 @@ export const tourTranslations = {
         title: "Official PDF Tactical Dossiers & Customization",
         subtitle: "One-click print-ready reports, parameter tuning, and multi-language support.",
         description:
-          "Generate high-fidelity PDF match dossiers with quarter-by-quarter breakdowns, exclusion timelines, and xG balances. Tailor your HandStats experience with dark/light themes and 6 international languages.",
+          "Generate high-fidelity PDF match dossiers with quarter-by-quarter breakdowns, exclusion timelines, and xG balances. Tailor your Handtix experience with dark/light themes and 6 international languages.",
         highlights: [
           "High-resolution official PDF reports tailored for coaches",
           "Metric calibration and weight tuning settings",
@@ -225,7 +225,7 @@ export const tourTranslations = {
   },
   de: {
     badge: "INTERAKTIVE TOUR",
-    title: "HandStats Pro entdecken",
+    title: "Handtix Pro entdecken",
     stepOf: "Schritt {{current}} von {{total}}",
     btnPrev: "Zurück",
     btnNext: "Weiter",
@@ -238,10 +238,10 @@ export const tourTranslations = {
       {
         id: "welcome",
         category: "EINFÜHRUNG",
-        title: "Willkommen bei HandStats Pro",
+        title: "Willkommen bei Handtix Pro",
         subtitle: "Die Echtzeit-Analyse- und Biomechanik-Suite für Spitzenhandball.",
         description:
-          "HandStats revolutioniert taktische Entscheidungen auf der Trainerbank. Erfassen Sie Live-Spiele direkt am Spielfeldrand, lesen Sie offizielle Spielberichte blitzschnell ein und nutzen Sie modernste prädiktive Modelle.",
+          "Handtix revolutioniert taktische Entscheidungen auf der Trainerbank. Erfassen Sie Live-Spiele direkt am Spielfeldrand, lesen Sie offizielle Spielberichte blitzschnell ein und nutzen Sie modernste prädiktive Modelle.",
         highlights: [
           "Ergonomische 4-Touch-Erfassung in unter 3 Sekunden",
           "Biomechanische Modelle: xG, xSaves und Net Player Score (NPS)",
@@ -257,7 +257,7 @@ export const tourTranslations = {
         title: "Schnelle Spielerstellung & PDF-Spielbericht",
         subtitle: "Manuelle Spieleinrichtung oder automatische PDF-Digitalisierung.",
         description:
-          "Gegner, Datum, Spielort und Halbzeitlänge festlegen. Laden Sie das offizielle Verbands-PDF hoch – HandStats übernimmt automatisch den kompletten Kader, Rückennummern und Offizielle.",
+          "Gegner, Datum, Spielort und Halbzeitlänge festlegen. Laden Sie das offizielle Verbands-PDF hoch – Handtix übernimmt automatisch den kompletten Kader, Rückennummern und Offizielle.",
         highlights: [
           "Automatische OCR/PDF-Erkennung offizieller Spielberichte",
           "Standard-Halbzeitprofile (2x30 Min., Verlängerung, Jugend)",
@@ -334,7 +334,7 @@ export const tourTranslations = {
   },
   fr: {
     badge: "TOUR GUIDÉ",
-    title: "Découvrir HandStats Pro",
+    title: "Découvrir Handtix Pro",
     stepOf: "Étape {{current}} sur {{total}}",
     btnPrev: "Précédent",
     btnNext: "Suivant",
@@ -347,10 +347,10 @@ export const tourTranslations = {
       {
         id: "welcome",
         category: "INTRODUCTION",
-        title: "Bienvenue sur HandStats Pro",
+        title: "Bienvenue sur Handtix Pro",
         subtitle: "La suite d'analyse biomécanique en temps réel pour le handball d'élite.",
         description:
-          "HandStats transforme la prise de décision sur le banc. Conçu comme un instrument de précision tactique, il permet d'enregistrer les matchs en direct, d'importer les feuilles de match officielles et d'exploiter des modèles prédictifs avancés.",
+          "Handtix transforme la prise de décision sur le banc. Conçu comme un instrument de précision tactique, il permet d'enregistrer les matchs en direct, d'importer les feuilles de match officielles et d'exploiter des modèles prédictifs avancés.",
         highlights: [
           "Saisie ergonomique en 4 touches en moins de 3 secondes",
           "Modèles biomécaniques xG, xSaves et Net Player Score (NPS)",
@@ -366,7 +366,7 @@ export const tourTranslations = {
         title: "Création Rapide & Import PDF de Feuille de Match",
         subtitle: "Configurez manuellement ou numérisez l'acte officiel de fédération en 2 clics.",
         description:
-          "Définissez adversaire, date, salle et durée des périodes. Grâce au parseur intelligent, téléversez le PDF officiel et HandStats importe instantanément les effectifs, numéros et officiels.",
+          "Définissez adversaire, date, salle et durée des périodes. Grâce au parseur intelligent, téléversez le PDF officiel et Handtix importe instantanément les effectifs, numéros et officiels.",
         highlights: [
           "Extraction OCR/PDF automatique des feuilles officielles",
           "Profils de périodes standard (2x30 min, prolongations, jeunes)",
@@ -443,7 +443,7 @@ export const tourTranslations = {
   },
   da: {
     badge: "GUIDET TUR",
-    title: "Oplev HandStats Pro",
+    title: "Oplev Handtix Pro",
     stepOf: "Trin {{current}} af {{total}}",
     btnPrev: "Forrige",
     btnNext: "Næste",
@@ -456,10 +456,10 @@ export const tourTranslations = {
       {
         id: "welcome",
         category: "INTRODUKTION",
-        title: "Velkommen til HandStats Pro",
+        title: "Velkommen til Handtix Pro",
         subtitle: "Realtids-analyse og biomekanik til elitehåndbold.",
         description:
-          "HandStats styrker beslutningerne på bænken. Registrer kampe live ved banen, indlæs officielle kampprotokoller på et øjeblik og få adgang til avancerede forudsigelsesmodeller.",
+          "Handtix styrker beslutningerne på bænken. Registrer kampe live ved banen, indlæs officielle kampprotokoller på et øjeblik og få adgang til avancerede forudsigelsesmodeller.",
         highlights: [
           "Ergonomisk 4-tryks registrering på under 3 sekunder",
           "Biomekaniske modeller: xG, xSaves og Net Player Score (NPS)",
@@ -552,7 +552,7 @@ export const tourTranslations = {
   },
   pl: {
     badge: "PRZEWODNIK",
-    title: "Poznaj HandStats Pro",
+    title: "Poznaj Handtix Pro",
     stepOf: "Krok {{current}} z {{total}}",
     btnPrev: "Wstecz",
     btnNext: "Dalej",
@@ -565,10 +565,10 @@ export const tourTranslations = {
       {
         id: "welcome",
         category: "WPROWADZENIE",
-        title: "Witaj w HandStats Pro",
+        title: "Witaj w Handtix Pro",
         subtitle: "Pakiet analityki w czasie rzeczywistym i biomechaniki dla piłki ręcznej.",
         description:
-          "HandStats rewolucjonizuje podejmowanie decyzji na ławce trenerskiej. Rejestruj mecze na żywo przy linii boiska, błyskawicznie importuj oficjalne protokoły meczowe i korzystaj z zaawansowanych modeli predykcyjnych.",
+          "Handtix rewolucjonizuje podejmowanie decyzji na ławce trenerskiej. Rejestruj mecze na żywo przy linii boiska, błyskawicznie importuj oficjalne protokoły meczowe i korzystaj z zaawansowanych modeli predykcyjnych.",
         highlights: [
           "Ergonomiczna rejestracja w 4 dotknięciach w poniżej 3 sekundy",
           "Modele biomechaniczne xG, xSaves oraz ocena Net Player Score (NPS)",
@@ -584,7 +584,7 @@ export const tourTranslations = {
         title: "Szybkie Tworzenie & Import Protokołu PDF",
         subtitle: "Skonfiguruj mecz ręcznie lub zdigitalizuj oficjalny protokół w 2 kliknięciach.",
         description:
-          "Wprowadź rywala, datę, halę i czas trwania połów. Dzięki inteligentnemu czytnikowi PDF prześlij oficjalny protokół związkowy, a HandStats zaimportuje pełne składy, numery i sztab.",
+          "Wprowadź rywala, datę, halę i czas trwania połów. Dzięki inteligentnemu czytnikowi PDF prześlij oficjalny protokół związkowy, a Handtix zaimportuje pełne składy, numery i sztab.",
         highlights: [
           "Automatyczny odczyt OCR/PDF oficjalnych protokołów meczowych",
           "Standardowe profile czasowe (2x30 min, dogrywki, grupy młodzieżowe)",

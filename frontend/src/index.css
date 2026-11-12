@@ -1,9 +1,9 @@
 /* ==========================================================
-   HANDSTATS — SPORTS ANALYTICS DESIGN SYSTEM v3.0
+   HANDTIX — SPORTS ANALYTICS DESIGN SYSTEM v3.0
    Plataforma profesional de análisis de balonmano (Opta / InStat / Wyscout tone)
    Paleta: 
      - Base Neutro: Acero/Estadio (Light #F0F4F2, Dark #090E19)
-     - Primario Pista: Verde HandStats (#2E7D4F / Dark #44D878)
+     - Primario Pista: Verde Handtix (#2E7D4F / Dark #44D878)
      - Acento Highlights: Verde Claro (#4ADE80 / Dark #74D888)
      - Verde Oscuro / Transparente: Dark #1A5138
      - Verde de Éxito: Dark #143D32
@@ -168,7 +168,7 @@
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         /* ---- Brand Identity (Identidad de marca) ---- */
-        --brand-primary:    #44D878; /* Verde principal HandStats */
+        --brand-primary:    #44D878; /* Verde principal Handtix */
         --brand-accent:     #74D888; /* Verde claro */
         --brand-secondary:  #F59E0B; /* Ámbar/naranja (alertas, MVP, penaltis) */
         --brand-danger:     #EF4444; /* Rojo (pérdidas, eliminar, tarjetas) */
@@ -206,7 +206,7 @@
         --shadow-lg:   0 6px 18px rgba(4, 8, 20, 0.65);
         --shadow-xl:   0 12px 30px rgba(4, 8, 20, 0.75);
 
-        /* ---- Primary Action (Verde Principal HandStats #44D878) ---- */
+        /* ---- Primary Action (Verde Principal Handtix #44D878) ---- */
         --color-primary:        #44D878;
         --color-primary-hover:  #38C26A;
         --color-primary-subtle: #1A5138; /* Verde oscuro/transparente */
@@ -262,7 +262,7 @@
 
 [data-theme="dark"] {
     /* ---- Brand Identity (Identidad de marca) ---- */
-    --brand-primary:    #44D878; /* Verde principal HandStats */
+    --brand-primary:    #44D878; /* Verde principal Handtix */
     --brand-accent:     #74D888; /* Verde claro */
     --brand-secondary:  #F59E0B; /* Ámbar/naranja (alertas, MVP, penaltis) */
     --brand-danger:     #EF4444; /* Rojo (pérdidas, eliminar, tarjetas) */
@@ -300,7 +300,7 @@
     --shadow-lg:   0 6px 18px rgba(4, 8, 20, 0.65);
     --shadow-xl:   0 12px 30px rgba(4, 8, 20, 0.75);
 
-    /* ---- Primary Action (Verde Principal HandStats #44D878) ---- */
+    /* ---- Primary Action (Verde Principal Handtix #44D878) ---- */
     --color-primary:        #44D878;
     --color-primary-hover:  #38C26A;
     --color-primary-subtle: #1A5138; /* Verde oscuro/transparente */
@@ -767,7 +767,7 @@ select.input-field {
    - 5 a < 6    -> Naranja
    - 6 a < 7    -> Amarillo
    - 7 a < 8    -> Verde Lima
-   - 8 a < 9    -> Verde HandStats
+   - 8 a < 9    -> Verde Handtix
    - 9 a 10     -> Púrpura MVP
    ========================================================== */
 

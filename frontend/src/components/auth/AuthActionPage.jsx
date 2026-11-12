@@ -10,6 +10,7 @@ import {
 import { auth } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "../../context/ToastContext";
+import authEmailService from "../../services/authEmailService";
 import logoCuadrado from "../../assets/logoCuadrado.png";
 import LanguageSelector from "../common/LanguageSelector";
 import {
@@ -56,9 +57,9 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, checkEmailVerified, sendVerificationEmail } = useAuth();
+  const { user, isEmailVerified, checkEmailVerified, sendVerificationEmail } = useAuth();
 
-  const { mode, oobCode, lang } = useMemo(
+  const { mode, token, oobCode, lang } = useMemo(
     () => parseAuthActionSearch(location.search),
     [location.search]
   );
@@ -74,6 +75,8 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
   const [resendingVerif, setResendingVerif] = useState(false);
 
   const processedCodeRef = useRef("");
+  const actionToken = token || oobCode;
+  const isIndependentToken = Boolean(token);
 
   useEffect(() => {
     if (lang && i18n.language?.slice(0, 2) !== lang) {
@@ -82,8 +85,8 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
   }, [lang, i18n]);
 
   useEffect(() => {
-    const executionKey = `${mode}:${oobCode}`;
-    if (!oobCode) {
+    const executionKey = `${mode}:${isIndependentToken ? "ind" : "fb"}:${actionToken}`;
+    if (!actionToken) {
       setStatus("fallback_ready");
       return;
     }
@@ -101,14 +104,18 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
 
       try {
         if (mode === "verifyEmail") {
-          await applyActionCode(auth, oobCode);
-          if (auth.currentUser) {
-            try {
-              await checkEmailVerified();
-            } catch (reloadErr) {
-              console.warn("No se pudo recargar el usuario tras verificación:", reloadErr);
-            }
+          if (isIndependentToken) {
+            await authEmailService.confirmVerification(token);
+          } else {
+            await applyActionCode(auth, oobCode);
           }
+
+          try {
+            await checkEmailVerified();
+          } catch (reloadErr) {
+            console.warn("No se pudo recargar la sesión tras verificación:", reloadErr);
+          }
+
           if (!cancelled) {
             setStatus("verify_success");
             toast.success(
@@ -116,12 +123,18 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
             );
           }
         } else if (mode === "resetPassword") {
-          const email = await verifyPasswordResetCode(auth, oobCode);
+          let email = "";
+          if (isIndependentToken) {
+            const verifyRes = await authEmailService.verifyResetToken(token);
+            email = verifyRes?.email || "";
+          } else {
+            email = await verifyPasswordResetCode(auth, oobCode);
+          }
           if (!cancelled) {
             setTargetEmail(email || "");
             setStatus("reset_form");
           }
-        } else if (mode === "recoverEmail") {
+        } else if (mode === "recoverEmail" && oobCode) {
           await applyActionCode(auth, oobCode);
           if (!cancelled) {
             setStatus("recover_success");
@@ -133,10 +146,12 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
           }
         }
       } catch (err) {
-        console.error("Error procesando acción de Firebase:", err);
+        console.error("Error procesando acción de cuenta:", err);
         if (!cancelled) {
           const errKey = mapActionCodeErrorKey(err?.code);
-          const msg = t(errKey, "El enlace de seguridad ha caducado o ya ha sido utilizado.");
+          const msg = err?.code
+            ? t(errKey, err?.message || "El enlace de seguridad ha caducado o ya ha sido utilizado.")
+            : err?.message || t("auth_action.error_generic", "El enlace de seguridad ha caducado o ya ha sido utilizado.");
           setErrorText(msg);
           setStatus("error");
         }
@@ -148,10 +163,13 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
     return () => {
       cancelled = true;
     };
-  }, [mode, oobCode, checkEmailVerified, t]);
+  }, [mode, token, oobCode, actionToken, isIndependentToken, checkEmailVerified, t]);
 
   const handleGoToApp = () => {
-    if (user && auth.currentUser?.emailVerified) {
+    const canEnterDashboard = Boolean(
+      user && (isEmailVerified || user?.email_verified || auth.currentUser?.emailVerified)
+    );
+    if (canEnterDashboard) {
       navigate("/matches", { replace: true });
       return;
     }
@@ -162,7 +180,7 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
   };
 
   const handleResendVerification = async () => {
-    if (!auth.currentUser || resendingVerif) return;
+    if (!user || resendingVerif) return;
     try {
       setResendingVerif(true);
       await sendVerificationEmail();
@@ -190,7 +208,11 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
 
     try {
       setSubmitting(true);
-      await confirmPasswordReset(auth, oobCode, password);
+      if (isIndependentToken) {
+        await authEmailService.confirmPasswordReset({ token, new_password: password });
+      } else {
+        await confirmPasswordReset(auth, oobCode, password);
+      }
       setStatus("reset_success");
       toast.success(
         t("auth_action.reset_success_title", "¡Contraseña actualizada correctamente!")
@@ -198,13 +220,19 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
     } catch (err) {
       console.error("Error al confirmar nueva contraseña:", err);
       const errKey = mapActionCodeErrorKey(err?.code);
-      const msg = t(errKey, err?.message || "No se pudo restablecer la contraseña.");
+      const msg = err?.code
+        ? t(errKey, err?.message || "No se pudo restablecer la contraseña.")
+        : err?.message || "No se pudo restablecer la contraseña.";
       setErrorText(msg);
       toast.error(msg);
     } finally {
       setSubmitting(false);
     }
   };
+
+  const isSessionReadyForDashboard = Boolean(
+    user && (isEmailVerified || user?.email_verified || status === "verify_success")
+  );
 
   return (
     <div className="auth-action-container">
@@ -225,7 +253,7 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
 
       <main className="auth-action-card">
         <div className="auth-action-logo-wrap">
-          <img src={logoCuadrado} alt="HandStats Pro" className="auth-action-logo" />
+          <img src={logoCuadrado} alt="Handtix Pro" className="auth-action-logo" />
         </div>
 
         {status === "loading" && (
@@ -244,7 +272,7 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
                 : t("auth_action.checking_link_title", "Validando enlace de seguridad...")}
             </h1>
             <p className="auth-action-desc">
-              {t("auth_action.processing_desc", "Estamos comprobando tu token de seguridad de HandStats Pro. Solo llevará un instante.")}
+              {t("auth_action.processing_desc", "Estamos comprobando tu token de seguridad de Handtix Pro. Solo llevará un instante.")}
             </p>
           </div>
         )}
@@ -266,12 +294,12 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
               {t("auth_action.verify_success_title", "¡Correo verificado con éxito!")}
             </h1>
             <p className="auth-action-desc">
-              {t("auth_action.verify_success_desc", "Tu dirección de correo electrónico ha quedado confirmada. Ya tienes acceso completo a tu espacio táctico en HandStats Pro.")}
+              {t("auth_action.verify_success_desc", "Tu dirección de correo electrónico ha quedado confirmada. Ya tienes acceso completo a tu espacio táctico en Handtix Pro.")}
             </p>
             <div className="auth-action-actions">
               <button type="button" className="btn btn-primary w-100" onClick={handleGoToApp}>
-                {user
-                  ? t("auth_action.go_to_dashboard", "Acceder a HandStats Pro")
+                {isSessionReadyForDashboard
+                  ? t("auth_action.go_to_dashboard", "Acceder a Handtix Pro")
                   : t("auth.back_to_login", "Volver a Iniciar Sesión")}
               </button>
             </div>
@@ -394,10 +422,17 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
               {t("auth_action.reset_success_title", "¡Contraseña actualizada correctamente!")}
             </h1>
             <p className="auth-action-desc">
-              {t("auth_action.reset_success_desc", "Ya puedes iniciar sesión en HandStats Pro con tu nueva contraseña.")}
+              {t("auth_action.reset_success_desc", "Ya puedes iniciar sesión en Handtix Pro con tu nueva contraseña.")}
             </p>
             <div className="auth-action-actions">
-              <button type="button" className="btn btn-primary w-100" onClick={handleGoToApp}>
+              <button
+                type="button"
+                className="btn btn-primary w-100"
+                onClick={() => {
+                  if (onOpenAppLogin) onOpenAppLogin();
+                  navigate("/", { replace: true });
+                }}
+              >
                 {t("auth.back_to_login", "Volver a Iniciar Sesión")}
               </button>
             </div>
@@ -451,7 +486,7 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
               {errorText || t("auth_action.error_generic", "El enlace ha caducado o ya ha sido utilizado. Solicita uno nuevo.")}
             </p>
             <div className="auth-action-actions">
-              {mode === "verifyEmail" && auth.currentUser && (
+              {mode === "verifyEmail" && user && user.role !== "guest" && (
                 <button
                   type="button"
                   className="btn btn-primary w-100"
@@ -465,7 +500,7 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
               )}
               <button type="button" className="btn btn-secondary w-100" onClick={handleGoToApp}>
                 {user
-                  ? t("auth_action.go_to_dashboard", "Acceder a HandStats Pro")
+                  ? t("auth_action.go_to_dashboard", "Acceder a Handtix Pro")
                   : t("auth.back_to_login", "Volver a Iniciar Sesión")}
               </button>
             </div>
@@ -477,4 +512,3 @@ function AuthActionPage({ theme = "light", toggleTheme, onOpenAppLogin }) {
 }
 
 export default AuthActionPage;
-

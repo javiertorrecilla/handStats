@@ -9,4 +9,6 @@ database = client.handstats
 # Colecciones
 match_collection = database.get_collection("matches")
 user_collection = database.get_collection("users")
+auth_tokens_collection = database.get_collection("auth_tokens")
+error_logs_collection = database.get_collection("error_logs")
 

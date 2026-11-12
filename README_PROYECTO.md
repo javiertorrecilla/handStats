@@ -1,12 +1,12 @@
-# 🤾‍♂️ HandStats — Proyecto y Organización del Sistema
+# 🤾‍♂️ Handtix — Proyecto y Organización del Sistema
 
-Bienvenido a la documentación de **HandStats**, la plataforma integral y profesional de análisis estadístico en tiempo real, seguimiento de rendimiento y valoración cuantitativa para balonmano.
+Bienvenido a la documentación de **Handtix**, la plataforma integral y profesional de análisis estadístico en tiempo real, seguimiento de rendimiento y valoración cuantitativa para balonmano.
 
 ---
 
 ## 📌 Visión General del Proyecto
 
-**HandStats** ha sido concebido para proporcionar a entrenadores, analistas y cuerpos técnicos de balonmano una herramienta de alto nivel para:
+**Handtix** ha sido concebido para proporcionar a entrenadores, analistas y cuerpos técnicos de balonmano una herramienta de alto nivel para:
 - **Toma de datos ágil en pista** durante partidos en vivo mediante una interfaz táctil optimizada.
 - **Modelado avanzado de datos** incorporando conceptos modernos de *Expected Goals* ($xG$), *Expected Saves* ($xSaves$), Impacto Neto del Jugador ($NPS$) y valoración de rendimiento individual de 0.0 a 10.0.
 - **Visualización analítica interactiva** mediante dashboards en tiempo real, gráficos de momentum, evolución de marcador por goles, mapas de calor en pista y portería, y comparativas cara a cara.
@@ -15,7 +15,7 @@ Bienvenido a la documentación de **HandStats**, la plataforma integral y profes
 
 ## 🏗️ Arquitectura General del Sistema
 
-HandStats está estructurado como una aplicación **Single Page Application (SPA)** desacoplada con arquitectura **Client-Server REST**:
+Handtix está estructurado como una aplicación **Single Page Application (SPA)** desacoplada con arquitectura **Client-Server REST**:
 
 ```mermaid
 graph TD
@@ -79,7 +79,7 @@ handStats/
 
 ## 🧮 Motores de Cálculo y Organización Modular
 
-El core de la inteligencia analítica de **HandStats** reside en el módulo `frontend/src/stats/engine/`:
+El core de la inteligencia analítica de **Handtix** reside en el módulo `frontend/src/stats/engine/`:
 
 | Motor | Archivo | Responsabilidad Principal |
 | :--- | :--- | :--- |

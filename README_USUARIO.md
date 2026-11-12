@@ -1,6 +1,6 @@
-# 📖 HandStats — Manual y Guía de Usuario
+# 📖 Handtix — Manual y Guía de Usuario
 
-Bienvenido al manual oficial de **HandStats**. Esta guía detalla paso a paso el funcionamiento del sistema a nivel de usuario, desde la preparación de plantillas hasta la toma de datos en directo y el análisis avanzado post-partido.
+Bienvenido al manual oficial de **Handtix**. Esta guía detalla paso a paso el funcionamiento del sistema a nivel de usuario, desde la preparación de plantillas hasta la toma de datos en directo y el análisis avanzado post-partido.
 
 ---
 
@@ -75,7 +75,7 @@ Para registrar el mérito tanto del atacante como del defensor de forma completa
 
 ## 📊 3. Módulo de Estadísticas y Analítica Avanzada
 
-Al cambiar a la pestaña **Estadísticas**, HandStats ofrece 6 vistas analíticas detalladas:
+Al cambiar a la pestaña **Estadísticas**, Handtix ofrece 6 vistas analíticas detalladas:
 
 ### 1. Cuadro de Mando (Dashboard)
 - **KPIs Principales**: Eficiencia Ofensiva (goles por cada 100 ataques), xG Acumulado, Paradas de Portería, Pérdidas y Ritmo del partido.

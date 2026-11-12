@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-// HandStats Match Analysis Page - Cleaned Icon Imports
+// Handtix Match Analysis Page - Cleaned Icon Imports
 import {
   ArrowLeft as IconArrowLeft,
   Undo2 as IconUndo,

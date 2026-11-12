@@ -299,7 +299,7 @@ export default function TermsPage({ theme = "light", toggleTheme, onBack, user }
             </button>
             <img
               src={logoHorizontal}
-              alt="HandStats"
+              alt="Handtix"
               className="legal-brand-logo"
               onClick={() => navigate("/")}
             />
@@ -487,17 +487,21 @@ export default function TermsPage({ theme = "light", toggleTheme, onBack, user }
             <button type="button" onClick={() => navigate("/terms")}>
               {nav.viewTerms}
             </button>
-            <span>·</span>
-            <button type="button" onClick={() => navigate("/manual")}>
-              {nav.viewManual || "Manual de Usuario"}
-            </button>
+            {user && (
+              <>
+                <span>·</span>
+                <button type="button" onClick={() => navigate("/manual")}>
+                  {nav.viewManual || "Manual de Usuario"}
+                </button>
+              </>
+            )}
             <span>·</span>
             <button type="button" onClick={handleReturn}>
               {user ? nav.backToApp : nav.backToHome}
             </button>
           </div>
           <div className="legal-footer-copy">
-            © {new Date().getFullYear()} HandStats Analytics. {nav.rightsReserved}
+            © {new Date().getFullYear()} Handtix Analytics. {nav.rightsReserved}
           </div>
         </div>
       </footer>

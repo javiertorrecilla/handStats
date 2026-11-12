@@ -6,8 +6,10 @@ import { useAuth } from "./context/AuthContext";
 import { useMatch } from "./context/MatchContext";
 import { toast } from "./context/ToastContext";
 
-import { matchService } from "./services/handstatsService";
+import { matchService } from "./services/handtixService";
 import userService from "./services/userService";
+import { trackEvent, trackPageView, setAnalyticsUser } from "./services/analyticsService";
+import { captureError, setErrorTrackingUser } from "./services/errorTrackingService";
 
 import AuthPage from "./components/auth/AuthPage";
 import AuthActionPage from "./components/auth/AuthActionPage";
@@ -18,6 +20,7 @@ import MatchesPage from "./components/match/MatchesPage";
 import CreateMatchPage from "./components/match/CreateMatchPage";
 import TeamsPage from "./components/team/TeamsPage";
 import SettingsPage from "./components/settings/SettingsPage";
+import DashboardCustomizerPage from "./components/customize/DashboardCustomizerPage";
 import MatchAnalysisPage from "./components/match/MatchAnalysisPage";
 import DeviceGuard from "./components/common/DeviceGuard";
 import NotFoundPage from "./components/common/NotFoundPage";
@@ -171,6 +174,16 @@ function App() {
   const [showLanding, setShowLanding] = useState(true);
   const [showTour, setShowTour] = useState(false);
 
+  // Seguimiento automático de vistas y usuario en Analytics y Error Telemetry
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setAnalyticsUser(user);
+    setErrorTrackingUser(user);
+  }, [user]);
+
   // Comprobación de onboarding guiado para nuevos usuarios
   useEffect(() => {
     if (
@@ -202,7 +215,7 @@ function App() {
         setMatchesList(matches || []);
       }
     } catch (err) {
-      console.error("Error cargando partidos:", err);
+      captureError(err, { source: "fetch_matches" });
     } finally {
       setLoadingData(false);
     }
@@ -241,6 +254,7 @@ function App() {
       const created = await matchService.create(payload);
 
       setMatchesList((prev) => [created, ...prev]);
+      trackEvent("match_created", { is_guest: user.role === "guest" });
       toast.success(t("matches.create_success", "Partido creado correctamente."));
       navigate("/matches");
 
@@ -358,7 +372,7 @@ function App() {
     );
   }
 
-  const knownRoutes = ["/", "/matches", "/matches/new", "/teams", "/settings", "/privacy", "/terms", "/manual", "/auth/action"];
+  const knownRoutes = ["/", "/matches", "/matches/new", "/teams", "/settings", "/customize", "/privacy", "/terms", "/manual", "/auth/action"];
   const isKnownMatchRoute = location.pathname.startsWith("/matches/");
   const isKnownRoute = knownRoutes.includes(location.pathname) || isKnownMatchRoute;
   const isNotFoundView = !isKnownRoute;
@@ -375,18 +389,7 @@ function App() {
 
   if (!user) {
     if (location.pathname === "/manual") {
-      return (
-        <DeviceGuard allowLandingPreview={true} onBackToLanding={() => navigate("/")}>
-          <UserManualPage
-            theme={theme}
-            toggleTheme={toggleTheme}
-            onBack={() => {
-              setShowLanding(true);
-              navigate("/");
-            }}
-          />
-        </DeviceGuard>
-      );
+      return <Navigate to="/" replace />;
     }
 
     if (location.pathname === "/privacy") {
@@ -484,6 +487,7 @@ function App() {
   const isVerified =
     isGuest ||
     isGoogleUser ||
+    Boolean(user?.email_verified) ||
     Boolean(firebaseUser?.emailVerified) ||
     isEmailVerified;
 
@@ -508,8 +512,7 @@ function App() {
 
   const isAnalyzeView = location.pathname.startsWith("/matches/") && location.pathname !== "/matches/new";
   const isLegalView = location.pathname === "/privacy" || location.pathname === "/terms";
-  const isManualView = location.pathname === "/manual";
-  const isFullscreenView = isAnalyzeView || isNotFoundView || isLegalView || isManualView;
+  const isFullscreenView = isAnalyzeView || isNotFoundView || isLegalView;
 
   return (
     <DeviceGuard allowLandingPreview={false}>
@@ -610,6 +613,12 @@ function App() {
               }
             />
             <Route
+              path="/customize"
+              element={
+                <DashboardCustomizerPage user={user} matchesList={matchesList} />
+              }
+            />
+            <Route
               path="/privacy"
               element={
                 <PrivacyPolicyPage
@@ -638,7 +647,8 @@ function App() {
                   user={user}
                   theme={theme}
                   toggleTheme={toggleTheme}
-                  onBack={() => navigate(-1)}
+                  onStartTour={() => setShowTour(true)}
+                  onBack={() => navigate("/matches")}
                 />
               }
             />

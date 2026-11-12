@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { matchService } from '../services/handstatsService';
+import { matchService } from '../services/handtixService';
 import { toast } from './ToastContext';
 import i18n from '../i18n/i18n';
 

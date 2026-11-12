@@ -9,6 +9,7 @@ export function parseAuthActionSearch(searchString) {
 
   return {
     mode: (params.get("mode") || "").trim(),
+    token: (params.get("token") || "").trim(),
     oobCode: (params.get("oobCode") || "").trim(),
     continueUrl: (params.get("continueUrl") || "").trim(),
     lang: SUPPORTED_LANGS.has(rawLang) ? rawLang : null,

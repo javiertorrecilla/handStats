@@ -1,6 +1,6 @@
 /**
  * Helper to determine if current device/window is an unsupported mobile phone.
- * HandStats is strictly designed and optimized for Tablets and PCs/Macs.
+ * Handtix is strictly designed and optimized for Tablets and PCs/Macs.
  * 
  * Tablets (iPad, Galaxy Tab, etc.) have minimum dimension >= 600px (iPad Mini is 768px).
  * Mobile phones have minimum dimension <= 480px.

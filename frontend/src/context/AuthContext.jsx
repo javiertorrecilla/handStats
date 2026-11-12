@@ -8,13 +8,9 @@ import {
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  updateProfile,
   deleteUser,
 } from "firebase/auth";
 
@@ -22,19 +18,34 @@ import { auth } from "../firebase/firebase";
 import i18n from "../i18n/i18n";
 import userService from "../services/userService";
 import authEmailService from "../services/authEmailService";
+import { trackEvent } from "../services/analyticsService";
+import { captureError } from "../services/errorTrackingService";
+import { toast } from "./ToastContext";
 
 const AuthContext = createContext();
+
+const SESSION_TOKEN_KEY = "hs_auth_token";
 
 function getCurrentAuthLang() {
   return (i18n.language || "es").slice(0, 2);
 }
 
-function getActionCodeSettings() {
-  if (typeof window === "undefined") return undefined;
-  return {
-    url: `${window.location.origin}/auth/action`,
-    handleCodeInApp: false,
-  };
+function getStoredToken() {
+  try {
+    return localStorage.getItem(SESSION_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredToken(token) {
+  try {
+    if (token) {
+      localStorage.setItem(SESSION_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(SESSION_TOKEN_KEY);
+    }
+  } catch {}
 }
 
 export function AuthProvider({ children }) {
@@ -45,41 +56,77 @@ export function AuthProvider({ children }) {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    const savedToken = getStoredToken();
+
+    const restorePromise = savedToken
+      ? authEmailService
+          .getMe(savedToken)
+          .then((me) => {
+            if (!mounted || !me) return false;
+            setFirebaseUser(null);
+            setUser({
+              uid: me.uid || me.firebase_uid || me._id,
+              ...me,
+            });
+            setIsEmailVerified(Boolean(me.email_verified));
+            setLoading(false);
+            return true;
+          })
+          .catch((err) => {
+            if (err?.status === 401 || err?.code === "invalid_session_token" || err?.code === "session_expired") {
+              saveStoredToken(null);
+            }
+            return false;
+          })
+      : Promise.resolve(false);
+
+    if (!auth) {
+      restorePromise.finally(() => {
+        if (mounted) setLoading(false);
+      });
+      return () => {
+        mounted = false;
+      };
+    }
+
     const unsubscribe = onAuthStateChanged(
       auth,
       async (fbUser) => {
+        const hasIndependent = await restorePromise;
+        if (!mounted) return;
+
+        // Si hay sesión independiente activa y no viene sesión Google/Firebase, no pisar estado
+        if (hasIndependent && !fbUser) {
+          return;
+        }
+
         if (!fbUser) {
-          setFirebaseUser(null);
-          setUser(null);
-          setIsEmailVerified(false);
+          if (!getStoredToken()) {
+            setFirebaseUser(null);
+            setUser(null);
+            setIsEmailVerified(false);
+          }
           setLoading(false);
           return;
         }
 
+        // Mantener soporte completo para Google Sign-In mediante Firebase Auth
         setFirebaseUser(fbUser);
         setIsEmailVerified(Boolean(fbUser.emailVerified));
 
         try {
-          const mongoUser =
-            await userService.getByFirebaseUid(
-              fbUser.uid
-            );
+          const mongoUser = await userService.getByFirebaseUid(fbUser.uid);
 
+          if (!mounted) return;
           setUser({
             uid: fbUser.uid,
             email: fbUser.email,
-            displayName:
-              fbUser.displayName ||
-              mongoUser.name,
+            displayName: fbUser.displayName || mongoUser.name,
             photoURL: fbUser.photoURL,
             ...mongoUser,
           });
-        } catch (err) {
-          console.log(
-            "Usuario aún no creado en Mongo."
-          );
-
-          // Si no existe en Mongo, lo creamos automáticamente
+        } catch {
           try {
             const mongoUser = await userService.create({
               firebase_uid: fbUser.uid,
@@ -87,173 +134,173 @@ export function AuthProvider({ children }) {
               name: fbUser.displayName || fbUser.email.split("@")[0],
             });
 
+            if (!mounted) return;
             setUser({
               uid: fbUser.uid,
               email: fbUser.email,
-              displayName:
-                fbUser.displayName ||
-                mongoUser.name,
+              displayName: fbUser.displayName || mongoUser.name,
               photoURL: fbUser.photoURL,
               ...mongoUser,
             });
           } catch (createErr) {
             console.error("Error creando usuario en Mongo:", createErr);
+            if (!mounted) return;
             setUser({
               uid: fbUser.uid,
               email: fbUser.email,
-              displayName:
-                fbUser.displayName ||
-                fbUser.email,
+              displayName: fbUser.displayName || fbUser.email,
               role: "coach",
             });
           }
         }
 
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // ==========================
-  // LOGIN
+  // LOGIN INDEPENDIENTE (+ migración automática de cuentas previas)
   // ==========================
 
-  const login = async (
-    email,
-    password
-  ) => {
-    return signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+  const login = async (email, password) => {
+    try {
+      const res = await authEmailService.loginIndependent({ email, password });
+      saveStoredToken(res.token);
+      setFirebaseUser(null);
+      setUser({
+        uid: res.user.uid || res.user.firebase_uid || res.user._id,
+        ...res.user,
+      });
+      setIsEmailVerified(Boolean(res.user.email_verified));
+      trackEvent("login", { method: "email" });
+      return res;
+    } catch (err) {
+      if (err?.code !== "auth/legacy-firebase-account") {
+        throw err;
+      }
+
+      if (!auth) {
+        throw err;
+      }
+      // Migración única de cuentas antiguas creadas previamente con Firebase
+      const fbCred = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await fbCred.user.getIdToken();
+      const migrated = await authEmailService.migrateLegacyAccount({
+        email,
+        password,
+        firebase_id_token: idToken,
+      });
+      try {
+        await signOut(auth);
+      } catch {}
+
+      saveStoredToken(migrated.token);
+      setFirebaseUser(null);
+      setUser({
+        uid: migrated.user.uid || migrated.user.firebase_uid || migrated.user._id,
+        ...migrated.user,
+      });
+      setIsEmailVerified(Boolean(migrated.user.email_verified));
+      return migrated;
+    }
   };
 
-  const triggerVerificationEmail = async (targetUser, preferredName) => {
+  // ==========================
+  // REGISTER INDEPENDIENTE (SIN FIREBASE EMAIL)
+  // ==========================
+
+  const register = async (email, password, name) => {
     const lang = getCurrentAuthLang();
     const origin = typeof window !== "undefined" ? window.location.origin : undefined;
 
-    try {
-      const idToken = await targetUser.getIdToken();
-      const customResult = await authEmailService.sendCustomVerificationEmail({
-        idToken,
-        name: preferredName || targetUser.displayName || undefined,
-        lang,
-        origin,
-      });
-      if (customResult?.handled) {
-        return customResult;
-      }
-    } catch (customErr) {
-      if (customErr?.code === "auth/too-many-requests") {
-        throw customErr;
-      }
-      console.warn("Usando envío nativo de Firebase como respaldo para verificación:", customErr);
-    }
-
-    auth.languageCode = lang;
-    const actionSettings = getActionCodeSettings();
-    try {
-      return await sendEmailVerification(targetUser, actionSettings);
-    } catch (fbErr) {
-      if (fbErr?.code === "auth/unauthorized-continue-uri" || fbErr?.code === "auth/invalid-continue-uri") {
-        return sendEmailVerification(targetUser);
-      }
-      throw fbErr;
-    }
-  };
-
-  // ==========================
-  // REGISTER
-  // ==========================
-
-  const register = async (
-    email,
-    password,
-    name
-  ) => {
-    const credential = await createUserWithEmailAndPassword(
-      auth,
+    const res = await authEmailService.registerIndependent({
+      name,
       email,
-      password
-    );
-
-    if (name && name.trim()) {
-      try {
-        await updateProfile(credential.user, { displayName: name.trim() });
-      } catch (profileErr) {
-        console.warn("No se pudo actualizar displayName en Firebase:", profileErr);
-      }
-    }
-
-    // Crear usuario en MongoDB directamente
-    const mongoUser = await userService.create({
-      firebase_uid: credential.user.uid,
-      email: email,
-      name: name,
+      password,
+      lang,
+      origin,
     });
 
+    saveStoredToken(res.token);
+    setFirebaseUser(null);
     setUser({
-      uid: credential.user.uid,
-      email: email,
-      displayName: name,
-      ...mongoUser,
+      uid: res.user.uid || res.user.firebase_uid || res.user._id,
+      ...res.user,
     });
+    setIsEmailVerified(Boolean(res.user.email_verified));
 
-    // Enviar correo de verificación personalizado inmediatamente
-    try {
-      await triggerVerificationEmail(credential.user, name);
-    } catch (verifErr) {
-      console.warn("No se pudo enviar el correo de verificación automático:", verifErr);
+    if (res.email_sent === false && res.email_error) {
+      toast.warning(res.email_error);
     }
 
-    return credential;
+    trackEvent("sign_up", { method: "email" });
+    return res;
   };
 
   // ==========================
-  // RECUPERACIÓN DE CONTRASEÑA
+  // RECUPERACIÓN DE CONTRASEÑA INDEPENDIENTE
   // ==========================
 
   const resetPassword = async (email) => {
     const lang = getCurrentAuthLang();
     const origin = typeof window !== "undefined" ? window.location.origin : undefined;
 
-    const customResult = await authEmailService.sendCustomPasswordResetEmail({
+    const result = await authEmailService.sendPasswordResetEmail({
       email,
       lang,
       origin,
     });
-    if (customResult?.handled) {
-      return customResult;
-    }
-
-    auth.languageCode = lang;
-    const actionSettings = getActionCodeSettings();
-    try {
-      return await sendPasswordResetEmail(auth, email, actionSettings);
-    } catch (fbErr) {
-      if (fbErr?.code === "auth/unauthorized-continue-uri" || fbErr?.code === "auth/invalid-continue-uri") {
-        return sendPasswordResetEmail(auth, email);
-      }
-      throw fbErr;
-    }
+    trackEvent("password_reset_requested");
+    return result;
   };
 
   // ==========================
-  // VERIFICACIÓN DE EMAIL
+  // VERIFICACIÓN DE EMAIL INDEPENDIENTE
   // ==========================
 
   const sendVerificationEmail = async () => {
-    const current = auth.currentUser;
-    if (!current) {
-      throw new Error("No hay usuario autenticado.");
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error("Inicia sesión con tu correo y contraseña para reenviar la verificación personalizada.");
     }
-    return triggerVerificationEmail(current, user?.name || user?.displayName);
+
+    const lang = getCurrentAuthLang();
+    const origin = typeof window !== "undefined" ? window.location.origin : undefined;
+
+    const result = await authEmailService.sendVerificationEmail({
+      token,
+      name: user?.name || user?.displayName,
+      lang,
+      origin,
+    });
+    trackEvent("email_verification_resent");
+    return result;
   };
 
   const checkEmailVerified = async () => {
+    const token = getStoredToken();
+    if (token) {
+      const me = await authEmailService.getMe(token);
+      const verified = Boolean(me?.email_verified);
+      if (me) {
+        setUser({
+          uid: me.uid || me.firebase_uid || me._id,
+          ...me,
+        });
+      }
+      setIsEmailVerified(verified);
+      return verified;
+    }
+
+    if (!auth) return false;
     const current = auth.currentUser;
     if (!current) return false;
     await current.reload();
@@ -264,25 +311,28 @@ export function AuthProvider({ children }) {
   };
 
   // ==========================
-  // GOOGLE
+  // GOOGLE SIGN-IN
   // ==========================
 
-  const loginWithGoogle =
-    async () => {
-      const provider =
-        new GoogleAuthProvider();
-
-      return signInWithPopup(
-        auth,
-        provider
-      );
-    };
+  const loginWithGoogle = async () => {
+    if (!auth) {
+      const cfgErr = new Error("Firebase Auth no configurado (VITE_FIREBASE_API_KEY requerida).");
+      captureError(cfgErr, { source: "auth_google" });
+      throw cfgErr;
+    }
+    saveStoredToken(null);
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    trackEvent("login", { method: "google" });
+    return cred;
+  };
 
   // ==========================
   // INVITADO
   // ==========================
 
   const loginAsGuest = () => {
+    saveStoredToken(null);
     setFirebaseUser(null);
     setIsEmailVerified(true);
 
@@ -292,10 +342,15 @@ export function AuthProvider({ children }) {
     });
 
     setGuestMatches(0);
+    trackEvent("login", { method: "guest" });
   };
 
   const incrementGuestMatches = () => {
     setGuestMatches((prev) => prev + 1);
+  };
+
+  const updateUserDashboardPreferences = (prefs) => {
+    setUser((prev) => (prev ? { ...prev, dashboard_preferences: prefs } : prev));
   };
 
   // ==========================
@@ -303,6 +358,9 @@ export function AuthProvider({ children }) {
   // ==========================
 
   const logout = async () => {
+    trackEvent("logout", { role: user?.role || "coach" });
+    saveStoredToken(null);
+
     if (user?.role === "guest") {
       setUser(null);
       setGuestMatches(0);
@@ -310,8 +368,14 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    await signOut(auth);
+    setFirebaseUser(null);
+    setUser(null);
     setIsEmailVerified(false);
+    try {
+      if (auth?.currentUser) {
+        await signOut(auth);
+      }
+    } catch {}
   };
 
   // ==========================
@@ -329,24 +393,26 @@ export function AuthProvider({ children }) {
       return { success: true };
     }
 
-    const currentFbUser = auth.currentUser;
+    const currentFbUser = auth?.currentUser || null;
     const targetUserId = user?._id || user?.firebase_uid || currentFbUser?.uid;
 
-    // 1. Eliminar datos en backend (MongoDB: usuario y partidos en cascada)
     if (targetUserId) {
       try {
         await userService.deleteAccount(targetUserId);
       } catch (err) {
-        console.error("Error al eliminar datos de usuario en MongoDB:", err);
+        captureError(err, { source: "delete_account_mongo" });
       }
     }
 
-    // 2. Eliminar cuenta en Firebase Authentication
     if (currentFbUser) {
-      await deleteUser(currentFbUser);
+      try {
+        await deleteUser(currentFbUser);
+      } catch (fbDelErr) {
+        console.warn("No se pudo eliminar sesión Firebase:", fbDelErr);
+      }
     }
 
-    // 3. Limpiar estado local
+    saveStoredToken(null);
     setFirebaseUser(null);
     setUser(null);
     setIsEmailVerified(false);
@@ -371,6 +437,7 @@ export function AuthProvider({ children }) {
         logout,
         deleteAccount,
         incrementGuestMatches,
+        updateUserDashboardPreferences,
       }}
     >
       {children}

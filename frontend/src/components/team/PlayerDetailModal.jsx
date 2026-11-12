@@ -12,8 +12,13 @@ import {
   IconCheck,
   IconXMark,
   IconTrendingUp,
-  IconFilter
+  IconFilter,
+  IconDownload
 } from "../../stats/components/common/Icons";
+import { toast } from "../../context/ToastContext";
+import { downloadPlayerReportPdf } from "../../services/playerReportPdfService";
+import { trackEvent } from "../../services/analyticsService";
+import { captureError } from "../../services/errorTrackingService";
 import "./PlayerDetailModal.css";
 
 const IconCalendar = () => (
@@ -72,14 +77,48 @@ function getGkSavePctBadgeTier(savePct) {
 }
 
 export default function PlayerDetailModal({ player, team, onClose }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("general"); // "general" | "matches" | "court"
   const [expandedMatches, setExpandedMatches] = useState({});
   const [matchFilter, setMatchFilter] = useState("all"); // "all" | "W" | "D" | "L"
   const [matchSort, setMatchSort] = useState("recent"); // "recent" | "rating" | "goals" | "saves"
+  const [downloadingReport, setDownloadingReport] = useState(false);
 
-  // Cerrar modal al pulsar Escape
+  const handleDownloadPlayerReport = () => {
+    if (downloadingReport || !player) return;
+    setDownloadingReport(true);
+    try {
+      downloadPlayerReportPdf(player, team, i18n?.language || "es");
+      trackEvent("player_report_pdf_downloaded", {
+        is_goalkeeper: Boolean(player.is_goalkeeper),
+        matches_count: Array.isArray(player.matches) ? player.matches.length : 0
+      });
+      toast.success(
+        t("player_card.report_download_success", {
+          name: player.name,
+          defaultValue: "Informe individual de {{name}} descargado."
+        })
+      );
+    } catch (err) {
+      captureError(err, { source: "player_report_pdf" });
+      toast.error(
+        t("player_card.report_download_error", {
+          defaultValue: "No se pudo generar el informe individual en PDF."
+        })
+      );
+    } finally {
+      setDownloadingReport(false);
+    }
+  };
+
+  // Registrar apertura de ficha de jugador y cerrar modal con Escape
   useEffect(() => {
+    if (player) {
+      trackEvent("player_profile_opened", {
+        is_goalkeeper: Boolean(player.is_goalkeeper),
+        matches_count: Array.isArray(player.matches) ? player.matches.length : 0
+      });
+    }
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         onClose();
@@ -87,19 +126,9 @@ export default function PlayerDetailModal({ player, team, onClose }) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [onClose, player]);
 
-  if (!player) return null;
-
-  const isGk = player.is_goalkeeper === true || player.is_goalkeeper === "true";
-  const matches = player.matches || [];
-
-  const toggleExpandMatch = (matchId) => {
-    setExpandedMatches((prev) => ({
-      ...prev,
-      [matchId]: !prev[matchId]
-    }));
-  };
+  const matches = useMemo(() => player?.matches || [], [player?.matches]);
 
   // Filtrado y ordenación de partidos
   const filteredMatches = useMemo(() => {
@@ -134,6 +163,17 @@ export default function PlayerDetailModal({ player, team, onClose }) {
     const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
     return { wins, draws, losses, total, winRate };
   }, [matches]);
+
+  if (!player) return null;
+
+  const isGk = player.is_goalkeeper === true || player.is_goalkeeper === "true";
+
+  const toggleExpandMatch = (matchId) => {
+    setExpandedMatches((prev) => ({
+      ...prev,
+      [matchId]: !prev[matchId]
+    }));
+  };
 
   const ratingBadge = getRatingBadgeTier(player.avgRating);
   const shotEffBadge = getShotEffBadgeTier(player.efficiency);
@@ -223,6 +263,21 @@ export default function PlayerDetailModal({ player, team, onClose }) {
                 <MetricBadge value={player.avgRating} variant={ratingBadge.variant} className={ratingBadge.className} style={{ fontSize: "0.85rem", padding: "1px 8px" }} />
               </div>
             </div>
+
+            <button
+              type="button"
+              className="hs-pdetail-download-btn"
+              onClick={handleDownloadPlayerReport}
+              disabled={downloadingReport}
+              title={t("player_card.download_report", "Descargar Informe")}
+            >
+              <IconDownload size={15} />
+              <span>
+                {downloadingReport
+                  ? t("player_card.downloading_report", "Generando...")
+                  : t("player_card.download_report", "Descargar Informe")}
+              </span>
+            </button>
 
             <button
               type="button"

@@ -143,7 +143,7 @@ function EmailVerificationGate({ email, theme = "light", toggleTheme, onVerified
 
       <div className="verify-gate-card">
         <header className="verify-gate-header">
-          <img src={logoCuadrado} alt="HandStats — Analyze. Improve. Win." className="verify-gate-logo" />
+          <img src={logoCuadrado} alt="Handtix — Analyze. Improve. Win." className="verify-gate-logo" />
         </header>
 
         <div className="verify-gate-badge-wrapper">

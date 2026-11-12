@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — USE MATCH STATS HOOK
+   HANDTIX ANALYTICS — USE MATCH STATS HOOK
    Hook reactivo memoizado para métricas en tiempo real
    ========================================================== */
 

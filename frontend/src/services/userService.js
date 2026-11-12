@@ -42,6 +42,16 @@ const userService = {
         return res.data;
     },
 
+    getDashboardPreferences: async (userId) => {
+        const res = await api.get(`/users/${userId}/dashboard-preferences`);
+        return res.data;
+    },
+
+    saveDashboardPreferences: async (userId, preferences) => {
+        const res = await api.put(`/users/${userId}/dashboard-preferences`, preferences);
+        return res.data;
+    },
+
 };
 
 export default userService;

@@ -22,7 +22,7 @@ import LanguageSelector from "./LanguageSelector";
 import "./NotFoundPage.css";
 
 /**
- * Página 404 temática de Balonmano & Sports Analytics para HandStats.
+ * Página 404 temática de Balonmano & Sports Analytics para Handtix.
  * Diseño centrado, impactante y conciso con un 404 gigante en el medio,
  * balón de balonmano interactivo con resina y animaciones de bote/tiro,
  * y tira compacta de estadísticas de balonmano.
@@ -93,8 +93,8 @@ export default function NotFoundPage({ user, theme, toggleTheme, onGoHome }) {
       {/* Header compacto */}
       <header className="not-found-header">
         <div className="not-found-brand" onClick={() => navigate(user ? "/matches" : "/")}>
-          <img src={isotipo} alt="HandStats" className="not-found-logo" />
-          <span className="not-found-brand-text">HANDSTATS</span>
+          <img src={isotipo} alt="Handtix" className="not-found-logo" />
+          <span className="not-found-brand-text">HANDTIX</span>
           <span className="not-found-pill-badge">
             <span className="pulse-dot" />
             {t("not_found.badge_var", "VAR · JUGADA REVISADA")}
@@ -181,7 +181,7 @@ export default function NotFoundPage({ user, theme, toggleTheme, onGoHome }) {
           </h1>
           <p className="not-found-desc">
             El balón ha salido fuera del 40x20m reglamentario. La jugada solicitada en{" "}
-            <code>{currentPath}</code> no figura en la pizarra táctica de HandStats.
+            <code>{currentPath}</code> no figura en la pizarra táctica de Handtix.
           </p>
         </div>
 
@@ -203,7 +203,7 @@ export default function NotFoundPage({ user, theme, toggleTheme, onGoHome }) {
             <Home size={18} />
             {user
               ? t("not_found.btn_back_matches", "Volver al banquillo (Mis Partidos)")
-              : t("not_found.btn_go_home", "Ir al Inicio (HandStats)")}
+              : t("not_found.btn_go_home", "Ir al Inicio (Handtix)")}
           </button>
 
           {user && (
@@ -246,7 +246,7 @@ export default function NotFoundPage({ user, theme, toggleTheme, onGoHome }) {
 
       {/* Footer minimalista */}
       <footer className="not-found-footer">
-        HANDSTATS SPORTS ANALYTICS · ERROR 404 // BALL OUT OF BOUNDS
+        HANDTIX SPORTS ANALYTICS · ERROR 404 // BALL OUT OF BOUNDS
       </footer>
     </div>
   );

@@ -2,20 +2,26 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X as IconX } from "lucide-react";
 import { MetricBadge, getRatingBadge } from "../common/MetricBadge";
+import { KPICard } from "../common/KPICard";
+import { ConfigurableDashboardGrid } from "../common/ConfigurableDashboardGrid";
+import {
+  PLAYERS_WIDGET_CATALOG,
+  createDefaultLayout
+} from "../../../services/dashboardLayoutService";
 
-export function PlayersStatsView({ metrics, teamFilter = "home" }) {
+export function PlayersStatsView({ metrics, teamFilter = "home", sectionConfig }) {
   const { t } = useTranslation();
+  const [sortField, setSortField] = useState("number");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedPlayerModal, setSelectedPlayerModal] = useState(null);
 
   if (!metrics) return null;
 
+  const activeConfig = sectionConfig || createDefaultLayout().sections.players;
   const { homePlayerStats, awayPlayerStats, overview } = metrics;
   const isAway = teamFilter === "away";
   const players = isAway ? awayPlayerStats : homePlayerStats;
   const teamName = isAway ? overview.awayTeam : overview.homeTeam;
-
-  const [sortField, setSortField] = useState("number");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [selectedPlayerModal, setSelectedPlayerModal] = useState(null);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -125,146 +131,171 @@ export function PlayersStatsView({ metrics, teamFilter = "home" }) {
     { key: "rating", label: t("players_table.col_rating", "Rating") }
   ];
 
+  const mvpPlayer = [...players].sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))[0];
+  const topScorer = [...players].sort((a, b) => (Number(b.goals) || 0) - (Number(a.goals) || 0))[0];
+
+  const renderWidget = (config) => {
+    switch (config.id) {
+      case "pl_kpi_mvp":
+        return (
+          <KPICard
+            title={t("customize.widgets.pl_kpi_mvp", "MVP DEL EQUIPO (MAYOR RATING)")}
+            value={mvpPlayer ? `#${mvpPlayer.number} ${mvpPlayer.name}` : "—"}
+            comparison={mvpPlayer ? `Rating: ${mvpPlayer.rating}` : ""}
+            subtitle={mvpPlayer?.isGoalkeeper ? `${mvpPlayer.goalkeeperSaves || 0} par.` : mvpPlayer ? `${mvpPlayer.goals || 0} goles` : ""}
+          />
+        );
+      case "pl_kpi_top_scorer":
+        return (
+          <KPICard
+            title={t("customize.widgets.pl_kpi_top_scorer", "MÁXIMO GOLEADOR DEL PARTIDO")}
+            value={topScorer ? `#${topScorer.number} ${topScorer.name}` : "—"}
+            comparison={topScorer ? `${topScorer.goals || 0} / ${topScorer.shotsCount || 0} (${topScorer.efficiency || 0}%)` : ""}
+            subtitle={`xG: ${topScorer?.xg || "0.00"}`}
+          />
+        );
+      case "pl_table_roster":
+        return (
+          <div className="hs-card">
+            <h4 className="hs-card-title">{t("players_table.title", { team: teamName, defaultValue: `ESTADÍSTICAS INDIVIDUALES DE JUGADORES Y PORTEROS — ${teamName}` })}</h4>
+            <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", margin: "var(--space-4) 0 var(--space-12) 0" }}>
+              {t("players_table.subtitle", "Haz clic en el título de cualquier columna para ordenar o haz clic en cualquier jugador para ver su desglose detallado de rating.")}
+            </p>
+
+            <div className="hs-table-swipe-hint">
+              <span>← {t("common.swipe_hint", "Desliza horizontalmente para ver todas las métricas")} →</span>
+            </div>
+
+            <div className="hs-table-container">
+              <table className="hs-data-table">
+                <thead>
+                  <tr>
+                    {columns.map((col) => (
+                      <th
+                        key={col.key}
+                        onClick={() => handleSort(col.key)}
+                        style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
+                        title={col.label}
+                      >
+                        {col.label} {renderSortIndicator(col.key)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPlayers.map((p, idx) => (
+                    <tr
+                      key={idx}
+                      onClick={() => setSelectedPlayerModal(p)}
+                      style={{ cursor: "pointer" }}
+                      title={t("players_table.click_for_details", "Haz clic para ver desglose detallado de rating y acciones")}
+                    >
+                      <td><strong>#{p.number}</strong></td>
+                      <td><strong>{p.name}</strong></td>
+                      <td>
+                        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
+                          {p.isGoalkeeper ? t("players_table.role_gk", "Portero") : t("players_table.role_player", "Jugador")}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, color: "var(--text-primary)" }}>
+                          {p.minutesPlayedFormatted || (p.minutesPlayed ? `${Math.round(p.minutesPlayed)}'` : "0'")}
+                        </span>
+                      </td>
+                      <td>{p.shotsCount > 0 ? p.shotsCount : "—"}</td>
+                      <td>
+                        {p.shotsCount > 0 || p.goals > 0 ? (
+                          <>
+                            <strong>{p.goals}</strong>
+                            {p.shotsCount > 0 && (
+                              <span style={{ fontSize: "0.8em", color: "var(--text-muted)", marginLeft: "4px" }}>
+                                ({p.efficiency}%)
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)" }}>0</span>
+                        )}
+                      </td>
+                      <td>{p.shotsCount > 0 ? p.xg : "—"}</td>
+                      <td>
+                        {p.isGoalkeeper ? (
+                          <strong>{p.goalkeeperShotsFaced}</strong>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)" }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        {p.isGoalkeeper ? (
+                          <>
+                            <strong>{p.goalkeeperSaves}</strong>
+                            {p.goalkeeperShotsFaced > 0 && (
+                              <span style={{ fontSize: "0.8em", color: "var(--text-muted)", marginLeft: "4px" }}>
+                                ({p.goalkeeperSavePct}%)
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)" }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        {p.isGoalkeeper ? (
+                          <strong>{p.goalkeeperXSaves}</strong>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)" }}>—</span>
+                        )}
+                      </td>
+                      <td>{p.turnovers}</td>
+                      <td>
+                        <span title={t("players_table.7m_tooltip", "7m Provocados (+0.80) / Cometidos (-0.90)")}>
+                          <strong style={{ color: p.drawn7mCount > 0 ? "var(--color-primary, #44D878)" : "inherit" }}>
+                            {p.drawn7mCount || 0}
+                          </strong>
+                          {" / "}
+                          <span style={{ color: p.penaltiesCommitted > 0 ? "#ef4444" : "var(--text-muted)" }}>
+                            {p.penaltiesCommitted || 0}
+                          </span>
+                        </span>
+                      </td>
+                      <td>
+                        <span title={t("players_table.off_foul_tooltip", "Faltas en ataque Provocadas (+0.60) / Cometidas (-0.80)")}>
+                          <strong style={{ color: p.offFoulsDrawn > 0 ? "var(--color-primary, #44D878)" : "inherit" }}>
+                            {p.offFoulsDrawn || 0}
+                          </strong>
+                          {" / "}
+                          <span style={{ color: p.offensiveFouls > 0 ? "#ef4444" : "var(--text-muted)" }}>
+                            {p.offensiveFouls || 0}
+                          </span>
+                        </span>
+                      </td>
+                      <td>{p.twoMins}</td>
+                      <td>
+                        {(() => {
+                          const badge = getRatingBadge(p.rating);
+                          return <MetricBadge value={p.rating} variant={badge.variant} className={badge.className} />;
+                        })()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="hs-view-container">
-      <div className="hs-card">
-        <h4 className="hs-card-title">{t("players_table.title", { team: teamName, defaultValue: `ESTADÍSTICAS INDIVIDUALES DE JUGADORES Y PORTEROS — ${teamName}` })}</h4>
-        <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", margin: "var(--space-4) 0 var(--space-12) 0" }}>
-          {t("players_table.subtitle", "Haz clic en el título de cualquier columna para ordenar o haz clic en cualquier jugador para ver su desglose detallado de rating.")}
-        </p>
-
-        <div className="hs-table-swipe-hint">
-          <span>← {t("common.swipe_hint", "Desliza horizontalmente para ver todas las métricas")} →</span>
-        </div>
-
-        <div className="hs-table-container">
-          <table className="hs-data-table">
-            <thead>
-              <tr>
-                {columns.map((col) => (
-                  <th
-                    key={col.key}
-                    onClick={() => handleSort(col.key)}
-                    style={{ cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
-                    title={col.label}
-                  >
-                    {col.label} {renderSortIndicator(col.key)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedPlayers.map((p, idx) => (
-                <tr
-                  key={idx}
-                  onClick={() => setSelectedPlayerModal(p)}
-                  style={{ cursor: "pointer" }}
-                  title={t("players_table.click_for_details", "Haz clic para ver desglose detallado de rating y acciones")}
-                >
-                  <td><strong>#{p.number}</strong></td>
-                  <td><strong>{p.name}</strong></td>
-                  <td>
-                    <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                      {p.isGoalkeeper ? t("players_table.role_gk", "Portero") : t("players_table.role_player", "Jugador")}
-                    </span>
-                  </td>
-
-                  {/* TIEMPO JUGADO (MINUTOS) */}
-                  <td>
-                    <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700, color: "var(--text-primary)" }}>
-                      {p.minutesPlayedFormatted || (p.minutesPlayed ? `${Math.round(p.minutesPlayed)}'` : "0'")}
-                    </span>
-                  </td>
-
-                  {/* TIROS DE CAMPO / GOLES (con % de eficacia integrado) / XG — JUGADORES Y PORTEROS QUE LANZAN */}
-                  <td>{p.shotsCount > 0 ? p.shotsCount : "—"}</td>
-                  <td>
-                    {p.shotsCount > 0 || p.goals > 0 ? (
-                      <>
-                        <strong>{p.goals}</strong>
-                        {p.shotsCount > 0 && (
-                          <span style={{ fontSize: "0.8em", color: "var(--text-muted)", marginLeft: "4px" }}>
-                            ({p.efficiency}%)
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span style={{ color: "var(--text-muted)" }}>0</span>
-                    )}
-                  </td>
-                  <td>{p.shotsCount > 0 ? p.xg : "—"}</td>
-
-                  {/* TIROS RECIBIDOS / PARADAS (con % de eficacia integrado) / XSAVES — PORTEROS */}
-                  <td>
-                    {p.isGoalkeeper ? (
-                      <strong>{p.goalkeeperShotsFaced}</strong>
-                    ) : (
-                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                    )}
-                  </td>
-                  <td>
-                    {p.isGoalkeeper ? (
-                      <>
-                        <strong>{p.goalkeeperSaves}</strong>
-                        {p.goalkeeperShotsFaced > 0 && (
-                          <span style={{ fontSize: "0.8em", color: "var(--text-muted)", marginLeft: "4px" }}>
-                            ({p.goalkeeperSavePct}%)
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                    )}
-                  </td>
-                  <td>
-                    {p.isGoalkeeper ? (
-                      <strong>{p.goalkeeperXSaves}</strong>
-                    ) : (
-                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                    )}
-                  </td>
-
-                  <td>{p.turnovers}</td>
-
-                  {/* 7 METROS: PROVOCADOS / COMETIDOS */}
-                  <td>
-                    <span title={t("players_table.7m_tooltip", "7m Provocados (+0.80) / Cometidos (-0.90)")}>
-                      <strong style={{ color: p.drawn7mCount > 0 ? "var(--color-primary, #44D878)" : "inherit" }}>
-                        {p.drawn7mCount || 0}
-                      </strong>
-                      {" / "}
-                      <span style={{ color: p.penaltiesCommitted > 0 ? "#ef4444" : "var(--text-muted)" }}>
-                        {p.penaltiesCommitted || 0}
-                      </span>
-                    </span>
-                  </td>
-
-                  {/* FALTAS EN ATAQUE: PROVOCADAS / COMETIDAS */}
-                  <td>
-                    <span title={t("players_table.off_foul_tooltip", "Faltas en ataque Provocadas (+0.60) / Cometidas (-0.80)")}>
-                      <strong style={{ color: p.offFoulsDrawn > 0 ? "var(--color-primary, #44D878)" : "inherit" }}>
-                        {p.offFoulsDrawn || 0}
-                      </strong>
-                      {" / "}
-                      <span style={{ color: p.offensiveFouls > 0 ? "#ef4444" : "var(--text-muted)" }}>
-                        {p.offensiveFouls || 0}
-                      </span>
-                    </span>
-                  </td>
-
-                  <td>{p.twoMins}</td>
-                  <td>
-                    {(() => {
-                      const badge = getRatingBadge(p.rating);
-                      return <MetricBadge value={p.rating} variant={badge.variant} className={badge.className} />;
-                    })()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ConfigurableDashboardGrid
+        widgets={activeConfig.widgets}
+        catalog={PLAYERS_WIDGET_CATALOG}
+        density={activeConfig.density}
+        renderWidget={renderWidget}
+      />
 
       {/* MODAL DETALLADO DE JUGADOR: DESGLOSE DE RATING Y ACCIONES */}
       {selectedPlayerModal && (() => {

@@ -1,32 +1,18 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import logoHorizontal from "../../assets/logoHorizontal.png";
-import LanguageSelector from "../common/LanguageSelector";
 import OnboardingTourModal from "../onboarding/OnboardingTourModal";
 import { manualNav, manualChapters } from "./manualContent";
 import { downloadDocumentPdf } from "../../services/documentPdfService";
+import { trackEvent } from "../../services/analyticsService";
+import { captureError } from "../../services/errorTrackingService";
 import { IconDownload } from "../../stats/components/common/Icons";
 import { toast } from "../../context/ToastContext";
 import "./UserManualPage.css";
 
-const IconSun = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-);
-
-const IconMoon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+const IconBook = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
   </svg>
 );
 
@@ -123,12 +109,8 @@ const ChapterIcon = ({ type }) => {
 };
 
 export default function UserManualPage({
-  theme = "light",
-  toggleTheme,
-  onBack,
-  user
+  onStartTour,
 }) {
-  const navigate = useNavigate();
   const { i18n, t } = useTranslation();
 
   const currentLang = (i18n.language || "es").slice(0, 2);
@@ -163,13 +145,11 @@ export default function UserManualPage({
 
   const [downloading, setDownloading] = useState(false);
 
-  const handleReturn = () => {
-    if (onBack) {
-      onBack();
-    } else if (user) {
-      navigate("/matches");
+  const handleOpenTour = () => {
+    if (onStartTour) {
+      onStartTour();
     } else {
-      navigate("/");
+      setShowTour(true);
     }
   };
 
@@ -177,9 +157,10 @@ export default function UserManualPage({
     try {
       setDownloading(true);
       await downloadDocumentPdf("manual", currentLang);
+      trackEvent("manual_pdf_downloaded", { lang: currentLang });
       toast.success(t("pdf.manual_download_success", nav.pdfDownloadSuccess || "Manual en PDF descargado con éxito"));
     } catch (err) {
-      console.error("Error al descargar PDF del manual:", err);
+      captureError(err, { source: "manual_pdf_download" });
       toast.error(t("pdf.download_error", nav.pdfDownloadError || "Error al descargar el PDF del manual"));
     } finally {
       setDownloading(false);
@@ -189,7 +170,7 @@ export default function UserManualPage({
   const handleScrollToChapter = (chapterId) => {
     const el = document.getElementById(chapterId);
     if (el) {
-      const yOffset = -90;
+      const yOffset = window.innerWidth <= 992 ? -80 : -24;
       const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: "smooth" });
       setActiveChapterId(chapterId);
@@ -226,76 +207,41 @@ export default function UserManualPage({
 
   return (
     <div className="manual-page-container">
-      {/* HEADER DE NAVEGACIÓN */}
-      <header className="manual-header-nav">
-        <div className="manual-header-content">
-          <div className="manual-header-left">
-            <button
-              type="button"
-              className="manual-back-btn"
-              onClick={handleReturn}
-              title={user ? nav.backToApp : nav.backToHome}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
-              <span>{user ? nav.backToApp : nav.backToHome}</span>
-            </button>
-            <img
-              src={logoHorizontal}
-              alt="HandStats"
-              className="manual-brand-logo"
-              onClick={() => navigate("/")}
-            />
-          </div>
+      {/* ENCABEZADO INTEGRADO EN EL PANEL PRINCIPAL */}
+      <header className="manual-page-header">
+        <div className="manual-page-title-block">
+          <h1 className="manual-page-title">
+            <IconBook />
+            <span>{nav.manualTitle}</span>
+          </h1>
+          <p className="manual-page-subtitle">{nav.manualSubtitle}</p>
+        </div>
 
-          <div className="manual-header-right">
-            <button
-              type="button"
-              className="manual-action-btn tour-btn"
-              onClick={() => setShowTour(true)}
-              title={nav.startTourBtn}
-            >
-              <IconSparkles />
-              <span className="btn-text-full">{nav.startTourBtn}</span>
-            </button>
+        <div className="manual-header-right">
+          <button
+            type="button"
+            className="manual-action-btn tour-btn"
+            onClick={handleOpenTour}
+            title={nav.startTourBtn}
+          >
+            <IconSparkles />
+            <span>{nav.startTourBtn}</span>
+          </button>
 
-            <button
-              type="button"
-              className="manual-action-btn print-btn"
-              onClick={handleDownloadPdf}
-              disabled={downloading}
-              title={nav.downloadPdf || nav.printBtn}
-            >
-              <IconDownload size={15} />
-              <span className="btn-text-full">
-                {downloading ? t("pdf.generating", nav.generatingPdf || "Descargando PDF...") : (nav.downloadPdf || nav.printBtn)}
-              </span>
-            </button>
-
-            <LanguageSelector compact />
-
-            {toggleTheme && (
-              <button
-                type="button"
-                className="manual-theme-btn"
-                onClick={toggleTheme}
-                title={theme === "dark" ? nav.themeLight : nav.themeDark}
-              >
-                {theme === "dark" ? <IconMoon /> : <IconSun />}
-              </button>
-            )}
-          </div>
+          <button
+            type="button"
+            className="manual-action-btn print-btn"
+            onClick={handleDownloadPdf}
+            disabled={downloading}
+            title={nav.downloadPdf || nav.printBtn}
+          >
+            <IconDownload size={15} />
+            <span>
+              {downloading ? t("pdf.generating", nav.generatingPdf || "Descargando PDF...") : (nav.downloadPdf || nav.printBtn)}
+            </span>
+          </button>
         </div>
       </header>
-
-      {/* HERO BANNER & BÚSQUEDA */}
-      <div className="manual-hero-banner">
-        <div className="manual-hero-inner">
-          <h1 className="manual-hero-title">{nav.manualTitle}</h1>
-        </div>
-      </div>
 
       {/* CUERPO PRINCIPAL: SIDEBAR TOC + CONTENIDO */}
       <div className="manual-layout-wrapper">

@@ -223,6 +223,47 @@
   transform: rotate(90deg);
 }
 
+.hs-pdetail-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(68, 216, 120, 0.4);
+  background: rgba(68, 216, 120, 0.14);
+  color: var(--brand-primary, #44D878);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.hs-pdetail-download-btn:hover:not(:disabled) {
+  background: rgba(68, 216, 120, 0.24);
+  border-color: var(--brand-primary, #44D878);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(68, 216, 120, 0.18);
+}
+
+.hs-pdetail-download-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+[data-theme="light"] .hs-pdetail-download-btn {
+  background: rgba(46, 125, 79, 0.1);
+  border-color: rgba(46, 125, 79, 0.35);
+  color: #2E7D4F;
+}
+
+[data-theme="light"] .hs-pdetail-download-btn:hover:not(:disabled) {
+  background: #2E7D4F;
+  border-color: #2E7D4F;
+  color: #ffffff;
+}
+
 /* ==========================================================================
    TABS NAV
    ========================================================================== */
@@ -987,6 +1028,16 @@
 
   .hs-pdetail-quick-stats {
     display: none;
+  }
+
+  .hs-pdetail-header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .hs-pdetail-download-btn {
+    padding: 7px 12px;
+    font-size: 0.74rem;
   }
 
   .hs-pdetail-match-summary-row {

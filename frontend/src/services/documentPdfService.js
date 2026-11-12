@@ -1,6 +1,6 @@
 /**
  * documentPdfService.js
- * Generador y exportador de documentos PDF oficiales de HandStats Pro:
+ * Generador y exportador de documentos PDF oficiales de Handtix Pro:
  * - Política de Privacidad
  * - Términos y Condiciones
  * - Manual de Usuario y Guía Táctica
@@ -16,7 +16,7 @@ import { manualNav, manualChapters } from "../components/manual/manualContent.js
 
 // Paleta de colores oficial para impresión profesional
 const PDF_COLORS = {
-  primary: [234, 88, 12],     // #ea580c (Naranja Balonmano HandStats)
+  primary: [234, 88, 12],     // #ea580c (Naranja Balonmano Handtix)
   primarySubtle: [255, 237, 213], // #ffedd5
   dark: [15, 23, 42],          // #0f172a (Navy oscuro)
   text: [30, 41, 59],          // #1e293b
@@ -28,12 +28,12 @@ const PDF_COLORS = {
 
 // Traducción de pie de página para numeración
 const PAGE_TEXTS = {
-  es: { pageOf: "Página {{current}} de {{total}}", officialDoc: "HandStats Pro · www.handstats.pro · Documento Oficial", confidentiality: "Documentación y Directrices Técnicas" },
-  en: { pageOf: "Page {{current}} of {{total}}", officialDoc: "HandStats Pro · www.handstats.pro · Official Document", confidentiality: "Technical Documentation & Guidelines" },
-  de: { pageOf: "Seite {{current}} von {{total}}", officialDoc: "HandStats Pro · www.handstats.pro · Offizielles Dokument", confidentiality: "Technische Dokumentation & Richtlinien" },
-  fr: { pageOf: "Page {{current}} sur {{total}}", officialDoc: "HandStats Pro · www.handstats.pro · Document Officiel", confidentiality: "Documentation et Directives Techniques" },
-  da: { pageOf: "Side {{current}} af {{total}}", officialDoc: "HandStats Pro · www.handstats.pro · Officielt Dokument", confidentiality: "Teknisk Dokumentation & Retningslinjer" },
-  pl: { pageOf: "Strona {{current}} z {{total}}", officialDoc: "HandStats Pro · www.handstats.pro · Oficjalny Dokument", confidentiality: "Dokumentacja i Wytyczne Techniczne" }
+  es: { pageOf: "Página {{current}} de {{total}}", officialDoc: "Handtix Pro · www.handtix.pro · Documento Oficial", confidentiality: "Documentación y Directrices Técnicas" },
+  en: { pageOf: "Page {{current}} of {{total}}", officialDoc: "Handtix Pro · www.handtix.pro · Official Document", confidentiality: "Technical Documentation & Guidelines" },
+  de: { pageOf: "Seite {{current}} von {{total}}", officialDoc: "Handtix Pro · www.handtix.pro · Offizielles Dokument", confidentiality: "Technische Dokumentation & Richtlinien" },
+  fr: { pageOf: "Page {{current}} sur {{total}}", officialDoc: "Handtix Pro · www.handtix.pro · Document Officiel", confidentiality: "Documentation et Directives Techniques" },
+  da: { pageOf: "Side {{current}} af {{total}}", officialDoc: "Handtix Pro · www.handtix.pro · Officielt Dokument", confidentiality: "Teknisk Dokumentation & Retningslinjer" },
+  pl: { pageOf: "Strona {{current}} z {{total}}", officialDoc: "Handtix Pro · www.handtix.pro · Oficjalny Dokument", confidentiality: "Dokumentacja i Wytyczne Techniczne" }
 };
 
 /**
@@ -73,7 +73,7 @@ function applyHeadersAndFooters(pdf, docTitle, lang = "es") {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(8);
       pdf.setTextColor(...PDF_COLORS.primary);
-      pdf.text("HANDSTATS PRO", 18, 11);
+      pdf.text("HANDTIX PRO", 18, 11);
 
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(...PDF_COLORS.textMuted);
@@ -541,7 +541,7 @@ export function generateUserManualPdf(lang = "es") {
   let y = drawDocumentCoverHeader(pdf, {
     badge: navData.versionBadge || "VERSIÓN 2.0 · SUITE ÉLITE",
     title: navData.manualTitle || "Manual de Usuario y Guía Táctica",
-    subtitle: navData.manualSubtitle || "Documentación oficial del sistema HandStats Pro v2.0 para analistas y entrenadores.",
+    subtitle: navData.manualSubtitle || "Documentación oficial del sistema Handtix Pro v2.0 para analistas y entrenadores.",
     metadataItems: [
       navData.lastUpdated || "Revisión: Octubre 2026",
       "7 Capítulos Oficiales",
@@ -654,15 +654,15 @@ export function generateUserManualPdf(lang = "es") {
 export const OFFICIAL_PDF_DOCS = {
   privacy: {
     path: "docs/HandStats-Pro_Politica-de-Privacidad.pdf",
-    filename: "HandStats-Pro_Politica-de-Privacidad.pdf"
+    filename: "Handtix-Pro_Politica-de-Privacidad.pdf"
   },
   terms: {
     path: "docs/HandStats-Pro_Terminos-y-Condiciones.pdf",
-    filename: "HandStats-Pro_Terminos-y-Condiciones.pdf"
+    filename: "Handtix-Pro_Terminos-y-Condiciones.pdf"
   },
   manual: {
     path: "docs/HandStats-Pro_Manual-de-Usuario.pdf",
-    filename: "HandStats-Pro_Manual-de-Usuario.pdf"
+    filename: "Handtix-Pro_Manual-de-Usuario.pdf"
   }
 };
 

@@ -32,6 +32,15 @@ const IconSettings = () => (
   </svg>
 );
 
+const IconLayoutGrid = () => (
+  <svg className="sidebar-item-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.2" />
+    <rect x="14" y="3" width="7" height="5" rx="1.2" />
+    <rect x="14" y="12" width="7" height="9" rx="1.2" />
+    <rect x="3" y="14" width="7" height="7" rx="1.2" />
+  </svg>
+);
+
 const IconChevronRight = () => (
   <svg className="sidebar-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <polyline points="9 18 15 12 9 6" />
@@ -112,6 +121,7 @@ export default function Sidebar({
   const pathname = location?.pathname || "";
   const isMatchesActive = pathname === "/matches" || pathname === "/matches/new" || pathname === "/";
   const isTeamsActive = pathname === "/teams";
+  const isCustomizeActive = pathname === "/customize";
   const isSettingsActive = pathname === "/settings";
   const isManualActive = pathname === "/manual";
 
@@ -138,7 +148,7 @@ export default function Sidebar({
           <IconHamburger />
         </button>
         <div className="mobile-brand-title">
-          HAND<span>STATS</span>
+          HAND<span>TIX</span>
         </div>
       </div>
 
@@ -154,10 +164,10 @@ export default function Sidebar({
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-top">
           <div className="sidebar-brand">
-            <img src={isotipo} alt="HandStats Emblem" className="sidebar-logo-img" />
+            <img src={isotipo} alt="Handtix Emblem" className="sidebar-logo-img" />
             <div className="sidebar-brand-text">
-              <h1 className="sidebar-title">HAND<span>STATS</span></h1>
-              <span className="sidebar-tagline">ANALYZE. IMPROVE. WIN.</span>
+              <h1 className="sidebar-title">HAND<span>TIX</span></h1>
+              <span className="sidebar-tagline">SEE BEYOND THE GAME</span>
             </div>
           </div>
 
@@ -195,6 +205,17 @@ export default function Sidebar({
               <IconChevronRight />
             </button>
           )}
+
+          <button
+            className={`sidebar-item ${isCustomizeActive ? "active" : ""}`}
+            onClick={() => handleSelectRoute("/customize")}
+          >
+            <div className="sidebar-icon-box">
+              <IconLayoutGrid />
+            </div>
+            <span className="sidebar-item-label">{t("sidebar.customize_dashboard", "Personalizar Dashboard")}</span>
+            <IconChevronRight />
+          </button>
 
           <button
             className={`sidebar-item ${isSettingsActive ? "active" : ""}`}

@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — TYPES & CONSTANTS
+   HANDTIX ANALYTICS — TYPES & CONSTANTS
    Definiciones y constantes del motor estadístico
    ========================================================== */
 

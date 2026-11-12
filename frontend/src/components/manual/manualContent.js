@@ -1,6 +1,6 @@
 /**
  * manualContent.js
- * Manual de Usuario exhaustivo de HandStats Pro.
+ * Manual de Usuario exhaustivo de Handtix Pro.
  * Contiene 7 capítulos con explicaciones tácticas, fórmulas biomecánicas, flujos de uso y FAQs.
  * Disponible en 6 idiomas: Español (es), English (en), Deutsch (de), Français (fr), Dansk (da), Polski (pl).
  */
@@ -12,7 +12,7 @@ export const manualNav = {
     themeDark: "Modo Oscuro",
     themeLight: "Modo Claro",
     manualTitle: "Manual de Usuario y Guía Táctica",
-    manualSubtitle: "Documentación oficial del sistema HandStats Pro v2.0 para analistas y entrenadores.",
+    manualSubtitle: "Documentación oficial del sistema Handtix Pro v2.0 para analistas y entrenadores.",
     versionBadge: "VERSIÓN 2.0 · SUITE ÉLITE",
     lastUpdated: "Última revisión: Octubre 2026",
     searchPlaceholder: "Buscar en el manual (ej: xG, 7 metros, acta PDF, cronómetro)...",
@@ -33,7 +33,7 @@ export const manualNav = {
     themeDark: "Dark Mode",
     themeLight: "Light Mode",
     manualTitle: "User Manual & Tactical Guide",
-    manualSubtitle: "Official HandStats Pro v2.0 system documentation for analysts and coaches.",
+    manualSubtitle: "Official Handtix Pro v2.0 system documentation for analysts and coaches.",
     versionBadge: "VERSION 2.0 · ELITE SUITE",
     lastUpdated: "Last revised: October 2026",
     searchPlaceholder: "Search handbook (e.g. xG, 7-meter, PDF sheet, clock)...",
@@ -54,7 +54,7 @@ export const manualNav = {
     themeDark: "Dunkelmodus",
     themeLight: "Hellmodus",
     manualTitle: "Benutzerhandbuch & Taktischer Leitfaden",
-    manualSubtitle: "Offizielle HandStats Pro v2.0 Dokumentation für Analysten und Trainer.",
+    manualSubtitle: "Offizielle Handtix Pro v2.0 Dokumentation für Analysten und Trainer.",
     versionBadge: "VERSION 2.0 · ELITE SUITE",
     lastUpdated: "Letzte Überarbeitung: Oktober 2026",
     searchPlaceholder: "Handbuch durchsuchen (z.B. xG, 7-Meter, PDF, Spielzeituhr)...",
@@ -75,7 +75,7 @@ export const manualNav = {
     themeDark: "Mode Sombre",
     themeLight: "Mode Clair",
     manualTitle: "Manuel d'Utilisation & Guide Tactique",
-    manualSubtitle: "Documentation officielle HandStats Pro v2.0 pour analystes et entraîneurs.",
+    manualSubtitle: "Documentation officielle Handtix Pro v2.0 pour analystes et entraîneurs.",
     versionBadge: "VERSION 2.0 · SUITE ÉLITE",
     lastUpdated: "Dernière révision : Octobre 2026",
     searchPlaceholder: "Rechercher dans le manuel (ex: xG, 7 mètres, feuille PDF, chronomètre)...",
@@ -96,7 +96,7 @@ export const manualNav = {
     themeDark: "Mørk tilstand",
     themeLight: "Lys tilstand",
     manualTitle: "Brugermanual & Taktisk Vejledning",
-    manualSubtitle: "Officiel HandStats Pro v2.0 systemdokumentation for analytikere og trænere.",
+    manualSubtitle: "Officiel Handtix Pro v2.0 systemdokumentation for analytikere og trænere.",
     versionBadge: "VERSION 2.0 · ELITE SUITE",
     lastUpdated: "Sidst opdateret: Oktober 2026",
     searchPlaceholder: "Søg i manualen (f.eks. xG, 7-meter, PDF-skema, kamptimer)...",
@@ -117,7 +117,7 @@ export const manualNav = {
     themeDark: "Tryb Ciemny",
     themeLight: "Tryb Jasny",
     manualTitle: "Podręcznik Użytkownika & Przewodnik Taktyczny",
-    manualSubtitle: "Oficjalna dokumentacja systemu HandStats Pro v2.0 dla analityków i trenerów.",
+    manualSubtitle: "Oficjalna dokumentacja systemu Handtix Pro v2.0 dla analityków i trenerów.",
     versionBadge: "WERSJA 2.0 · PAKIET ELITE",
     lastUpdated: "Ostatnia aktualizacja: Październik 2026",
     searchPlaceholder: "Szukaj w podręczniku (np. xG, 7 metrów, protokół PDF, zegar)...",
@@ -141,13 +141,13 @@ export const manualChapters = {
       number: "01",
       title: "Introducción y Arquitectura del Sistema",
       icon: "layout",
-      summary: "Visión global de la suite HandStats Pro, roles de usuario, soporte para tablets en banquillo y resiliencia offline.",
+      summary: "Visión global de la suite Handtix Pro, roles de usuario, soporte para tablets en banquillo y resiliencia offline.",
       sections: [
         {
           id: "ch1-overview",
           subtitle: "1.1 Filosofía de Diseño y Propósito",
           content:
-            "HandStats Pro ha sido concebido desde sus cimientos como un instrumento de ingeniería deportiva para balonmano de alto rendimiento. En un deporte caracterizado por transiciones ultrasónicas (más de 60 posesiones por partido y toma de decisiones en fracciones de segundo), las hojas de cálculo tradicionales o los programas genéricos resultan lentos e ineficaces. HandStats combina ergonomía táctil a pie de pista con algoritmos biomecánicos de precisión que procesan en tiempo real xG (Expected Goals), xSaves y NPS (Net Player Score)."
+            "Handtix Pro ha sido concebido desde sus cimientos como un instrumento de ingeniería deportiva para balonmano de alto rendimiento. En un deporte caracterizado por transiciones ultrasónicas (más de 60 posesiones por partido y toma de decisiones en fracciones de segundo), las hojas de cálculo tradicionales o los programas genéricos resultan lentos e ineficaces. Handtix combina ergonomía táctil a pie de pista con algoritmos biomecánicos de precisión que procesan en tiempo real xG (Expected Goals), xSaves y NPS (Net Player Score)."
         },
         {
           id: "ch1-devices",
@@ -180,7 +180,7 @@ export const manualChapters = {
           id: "ch2-pdf-import",
           subtitle: "2.2 Importación y Parseo Inteligente de Actas PDF (RFEBM)",
           content:
-            "Para evitar teclear a mano las plantillas de 16 a 20 jugadores por equipo, HandStats integra un motor de extracción inteligente. Sube el archivo PDF del acta oficial de partido emitido por la Real Federación Española de Balonmano o federaciones territoriales. El sistema analiza automáticamente el documento, detecta nombres, dorsales, posiciones, porteros y oficiales de banquillo, autocompletando la configuración del partido en menos de 5 segundos."
+            "Para evitar teclear a mano las plantillas de 16 a 20 jugadores por equipo, Handtix integra un motor de extracción inteligente. Sube el archivo PDF del acta oficial de partido emitido por la Real Federación Española de Balonmano o federaciones territoriales. El sistema analiza automáticamente el documento, detecta nombres, dorsales, posiciones, porteros y oficiales de banquillo, autocompletando la configuración del partido en menos de 5 segundos."
         },
         {
           id: "ch2-lifecycle",
@@ -213,7 +213,7 @@ export const manualChapters = {
           id: "ch3-7m-fouls",
           subtitle: "3.3 Registro Integral de 7 Metros y Faltas en Ataque",
           content:
-            "En el balonmano moderno, forzar un penalti de 7m o un paso/falta en ataque es tan determinante como marcar un gol. HandStats permite asignar tanto al autor infractor como al provocador que ganó la posición. Esto garantiza que el jugador defensivo que provocó la falta en ataque sea recompensado positivamente (+0.60) en su nota NPS, mientras el atacante infractor recibe su justa penalización (-0.80)."
+            "En el balonmano moderno, forzar un penalti de 7m o un paso/falta en ataque es tan determinante como marcar un gol. Handtix permite asignar tanto al autor infractor como al provocador que ganó la posición. Esto garantiza que el jugador defensivo que provocó la falta en ataque sea recompensado positivamente (+0.60) en su nota NPS, mientras el atacante infractor recibe su justa penalización (-0.80)."
         },
         {
           id: "ch3-sanctions",
@@ -282,7 +282,7 @@ export const manualChapters = {
           id: "ch6-pdf-generation",
           subtitle: "6.1 Generación del Dossier PDF de Partido",
           content:
-            "Tras finalizar el encuentro o durante el descanso, pulsa el botón 'Exportar Informe PDF'. HandStats compila instantáneamente un documento vectorizado de alta resolución con el resumen general del marcador, la efectividad de tiro comparativa de ambos equipos, el balance xG y el desglose individual por jugador."
+            "Tras finalizar el encuentro o durante el descanso, pulsa el botón 'Exportar Informe PDF'. Handtix compila instantáneamente un documento vectorizado de alta resolución con el resumen general del marcador, la efectividad de tiro comparativa de ambos equipos, el balance xG y el desglose individual por jugador."
         },
         {
           id: "ch6-reading-metrics",
@@ -315,7 +315,7 @@ export const manualChapters = {
           id: "ch7-contact",
           subtitle: "7.3 Soporte Técnico y Sugerencias",
           content:
-            "Si tienes dudas técnicas, deseas solicitar soporte para tu club o sugerir nuevas métricas, contáctanos en soporte@handstats.pro o a través del formulario de soporte en la sección de Ajustes."
+            "Si tienes dudas técnicas, deseas solicitar soporte para tu club o sugerir nuevas métricas, contáctanos en soporte@handtix.pro o a través del formulario de soporte en la sección de Ajustes."
         }
       ]
     }
@@ -326,13 +326,13 @@ export const manualChapters = {
       number: "01",
       title: "System Architecture & Introduction",
       icon: "layout",
-      summary: "Overview of HandStats Pro, user roles, bench tablet support, and offline resilience.",
+      summary: "Overview of Handtix Pro, user roles, bench tablet support, and offline resilience.",
       sections: [
         {
           id: "ch1-overview",
           subtitle: "1.1 Design Philosophy & Mission",
           content:
-            "HandStats Pro is engineered from the ground up as a high-precision sports analytics suite for elite handball. In a fast-paced sport with over 60 possessions per game, legacy spreadsheets fail. HandStats combines courtside touch ergonomics with validated biomechanical models: Expected Goals (xG), xSaves, and Net Player Score (NPS)."
+            "Handtix Pro is engineered from the ground up as a high-precision sports analytics suite for elite handball. In a fast-paced sport with over 60 possessions per game, legacy spreadsheets fail. Handtix combines courtside touch ergonomics with validated biomechanical models: Expected Goals (xG), xSaves, and Net Player Score (NPS)."
         },
         {
           id: "ch1-devices",
@@ -344,7 +344,7 @@ export const manualChapters = {
           id: "ch1-offline",
           subtitle: "1.3 Offline Resilience & Data Sync",
           content:
-            "If arena Wi-Fi drops, HandStats keeps tracking seamlessly in browser memory, synchronizing transparently with the backend API as soon as connectivity resumes."
+            "If arena Wi-Fi drops, Handtix keeps tracking seamlessly in browser memory, synchronizing transparently with the backend API as soon as connectivity resumes."
         }
       ]
     },
@@ -365,7 +365,7 @@ export const manualChapters = {
           id: "ch2-pdf-import",
           subtitle: "2.2 Smart PDF Match Sheet Parsing",
           content:
-            "Upload official federation PDF match sheets. HandStats automatically extracts rosters, jersey numbers, goalkeeper tags, and coaching staff in under 5 seconds."
+            "Upload official federation PDF match sheets. Handtix automatically extracts rosters, jersey numbers, goalkeeper tags, and coaching staff in under 5 seconds."
         },
         {
           id: "ch2-lifecycle",
@@ -500,7 +500,7 @@ export const manualChapters = {
           id: "ch7-contact",
           subtitle: "7.3 Technical Support",
           content:
-            "For assistance or club inquiries, contact us at support@handstats.pro or via the Settings support form."
+            "For assistance or club inquiries, contact us at support@handtix.pro or via the Settings support form."
         }
       ]
     }
@@ -511,12 +511,12 @@ export const manualChapters = {
       number: "01",
       title: "Systemarchitektur & Einführung",
       icon: "layout",
-      summary: "Überblick über HandStats Pro, Benutzerrollen, Tablet-Optimierung und Offline-Funktionalität.",
+      summary: "Überblick über Handtix Pro, Benutzerrollen, Tablet-Optimierung und Offline-Funktionalität.",
       sections: [
         {
           id: "ch1-overview",
           subtitle: "1.1 Philosophie und Zweck",
-          content: "HandStats Pro ist eine professionelle Handball-Analysesuite für Spitzenmannschaften. Präzise Datenerfassung am Spielfeldrand und prädiktive Modelle (xG, xSaves, NPS) in Echtzeit."
+          content: "Handtix Pro ist eine professionelle Handball-Analysesuite für Spitzenmannschaften. Präzise Datenerfassung am Spielfeldrand und prädiktive Modelle (xG, xSaves, NPS) in Echtzeit."
         },
         {
           id: "ch1-devices",
@@ -526,7 +526,7 @@ export const manualChapters = {
         {
           id: "ch1-offline",
           subtitle: "1.3 Offline-Verfügbarkeit",
-          content: "Bei Verbindungsproblemen in der Halle speichert HandStats alle Daten lokal und synchronisiert automatisch, sobald die Verbindung wiederhergestellt ist."
+          content: "Bei Verbindungsproblemen in der Halle speichert Handtix alle Daten lokal und synchronisiert automatisch, sobald die Verbindung wiederhergestellt ist."
         }
       ]
     },
@@ -545,7 +545,7 @@ export const manualChapters = {
         {
           id: "ch2-pdf-import",
           subtitle: "2.2 Smartes PDF-Einlesen",
-          content: "Laden Sie den offiziellen Spielbericht als PDF hoch. HandStats erkennt automatisch alle Spieler, Rückennummern und Offizielle in wenigen Sekunden."
+          content: "Laden Sie den offiziellen Spielbericht als PDF hoch. Handtix erkennt automatisch alle Spieler, Rückennummern und Offizielle in wenigen Sekunden."
         }
       ]
     },
@@ -625,7 +625,7 @@ export const manualChapters = {
         {
           id: "ch7-faq-list",
           subtitle: "7.1 FAQs & Shortcuts",
-          content: "Leertaste zum Starten/Stoppen der Spielzeituhr, Pfeiltasten im Tour-Modus. Support unter support@handstats.pro."
+          content: "Leertaste zum Starten/Stoppen der Spielzeituhr, Pfeiltasten im Tour-Modus. Support unter support@handtix.pro."
         }
       ]
     }
@@ -636,12 +636,12 @@ export const manualChapters = {
       number: "01",
       title: "Architecture & Introduction",
       icon: "layout",
-      summary: "Présentation de HandStats Pro, rôles utilisateurs, compatibilité tablettes et mode hors-ligne.",
+      summary: "Présentation de Handtix Pro, rôles utilisateurs, compatibilité tablettes et mode hors-ligne.",
       sections: [
         {
           id: "ch1-overview",
           subtitle: "1.1 Philosophie et Objectifs",
-          content: "HandStats Pro est conçu pour le handball d'élite, combinant ergonomie tactile sur le banc et modélisation biomécanique en temps réel (xG, xSaves, NPS)."
+          content: "Handtix Pro est conçu pour le handball d'élite, combinant ergonomie tactile sur le banc et modélisation biomécanique en temps réel (xG, xSaves, NPS)."
         },
         {
           id: "ch1-devices",
@@ -730,7 +730,7 @@ export const manualChapters = {
         {
           id: "ch7-faq-list",
           subtitle: "7.1 Questions Fréquentes",
-          content: "Fonctionne hors-ligne, modification possible de tout événement enregistré. Contact : support@handstats.pro."
+          content: "Fonctionne hors-ligne, modification possible de tout événement enregistré. Contact : support@handtix.pro."
         }
       ]
     }
@@ -741,12 +741,12 @@ export const manualChapters = {
       number: "01",
       title: "Systemarkitektur & Introduktion",
       icon: "layout",
-      summary: "Oversigt over HandStats Pro, brugerroller, tablet-ergonomi og offline-funktionalitet.",
+      summary: "Oversigt over Handtix Pro, brugerroller, tablet-ergonomi og offline-funktionalitet.",
       sections: [
         {
           id: "ch1-overview",
           subtitle: "1.1 Formål og Filosofi",
-          content: "HandStats Pro er bygget til elitehåndbold med realtids biomekaniske modeller (xG, xSaves, NPS) og lynhurtig registrering."
+          content: "Handtix Pro er bygget til elitehåndbold med realtids biomekaniske modeller (xG, xSaves, NPS) og lynhurtig registrering."
         }
       ]
     },
@@ -830,7 +830,7 @@ export const manualChapters = {
         {
           id: "ch7-faq-list",
           subtitle: "7.1 Spørgsmål & Svar",
-          content: "Fungerer offline og tillader rettelse af alle hændelser. Kontakt: support@handstats.pro."
+          content: "Fungerer offline og tillader rettelse af alle hændelser. Kontakt: support@handtix.pro."
         }
       ]
     }
@@ -841,12 +841,12 @@ export const manualChapters = {
       number: "01",
       title: "Architektura Systemu i Wprowadzenie",
       icon: "layout",
-      summary: "Przegląd HandStats Pro, role, obsługa tabletów przy ławce rezerwowych i praca w trybie offline.",
+      summary: "Przegląd Handtix Pro, role, obsługa tabletów przy ławce rezerwowych i praca w trybie offline.",
       sections: [
         {
           id: "ch1-overview",
           subtitle: "1.1 Filozofia i Cel",
-          content: "HandStats Pro to zaawansowany pakiet analityki sportowej dla profesjonalnej piłki ręcznej. Rejestracja zdarzeń w czasie rzeczywistym i modele xG, xSaves oraz NPS."
+          content: "Handtix Pro to zaawansowany pakiet analityki sportowej dla profesjonalnej piłki ręcznej. Rejestracja zdarzeń w czasie rzeczywistym i modele xG, xSaves oraz NPS."
         }
       ]
     },
@@ -930,7 +930,7 @@ export const manualChapters = {
         {
           id: "ch7-faq-list",
           subtitle: "7.1 Pytania i Odpowiedzi",
-          content: "Obsługa offline, edycja wprowadzonych zdarzeń i kontakt: support@handstats.pro."
+          content: "Obsługa offline, edycja wprowadzonych zdarzeń i kontakt: support@handtix.pro."
         }
       ]
     }

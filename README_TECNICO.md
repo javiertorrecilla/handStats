@@ -1,6 +1,6 @@
-# 🛠️ HandStats — Requisitos Técnicos, Arquitectura y Despliegue
+# 🛠️ Handtix — Requisitos Técnicos, Arquitectura y Despliegue
 
-Este documento recoge los **requisitos técnicos**, stack de tecnologías, APIs REST, modelos matemáticos ($xG$, $xSaves$, $NPS$, Sigmoide) e instrucciones completas para la instalación, desarrollo y despliegue del sistema **HandStats**.
+Este documento recoge los **requisitos técnicos**, stack de tecnologías, APIs REST, modelos matemáticos ($xG$, $xSaves$, $NPS$, Sigmoide) e instrucciones completas para la instalación, desarrollo y despliegue del sistema **Handtix**.
 
 ---
 

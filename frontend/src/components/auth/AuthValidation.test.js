@@ -117,7 +117,7 @@ describe("Auth - Validación de Formato de Email para Recuperación de Contrase�
   it("Debe validar correos con formato correcto", () => {
     assert.equal(isValidEmail("entrenador@balonmano.es"), true);
     assert.equal(isValidEmail("analista.tactico@club.cat"), true);
-    assert.equal(isValidEmail("admin@handstats.pro"), true);
+    assert.equal(isValidEmail("admin@handtix.pro"), true);
   });
 
   it("Debe rechazar correos vacíos, sin dominio o con formato erróneo", () => {
@@ -158,7 +158,13 @@ describe("Auth - Mapeo de Códigos de Error de Recuperación y Registro", () => 
 });
 
 describe("AuthActionPage (/auth/action) - Utilidades de enlaces e i18n", () => {
-  it("Debe extraer mode, oobCode y lang válido desde la URL", () => {
+  it("Debe extraer mode, token/oobCode y lang válido desde la URL", () => {
+    const parsedInd = parseAuthActionSearch("?mode=verifyEmail&token=TOK_INDEP_999&lang=es");
+    assert.equal(parsedInd.mode, "verifyEmail");
+    assert.equal(parsedInd.token, "TOK_INDEP_999");
+    assert.equal(parsedInd.oobCode, "");
+    assert.equal(parsedInd.lang, "es");
+
     const parsed = parseAuthActionSearch("?mode=resetPassword&oobCode=ABC_123&lang=de-DE");
     assert.equal(parsed.mode, "resetPassword");
     assert.equal(parsed.oobCode, "ABC_123");
@@ -172,7 +178,7 @@ describe("AuthActionPage (/auth/action) - Utilidades de enlaces e i18n", () => {
     assert.equal(validateResetPasswordFields("", "123456"), "auth.fill_all_fields");
     assert.equal(validateResetPasswordFields("12345", "12345"), "auth_action.password_min_length");
     assert.equal(validateResetPasswordFields("abc123", "abc124"), "auth_action.passwords_mismatch");
-    assert.equal(validateResetPasswordFields("HandStats2026!", "HandStats2026!"), null);
+    assert.equal(validateResetPasswordFields("Handtix2026!", "Handtix2026!"), null);
   });
 
   it("Debe mapear códigos de error de Firebase Action Code", () => {

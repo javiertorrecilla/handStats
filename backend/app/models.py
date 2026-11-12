@@ -200,6 +200,18 @@ class Match(BaseModel):
 # MODELO USUARIO (USER)
 # ==========================================
 
+class DashboardPreferences(BaseModel):
+    """Preferencias personalizadas de dashboard y estadísticas del usuario."""
+    version: int = 1
+    activePreset: Optional[str] = "balanced"
+    matchDashboard: Optional[Dict[str, Any]] = None
+    teamDashboard: Optional[Dict[str, Any]] = None
+    updatedAt: Optional[str] = None
+
+    class Config:
+        extra = "allow"
+
+
 class User(BaseModel):
 
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
@@ -207,6 +219,7 @@ class User(BaseModel):
     email: str
     name: str
     saved_teams: List[SavedTeam] = []
+    dashboard_preferences: Optional[Dict[str, Any]] = None
 
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)

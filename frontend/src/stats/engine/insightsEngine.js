@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — INSIGHTS ENGINE
+   HANDTIX ANALYTICS — INSIGHTS ENGINE
    Motor de Inteligencia Táctica y Recomendaciones en tiempo real
    ========================================================== */
 

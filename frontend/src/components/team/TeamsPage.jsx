@@ -10,14 +10,15 @@ const IconUploadCloud = () => (
   </svg>
 );
 import userService from "../../services/userService";
+import { trackEvent } from "../../services/analyticsService";
+import { captureError } from "../../services/errorTrackingService";
 import { calculateTeamCumulativeStats } from "../../stats/engine/teamCumulativeEngine";
 import { KPICard } from "../../stats/components/common/KPICard";
 import { MetricBadge } from "../../stats/components/common/MetricBadge";
 import { HeatmapCourt } from "../../stats/components/charts/HeatmapCourt";
 import {
   IconBarChart,
-  IconUsers,
-  IconClock
+  IconUsers
 } from "../../stats/components/common/Icons";
 import "./TeamsPage.css";
 import PlayerDetailModal from "./PlayerDetailModal";
@@ -151,7 +152,7 @@ function getTeamBadgeText(name = "") {
  * - Menos de 25% (< 25): Rojo (danger)
  * - Entre 25% y 34.9% [25, 35): Ámbar/Naranja (warning)
  * - Entre 35% y 39.9% [35, 40): Verde Lima Claro #A3E635 / #65A30D (accent)
- * - 40% o más (>= 40): Verde principal HandStats #44D878 / #15803D (success)
+ * - 40% o más (>= 40): Verde principal Handtix #44D878 / #15803D (success)
  */
 function getGkSavePctBadge(savePct) {
   const val = Number(savePct);
@@ -173,7 +174,7 @@ function getGkSavePctBadge(savePct) {
  * - 51% – 57%: Naranja
  * - 58% – 64%: Amarillo/Ámbar
  * - 65% – 75%: Verde Lima Claro #A3E635 / #65A30D
- * - > 75%: Verde principal HandStats #44D878 / #15803D
+ * - > 75%: Verde principal Handtix #44D878 / #15803D
  */
 function getShotEffBadge(efficiency) {
   const val = Number(efficiency);
@@ -198,7 +199,7 @@ function getShotEffBadge(efficiency) {
  * - 5 a < 6: Naranja (badge-rating-tier-orange)
  * - 6 a < 7: Amarillo (badge-rating-tier-amber)
  * - 7 a < 8: Verde lima #A3E635 / #65A30D (badge-rating-tier-lime)
- * - 8 a < 9: Verde HandStats #44D878 / #15803D (badge-rating-tier-success)
+ * - 8 a < 9: Verde Handtix #44D878 / #15803D (badge-rating-tier-success)
  * - 9 a 10: Púrpura MVP #A855F7 / #7E22CE (badge-rating-tier-mvp)
  */
 function getRatingBadge(rating) {
@@ -641,11 +642,11 @@ export default function TeamsPage({ user, matchesList = [] }) {
       prev.map((p, i) =>
         i === index
           ? {
-              ...p,
-              name: editingName.trim().toUpperCase(),
-              number: numberVal,
-              is_goalkeeper: editingRole === "gk",
-            }
+            ...p,
+            name: editingName.trim().toUpperCase(),
+            number: numberVal,
+            is_goalkeeper: editingRole === "gk",
+          }
           : p
       )
     );
@@ -674,6 +675,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
           logo_url: editLogoUrl || null,
           players: editPlayers,
         });
+        trackEvent("team_saved", { action: "create", players_count: editPlayers.length });
         toast.success(t("teams.team_created_success"));
         setSelectedTeam(null);
         setIsCreating(false);
@@ -683,6 +685,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
           logo_url: editLogoUrl || null,
           players: editPlayers,
         });
+        trackEvent("team_saved", { action: "update", players_count: editPlayers.length });
         toast.success(t("teams.team_saved_success"));
         setSelectedTeam((prev) => ({
           ...prev,
@@ -694,7 +697,7 @@ export default function TeamsPage({ user, matchesList = [] }) {
       }
       loadTeams();
     } catch (err) {
-      console.error(err);
+      captureError(err, { source: "team_save" });
       toast.error(err.response?.data?.detail || t("teams.save_error", "Error al guardar el equipo."));
     }
   };
@@ -704,13 +707,14 @@ export default function TeamsPage({ user, matchesList = [] }) {
 
     try {
       await userService.deleteSavedTeam(user._id, teamName);
+      trackEvent("team_deleted");
       if (selectedTeam?.name === teamName) {
         setSelectedTeam(null);
       }
       loadTeams();
       toast.success(t("teams.delete_team_success"));
     } catch (err) {
-      console.error(err);
+      captureError(err, { source: "team_delete" });
       toast.error(t("teams.delete_error", "Error al eliminar el equipo."));
     }
   };
@@ -1158,22 +1162,52 @@ export default function TeamsPage({ user, matchesList = [] }) {
             )}
           </div>
 
-          {/* SUB-VISTA 1: DASHBOARD GLOBAL DE RENDIMIENTO A PANTALLA COMPLETA */}
+          {/* SUB-VISTA 1: DASHBOARD GLOBAL DE RENDIMIENTO */}
           {selectedTeam && !isCreating && rightPanelTab === "stats" && cumulativeStats && (
-            <div className="team-stats-dashboard" style={{ display: "flex", flexDirection: "column", gap: "var(--space-32)" }}>
-              {/* TARJETAS KPI DE RENDIMIENTO ACUMULADO */}
+            <div className="team-stats-dashboard" style={{ display: "flex", flexDirection: "column", gap: "var(--space-20)" }}>
               <div className="hs-grid hs-grid-4">
-                <KPICard title={t("teams.kpis.matches_played")} value={cumulativeStats.totalMatches} subtitle={t("teams.w_d_l", { wins: cumulativeStats.wins, draws: cumulativeStats.draws, losses: cumulativeStats.losses })} />
-                <KPICard title={t("teams.kpis.goals_for_against")} value={`${cumulativeStats.goalsFor} / ${cumulativeStats.goalsAgainst}`} subtitle={t("teams.kpis.goals_avg_sub", { gf: cumulativeStats.avgGoalsFor, ga: cumulativeStats.avgGoalsAgainst })} />
-                <KPICard title={t("teams.kpis.xg_xga_title")} value={`${cumulativeStats.totalXG} vs ${cumulativeStats.totalXGA}`} subtitle={t("teams.kpis.xg_xga_diff", { diff: (cumulativeStats.totalXG - cumulativeStats.totalXGA).toFixed(2) })} />
-                <KPICard title={t("teams.kpis.off_eff_title")} value={`${cumulativeStats.avgOffEfficiency}%`} subtitle={t("teams.kpis.shot_eff_sub", { val: cumulativeStats.shotEfficiency })} />
-                <KPICard title={t("teams.kpis.saves_eff_title")} value={`${cumulativeStats.totalSaves}/${cumulativeStats.totalShotsFaced}`} subtitle={t("teams.kpis.saves_pct_sub", { val: cumulativeStats.savePct })} />
-                <KPICard title={t("teams.kpis.total_turnovers_title")} value={cumulativeStats.totalTurnovers} subtitle={t("teams.kpis.turnovers_avg_sub", { val: cumulativeStats.avgTurnovers })} />
-                <KPICard title={t("teams.kpis.avg_poss_duration")} value={`${cumulativeStats.avgPossessionDuration}s`} subtitle={t("teams.kpis.poss_avg_sub", { val: cumulativeStats.avgPossessionsPerMatch })} />
-                <KPICard title={t("teams.kpis.def_eff_title")} value={`${cumulativeStats.avgDefEfficiency}%`} subtitle={t("teams.kpis.def_eff_sub")} />
+                <KPICard
+                  title={t("teams.kpis.matches_played")}
+                  value={cumulativeStats.totalMatches}
+                  subtitle={t("teams.w_d_l", { wins: cumulativeStats.wins, draws: cumulativeStats.draws, losses: cumulativeStats.losses })}
+                />
+                <KPICard
+                  title={t("teams.kpis.goals_for_against")}
+                  value={`${cumulativeStats.goalsFor} / ${cumulativeStats.goalsAgainst}`}
+                  subtitle={t("teams.kpis.goals_avg_sub", { gf: cumulativeStats.avgGoalsFor, ga: cumulativeStats.avgGoalsAgainst })}
+                />
+                <KPICard
+                  title={t("teams.kpis.xg_xga_title")}
+                  value={`${cumulativeStats.totalXG} vs ${cumulativeStats.totalXGA}`}
+                  subtitle={t("teams.kpis.xg_xga_diff", { diff: (cumulativeStats.totalXG - cumulativeStats.totalXGA).toFixed(2) })}
+                />
+                <KPICard
+                  title={t("teams.kpis.off_eff_title")}
+                  value={`${cumulativeStats.avgOffEfficiency}%`}
+                  subtitle={t("teams.kpis.shot_eff_sub", { val: cumulativeStats.shotEfficiency })}
+                />
+                <KPICard
+                  title={t("teams.kpis.saves_eff_title")}
+                  value={`${cumulativeStats.totalSaves}/${cumulativeStats.totalShotsFaced}`}
+                  subtitle={t("teams.kpis.saves_pct_sub", { val: cumulativeStats.savePct })}
+                />
+                <KPICard
+                  title={t("teams.kpis.total_turnovers_title")}
+                  value={cumulativeStats.totalTurnovers}
+                  subtitle={t("teams.kpis.turnovers_avg_sub", { val: cumulativeStats.avgTurnovers })}
+                />
+                <KPICard
+                  title={t("teams.kpis.avg_poss_duration")}
+                  value={`${cumulativeStats.avgPossessionDuration}s`}
+                  subtitle={t("teams.kpis.poss_avg_sub", { val: cumulativeStats.avgPossessionsPerMatch })}
+                />
+                <KPICard
+                  title={t("teams.kpis.def_eff_title")}
+                  value={`${cumulativeStats.avgDefEfficiency}%`}
+                  subtitle={t("teams.kpis.def_eff_sub")}
+                />
               </div>
 
-              {/* ESTADÍSTICAS ACUMULADAS DE LA PLANTILLA EN LA TEMPORADA */}
               <div className="hs-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-12)", flexWrap: "wrap", gap: "8px" }}>
                   <h4 className="hs-card-title" style={{ margin: 0 }}>
@@ -1290,158 +1324,157 @@ export default function TeamsPage({ user, matchesList = [] }) {
                                   </div>
                                 </td>
 
-                              {playerTableFilter === "field" ? (
-                                <>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsCount}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>{p.goals}</strong></td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {p.shotsCount > 0 ? (
-                                      (() => {
-                                        const badge = getShotEffBadge(p.efficiency);
+                                {playerTableFilter === "field" ? (
+                                  <>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsCount}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>{p.goals}</strong></td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {p.shotsCount > 0 ? (
+                                        (() => {
+                                          const badge = getShotEffBadge(p.efficiency);
+                                          return (
+                                            <MetricBadge
+                                              value={`${p.efficiency}%`}
+                                              variant={badge.variant}
+                                              className={badge.className}
+                                            />
+                                          );
+                                        })()
+                                      ) : (
+                                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                                      )}
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsCount > 0 ? p.xg : "—"}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.turnovers}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {(() => {
+                                        const badge = getRatingBadge(p.avgRating);
                                         return (
                                           <MetricBadge
-                                            value={`${p.efficiency}%`}
+                                            value={p.avgRating}
                                             variant={badge.variant}
                                             className={badge.className}
                                           />
                                         );
-                                      })()
-                                    ) : (
-                                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsCount > 0 ? p.xg : "—"}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.turnovers}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {(() => {
-                                      const badge = getRatingBadge(p.avgRating);
-                                      return (
-                                        <MetricBadge
-                                          value={p.avgRating}
-                                          variant={badge.variant}
-                                          className={badge.className}
-                                        />
-                                      );
-                                    })()}
-                                  </td>
-                                </>
-                              ) : playerTableFilter === "goalkeepers" ? (
-                                <>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>{p.saves}/{p.shotsFaced}</strong></td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {p.shotsFaced > 0 ? (
-                                      (() => {
-                                        const badge = getGkSavePctBadge(p.savePct);
+                                      })()}
+                                    </td>
+                                  </>
+                                ) : playerTableFilter === "goalkeepers" ? (
+                                  <>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}><strong>{p.saves}/{p.shotsFaced}</strong></td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {p.shotsFaced > 0 ? (
+                                        (() => {
+                                          const badge = getGkSavePctBadge(p.savePct);
+                                          return (
+                                            <MetricBadge
+                                              value={`${p.savePct}%`}
+                                              variant={badge.variant}
+                                              className={badge.className}
+                                            />
+                                          );
+                                        })()
+                                      ) : (
+                                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                                      )}
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsFaced > 0 ? p.goalkeeperXSaves : "—"}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.goals > 0 ? <strong>{p.goals}</strong> : "0"}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {(() => {
+                                        const badge = getRatingBadge(p.avgRating);
                                         return (
                                           <MetricBadge
-                                            value={`${p.savePct}%`}
+                                            value={p.avgRating}
                                             variant={badge.variant}
                                             className={badge.className}
                                           />
                                         );
-                                      })()
-                                    ) : (
-                                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.shotsFaced > 0 ? p.goalkeeperXSaves : "—"}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.goals > 0 ? <strong>{p.goals}</strong> : "0"}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {(() => {
-                                      const badge = getRatingBadge(p.avgRating);
-                                      return (
-                                        <MetricBadge
-                                          value={p.avgRating}
-                                          variant={badge.variant}
-                                          className={badge.className}
-                                        />
-                                      );
-                                    })()}
-                                  </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    <span
-                                      style={{
-                                        fontSize: "0.68rem",
-                                        fontWeight: 800,
-                                        padding: "1px 6px",
-                                        borderRadius: "var(--radius-full)",
-                                        background: isGk ? "var(--color-primary-subtle)" : "var(--bg-inset)",
-                                        color: isGk ? "var(--brand-primary)" : "var(--text-muted)",
-                                        border: `1px solid ${isGk ? "rgba(16, 185, 129, 0.25)" : "var(--border-color)"}`
-                                      }}
-                                    >
-                                      {isGk ? t("players_table.role_gk") : t("players_table.role_player")}
-                                    </span>
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {p.shotsCount > 0 || p.goals > 0 ? <strong>{p.goals}/{p.shotsCount}</strong> : <span style={{ color: "var(--text-muted)" }}>—</span>}
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {p.shotsCount > 0 ? (
-                                      (() => {
-                                        const badge = getShotEffBadge(p.efficiency);
+                                      })()}
+                                    </td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      <span
+                                        style={{
+                                          fontSize: "0.68rem",
+                                          fontWeight: 800,
+                                          padding: "1px 6px",
+                                          borderRadius: "var(--radius-full)",
+                                          background: isGk ? "var(--color-primary-subtle)" : "var(--bg-inset)",
+                                          color: isGk ? "var(--brand-primary)" : "var(--text-muted)",
+                                          border: `1px solid ${isGk ? "rgba(16, 185, 129, 0.25)" : "var(--border-color)"}`
+                                        }}
+                                      >
+                                        {isGk ? t("players_table.role_gk") : t("players_table.role_player")}
+                                      </span>
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>{p.matchesPlayed}</td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {p.shotsCount > 0 || p.goals > 0 ? <strong>{p.goals}/{p.shotsCount}</strong> : <span style={{ color: "var(--text-muted)" }}>—</span>}
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {p.shotsCount > 0 ? (
+                                        (() => {
+                                          const badge = getShotEffBadge(p.efficiency);
+                                          return (
+                                            <MetricBadge
+                                              value={`${p.efficiency}%`}
+                                              variant={badge.variant}
+                                              className={badge.className}
+                                            />
+                                          );
+                                        })()
+                                      ) : (
+                                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                                      )}
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {isGk ? <strong>{p.saves}/{p.shotsFaced}</strong> : <span style={{ color: "var(--text-muted)" }}>—</span>}
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {isGk && p.shotsFaced > 0 ? (
+                                        (() => {
+                                          const badge = getGkSavePctBadge(p.savePct);
+                                          return (
+                                            <MetricBadge
+                                              value={`${p.savePct}%`}
+                                              variant={badge.variant}
+                                              className={badge.className}
+                                            />
+                                          );
+                                        })()
+                                      ) : (
+                                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                                      )}
+                                    </td>
+                                    <td style={{ textAlign: "center", padding: "6px 4px" }}>
+                                      {(() => {
+                                        const badge = getRatingBadge(p.avgRating);
                                         return (
                                           <MetricBadge
-                                            value={`${p.efficiency}%`}
+                                            value={p.avgRating}
                                             variant={badge.variant}
                                             className={badge.className}
                                           />
                                         );
-                                      })()
-                                    ) : (
-                                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {isGk ? <strong>{p.saves}/{p.shotsFaced}</strong> : <span style={{ color: "var(--text-muted)" }}>—</span>}
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {isGk && p.shotsFaced > 0 ? (
-                                      (() => {
-                                        const badge = getGkSavePctBadge(p.savePct);
-                                        return (
-                                          <MetricBadge
-                                            value={`${p.savePct}%`}
-                                            variant={badge.variant}
-                                            className={badge.className}
-                                          />
-                                        );
-                                      })()
-                                    ) : (
-                                      <span style={{ color: "var(--text-muted)" }}>—</span>
-                                    )}
-                                  </td>
-                                  <td style={{ textAlign: "center", padding: "6px 4px" }}>
-                                    {(() => {
-                                      const badge = getRatingBadge(p.avgRating);
-                                      return (
-                                        <MetricBadge
-                                          value={p.avgRating}
-                                          variant={badge.variant}
-                                          className={badge.className}
-                                        />
-                                      );
-                                    })()}
-                                  </td>
-                                </>
-                              )}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                      })()}
+                                    </td>
+                                  </>
+                                )}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </>
                 )}
               </div>
 
-              {/* MAPA ACUMULADO DE LANZAMIENTOS Y PARADAS DE PORTERÍA EN LA TEMPORADA CON FILTRO DE PORTERO */}
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-12)" }}>
                 {teamGoalkeepers.length > 0 && (
                   <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "var(--space-8)", background: "var(--bg-surface)", padding: "var(--space-12) var(--space-16)", borderRadius: "var(--radius)", border: "1px solid var(--border-color)" }}>

@@ -1,83 +1,141 @@
 import api from "./api";
 
-function extractBackendError(err) {
-  const status = err?.response?.status;
+function buildServiceError(err, defaultMessage = "Error de comunicación con el servidor") {
   const detail = err?.response?.data?.detail;
   const code = typeof detail === "object" ? detail?.code : null;
   const message =
     (typeof detail === "object" ? detail?.message : detail) ||
     err?.message ||
-    "Error de comunicación con el servicio de correo";
+    defaultMessage;
 
-  return { status, code, message };
+  const customErr = new Error(message);
+  if (code) customErr.code = code;
+  if (err?.response?.status) customErr.status = err.response.status;
+  return customErr;
 }
 
 const authEmailService = {
-  /**
-   * Solicita al backend el envío del correo personalizado de verificación vía Resend.
-   * Devuelve { handled: true } si fue enviado o ya verificado, o { handled: false }
-   * cuando se requiere fallback al proveedor nativo de Firebase.
-   */
-  sendCustomVerificationEmail: async ({ idToken, name, lang = "es", origin }) => {
+  registerIndependent: async ({ name, email, password, lang = "es", origin }) => {
+    try {
+      const res = await api.post(
+        "/auth/register",
+        { name, email, password, lang, origin },
+        { timeout: 15000 }
+      );
+      return res.data;
+    } catch (err) {
+      throw buildServiceError(err, "No se pudo completar el registro.");
+    }
+  },
+
+  loginIndependent: async ({ email, password }) => {
+    try {
+      const res = await api.post(
+        "/auth/login",
+        { email, password },
+        { timeout: 12000 }
+      );
+      return res.data;
+    } catch (err) {
+      throw buildServiceError(err, "Correo o contraseña incorrectos.");
+    }
+  },
+
+  migrateLegacyAccount: async ({ email, password, firebase_id_token }) => {
+    try {
+      const res = await api.post(
+        "/auth/migrate-legacy",
+        { email, password, firebase_id_token },
+        { timeout: 12000 }
+      );
+      return res.data;
+    } catch (err) {
+      throw buildServiceError(err, "No se pudo sincronizar la cuenta.");
+    }
+  },
+
+  getMe: async (token) => {
+    try {
+      const res = await api.get("/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        timeout: 10000,
+      });
+      return res.data?.user;
+    } catch (err) {
+      throw buildServiceError(err, "Sesión no válida.");
+    }
+  },
+
+  sendVerificationEmail: async ({ token, name, lang = "es", origin }) => {
     try {
       const res = await api.post(
         "/auth/send-verification",
         { name, lang, origin },
         {
           headers: {
-            Authorization: `Bearer ${idToken}`,
+            Authorization: `Bearer ${token}`,
           },
-          timeout: 12000,
+          timeout: 15000,
         }
       );
-
-      const data = res?.data || {};
-      if (data.sent || data.already_verified) {
-        return { handled: true, ...data };
-      }
-
-      return { handled: false, fallbackRequired: true, ...data };
+      return res.data;
     } catch (err) {
-      const { status, code, message } = extractBackendError(err);
-      if (status === 429 || code === "auth/too-many-requests") {
-        const rateErr = new Error(message);
-        rateErr.code = "auth/too-many-requests";
-        throw rateErr;
-      }
-      return { handled: false, fallbackRequired: true, reason: message };
+      throw buildServiceError(err, "No se pudo enviar el correo de verificación.");
     }
   },
 
-  /**
-   * Solicita al backend el envío del correo personalizado de recuperación vía Resend.
-   * Propaga errores de validación/rate-limit y delega a fallback solo si el
-   * servicio backend no está configurado o no responde.
-   */
-  sendCustomPasswordResetEmail: async ({ email, lang = "es", origin }) => {
+  confirmVerification: async (token) => {
+    try {
+      const res = await api.post(
+        "/auth/confirm-verification",
+        { token },
+        { timeout: 12000 }
+      );
+      return res.data;
+    } catch (err) {
+      throw buildServiceError(err, "No se pudo verificar el correo.");
+    }
+  },
+
+  sendPasswordResetEmail: async ({ email, lang = "es", origin }) => {
     try {
       const res = await api.post(
         "/auth/send-password-reset",
         { email, lang, origin },
+        { timeout: 15000 }
+      );
+      return res.data;
+    } catch (err) {
+      throw buildServiceError(err, "No se pudo enviar el correo de recuperación.");
+    }
+  },
+
+  verifyResetToken: async (token) => {
+    try {
+      const res = await api.get("/auth/verify-reset-token", {
+        params: { token },
+        timeout: 10000,
+      });
+      return res.data;
+    } catch (err) {
+      throw buildServiceError(err, "El enlace de recuperación no es válido o ha caducado.");
+    }
+  },
+
+  confirmPasswordReset: async ({ token, new_password }) => {
+    try {
+      const res = await api.post(
+        "/auth/confirm-password-reset",
+        { token, new_password },
         { timeout: 12000 }
       );
-
-      const data = res?.data || {};
-      if (data.sent) {
-        return { handled: true, ...data };
-      }
-
-      return { handled: false, fallbackRequired: true, ...data };
+      return res.data;
     } catch (err) {
-      const { status, code, message } = extractBackendError(err);
-      if (status === 400 || status === 404 || status === 429) {
-        const clientErr = new Error(message);
-        if (code) clientErr.code = code;
-        throw clientErr;
-      }
-      return { handled: false, fallbackRequired: true, reason: message };
+      throw buildServiceError(err, "No se pudo actualizar la contraseña.");
     }
   },
 };
 
 export default authEmailService;
-

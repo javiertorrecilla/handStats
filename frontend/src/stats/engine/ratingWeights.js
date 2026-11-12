@@ -1,7 +1,7 @@
 /**
  * ratingWeights.js
  * Configuración centralizada de pesos para el cálculo del Rating (0.0 - 10.0)
- * y el Net Performance Score (NPS) en HandStats.
+ * y el Net Performance Score (NPS) en Handtix.
  */
 
 export const RATING_WEIGHTS = {

@@ -1,7 +1,10 @@
 import os
 import sys
 import unittest
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
+
+from bson import ObjectId
 
 BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BACKEND_DIR not in sys.path:
@@ -13,6 +16,67 @@ from app.services.email_templates import (
     build_verification_email,
     resolve_recipient_names,
 )
+
+
+class FakeCollection:
+    """Colección Mongo en memoria para pruebas unitarias aisladas."""
+
+    def __init__(self):
+        self.docs = []
+
+    def _match(self, doc, query):
+        for k, v in (query or {}).items():
+            if k == "$or":
+                if not any(self._match(doc, branch) for branch in v):
+                    return False
+                continue
+            doc_val = doc.get(k)
+            if isinstance(v, dict) and "$regex" in v:
+                import re
+                flags = re.IGNORECASE if "i" in v.get("$options", "") else 0
+                if not isinstance(doc_val, str) or not re.search(v["$regex"], doc_val, flags):
+                    return False
+            elif doc_val != v:
+                return False
+        return True
+
+    async def find_one(self, query):
+        for d in self.docs:
+            if self._match(d, query):
+                return dict(d)
+        return None
+
+    async def insert_one(self, doc):
+        new_doc = dict(doc)
+        new_doc["_id"] = new_doc.get("_id") or ObjectId()
+        self.docs.append(new_doc)
+
+        class Res:
+            def __init__(self, oid):
+                self.inserted_id = oid
+
+        return Res(new_doc["_id"])
+
+    async def update_one(self, query, update):
+        for d in self.docs:
+            if self._match(d, query):
+                if "$set" in update:
+                    d.update(update["$set"])
+                return
+
+    async def update_many(self, query, update):
+        for d in self.docs:
+            if self._match(d, query):
+                if "$set" in update:
+                    d.update(update["$set"])
+
+    async def find_one_and_update(self, query, update):
+        for d in self.docs:
+            if self._match(d, query):
+                if "$set" in update:
+                    d.update(update["$set"])
+                return dict(d)
+        return None
 
 
 class TestEmailTemplates(unittest.TestCase):
@@ -35,29 +99,29 @@ class TestEmailTemplates(unittest.TestCase):
             self.assertIn(lang, EMAIL_TRANSLATIONS)
 
             verif = build_verification_email(
-                recipient_email="coach@handstats.pro",
+                recipient_email="coach@handtix.pro",
                 full_name="María García",
-                action_url="https://hand-stats.vercel.app/auth/action?mode=verifyEmail&oobCode=XYZ",
+                action_url="https://hand-stats.vercel.app/auth/action?mode=verifyEmail&token=XYZ",
                 brand_url="https://hand-stats.vercel.app",
                 lang=lang,
             )
             self.assertIn("María", verif["subject"])
             self.assertIn("María García", verif["html"])
-            self.assertIn("coach@handstats.pro", verif["html"])
-            self.assertIn("https://hand-stats.vercel.app/auth/action?mode=verifyEmail&amp;oobCode=XYZ", verif["html"])
-            self.assertIn("https://hand-stats.vercel.app/auth/action?mode=verifyEmail&oobCode=XYZ", verif["text"])
+            self.assertIn("coach@handtix.pro", verif["html"])
+            self.assertIn("https://hand-stats.vercel.app/auth/action?mode=verifyEmail&amp;token=XYZ", verif["html"])
+            self.assertIn("https://hand-stats.vercel.app/auth/action?mode=verifyEmail&token=XYZ", verif["text"])
 
             reset = build_password_reset_email(
-                recipient_email="coach@handstats.pro",
+                recipient_email="coach@handtix.pro",
                 full_name="María García",
-                action_url="https://hand-stats.vercel.app/auth/action?mode=resetPassword&oobCode=RST",
+                action_url="https://hand-stats.vercel.app/auth/action?mode=resetPassword&token=RST",
                 brand_url="https://hand-stats.vercel.app",
                 lang=lang,
             )
             self.assertIn("María", reset["subject"])
             self.assertIn("María García", reset["html"])
-            self.assertIn("coach@handstats.pro", reset["html"])
-            self.assertIn("https://hand-stats.vercel.app/auth/action?mode=resetPassword&amp;oobCode=RST", reset["html"])
+            self.assertIn("coach@handtix.pro", reset["html"])
+            self.assertIn("https://hand-stats.vercel.app/auth/action?mode=resetPassword&amp;token=RST", reset["html"])
             self.assertNotEqual(verif["subject"], reset["subject"])
 
     def test_html_escaping_prevents_injection(self):
@@ -65,171 +129,176 @@ class TestEmailTemplates(unittest.TestCase):
         doc = build_verification_email(
             recipient_email="safe@club.es",
             full_name=malicious_name,
-            action_url="https://hand-stats.vercel.app/auth/action?mode=verifyEmail&oobCode=123",
+            action_url="https://hand-stats.vercel.app/auth/action?mode=verifyEmail&token=123",
             lang="es",
         )
         self.assertNotIn("<script>", doc["html"])
         self.assertIn("&lt;script&gt;", doc["html"])
 
 
-class TestAuthEmailService(unittest.TestCase):
-    def test_sanitize_auth_origin_and_rewrite_link(self):
-        try:
-            from app.services.auth_email_service import (
-                rewrite_oob_link_to_app,
-                sanitize_auth_origin,
-            )
-        except ImportError as exc:
-            self.skipTest(f"Dependencias backend no instaladas en este intérprete: {exc}")
+class TestAuthSecurityAndConfig(unittest.TestCase):
+    def test_password_hashing_and_session_tokens(self):
+        from app.services.auth_email_service import (
+            build_app_action_url,
+            create_session_token,
+            hash_password,
+            sanitize_auth_origin,
+            verify_password,
+            verify_session_token,
+        )
+
+        pw_hash = hash_password("Handtix2026!")
+        self.assertTrue(pw_hash.startswith("pbkdf2_sha256$"))
+        self.assertTrue(verify_password("Handtix2026!", pw_hash))
+        self.assertFalse(verify_password("WrongPass!", pw_hash))
+
+        sess = create_session_token(user_id="66a1", uid="hs_123", email="coach@club.es")
+        claims = verify_session_token(sess)
+        self.assertEqual(claims["sub"], "66a1")
+        self.assertEqual(claims["uid"], "hs_123")
+        self.assertEqual(claims["email"], "coach@club.es")
 
         self.assertEqual(sanitize_auth_origin("http://localhost:5173"), "http://localhost:5173")
-        self.assertEqual(sanitize_auth_origin("https://hand-stats.vercel.app/"), "https://hand-stats.vercel.app")
-        self.assertEqual(
-            sanitize_auth_origin("https://hand-stats-abc123.vercel.app"),
-            "https://hand-stats-abc123.vercel.app",
-        )
-        # Rechaza dominios externos (open-redirect)
         self.assertEqual(sanitize_auth_origin("https://evil-phishing.com"), "https://hand-stats.vercel.app")
-        self.assertEqual(sanitize_auth_origin("javascript:alert(1)"), "https://hand-stats.vercel.app")
-
-        firebase_oob = (
-            "https://handstats-ac5fa.firebaseapp.com/__/auth/action"
-            "?mode=resetPassword&oobCode=SECRET_CODE_1&apiKey=AIza123&lang=es"
-        )
-        rewritten = rewrite_oob_link_to_app(firebase_oob, "https://hand-stats.vercel.app", "es")
         self.assertEqual(
-            rewritten,
-            "https://hand-stats.vercel.app/auth/action?mode=resetPassword&oobCode=SECRET_CODE_1&lang=es",
+            build_app_action_url(app_origin="http://localhost:5173", mode="verifyEmail", token="TOK1", lang="es"),
+            "http://localhost:5173/auth/action?mode=verifyEmail&token=TOK1&lang=es",
         )
 
-    def test_service_status_reports_missing_when_unconfigured(self):
-        try:
-            from app.services import auth_email_service
-        except ImportError as exc:
-            self.skipTest(f"Dependencias backend no instaladas en este intérprete: {exc}")
+    def test_service_status_providers(self):
+        from app.services import auth_email_service
 
         with patch.object(auth_email_service.settings, "resend_api_key", None), \
-             patch.object(auth_email_service.settings, "firebase_service_account_json", None), \
-             patch.object(auth_email_service.settings, "firebase_client_email", None):
-            status = auth_email_service.get_email_service_status()
-            self.assertFalse(status["configured"])
-            self.assertEqual(status["provider"], "firebase_default")
-            self.assertIn("RESEND_API_KEY", status["missing"])
-            self.assertIn("FIREBASE_SERVICE_ACCOUNT_JSON", status["missing"])
+             patch.object(auth_email_service.settings, "smtp_user", None), \
+             patch.object(auth_email_service.settings, "smtp_password", None):
+            st = auth_email_service.get_email_service_status()
+            self.assertFalse(st["configured"])
+            self.assertIsNone(st["provider"])
+
+        with patch.object(auth_email_service.settings, "resend_api_key", None), \
+             patch.object(auth_email_service.settings, "smtp_user", "coach@gmail.com"), \
+             patch.object(auth_email_service.settings, "smtp_password", "app-pass-16"):
+            st = auth_email_service.get_email_service_status()
+            self.assertTrue(st["configured"])
+            self.assertEqual(st["provider"], "smtp")
+
+        with patch.object(auth_email_service.settings, "resend_api_key", "re_live_123"), \
+             patch.object(auth_email_service.settings, "smtp_user", "coach@gmail.com"):
+            st = auth_email_service.get_email_service_status()
+            self.assertTrue(st["configured"])
+            self.assertEqual(st["provider"], "resend")
 
 
-class TestAuthEmailEndpoints(unittest.IsolatedAsyncioTestCase):
-    async def test_fallback_when_unconfigured(self):
-        try:
-            from app.routes import auth_emails
-        except ImportError as exc:
-            self.skipTest(f"Dependencias backend no instaladas: {exc}")
-
-        with patch.object(
-            auth_emails,
-            "get_email_service_status",
-            return_value={"configured": False, "provider": "firebase_default", "missing": ["RESEND_API_KEY"]},
-        ):
-            res_verif = await auth_emails.send_verification_email_endpoint(
-                auth_emails.SendVerificationRequest(lang="es"),
-                authorization=None,
-            )
-            self.assertFalse(res_verif["sent"])
-            self.assertTrue(res_verif["fallback_required"])
-
-            res_reset = await auth_emails.send_password_reset_email_endpoint(
-                auth_emails.SendPasswordResetRequest(email="coach@club.es", lang="es")
-            )
-            self.assertFalse(res_reset["sent"])
-            self.assertTrue(res_reset["fallback_required"])
-
-    async def test_send_verification_and_reset_flows_with_mocks(self):
-        try:
-            from fastapi import HTTPException
-            from app.routes import auth_emails
-            from app.services import auth_email_service
-        except ImportError as exc:
-            self.skipTest(f"Dependencias backend no instaladas: {exc}")
+class TestIndependentAuthFlowEndpoints(unittest.IsolatedAsyncioTestCase):
+    async def test_full_independent_register_verify_reset_login(self):
+        from urllib.parse import parse_qs, urlparse
+        from fastapi import HTTPException
+        from app.routes import auth_emails
+        from app.services import auth_email_service
 
         auth_email_service._RATE_LIMIT_STORE.clear()
-        captured_emails = []
+        fake_users = FakeCollection()
+        fake_tokens = FakeCollection()
+        sent_emails = []
 
-        def fake_resend(**kwargs):
-            captured_emails.append(kwargs)
-            return {"id": "msg_test_123"}
+        def fake_send(**kwargs):
+            sent_emails.append(kwargs)
+            return {"provider": "smtp", "message_id": f"msg_{len(sent_emails)}"}
 
-        with patch.object(
-            auth_emails,
-            "get_email_service_status",
-            return_value={"configured": True, "provider": "resend", "missing": []},
-        ), patch.object(
-            auth_emails,
-            "verify_firebase_id_token",
-            return_value={"uid": "uid_1", "email": "javier@club.es", "email_verified": False, "name": "Javier Reyes"},
-        ), patch.object(
-            auth_emails,
-            "_find_user_name_in_mongo",
-            return_value="Javier Torrecilla",
-        ), patch.object(
-            auth_emails,
-            "generate_firebase_action_link",
-            side_effect=[
-                "https://handstats-ac5fa.firebaseapp.com/__/auth/action?mode=verifyEmail&oobCode=V_CODE",
-                "https://handstats-ac5fa.firebaseapp.com/__/auth/action?mode=resetPassword&oobCode=R_CODE",
-            ],
-        ), patch.object(
-            auth_emails,
-            "lookup_firebase_user_by_email",
-            return_value={"localId": "uid_1", "email": "javier@club.es", "displayName": "Javier Reyes"},
-        ), patch.object(
-            auth_emails,
-            "send_via_resend",
-            side_effect=fake_resend,
-        ):
-            # 1. Verificación requiere Bearer token cuando está configurado
-            with self.assertRaises(HTTPException) as ctx401:
-                await auth_emails.send_verification_email_endpoint(
-                    auth_emails.SendVerificationRequest(lang="es"),
-                    authorization=None,
+        with patch.object(auth_emails, "user_collection", fake_users), \
+             patch.object(auth_emails, "auth_tokens_collection", fake_tokens), \
+             patch.object(auth_emails, "get_email_service_status", return_value={"configured": True, "provider": "smtp", "missing": []}), \
+             patch.object(auth_emails, "send_transactional_email", side_effect=fake_send):
+
+            # 1. Registro independiente sin Firebase
+            reg = await auth_emails.register_independent(
+                auth_emails.RegisterRequest(
+                    name="Javier Torrecilla",
+                    email="javier@clubbalonmano.es",
+                    password="Password123!",
+                    lang="es",
+                    origin="http://localhost:5173",
                 )
-            self.assertEqual(ctx401.exception.status_code, 401)
-
-            # 2. Verificación exitosa envía HTML personalizado con nombre
-            res_verif = await auth_emails.send_verification_email_endpoint(
-                auth_emails.SendVerificationRequest(lang="es", origin="https://hand-stats.vercel.app"),
-                authorization="Bearer fake_firebase_jwt",
             )
-            self.assertTrue(res_verif["sent"])
-            self.assertEqual(res_verif["message_id"], "msg_test_123")
+            self.assertTrue(reg["email_sent"])
+            self.assertEqual(reg["provider"], "smtp")
+            self.assertFalse(reg["user"]["email_verified"])
+            self.assertNotIn("password_hash", reg["user"])
 
-            # 3. Reset con email inválido falla con 400
-            with self.assertRaises(HTTPException) as ctx400:
-                await auth_emails.send_password_reset_email_endpoint(
-                    auth_emails.SendPasswordResetRequest(email="invalido", lang="es")
+            # Correo de verificación personalizado generado
+            self.assertEqual(len(sent_emails), 1)
+            verif_mail = sent_emails[0]
+            self.assertEqual(verif_mail["email_type"], "email_verification")
+            self.assertIn("Javier", verif_mail["subject"])
+            self.assertIn("Javier Torrecilla", verif_mail["html_body"])
+            self.assertNotIn("firebaseapp.com", verif_mail["html_body"])
+
+            # Extraer token del text_body (url directa a localhost:5173/auth/action)
+            import re
+            match_url = re.search(r"http://localhost:5173/auth/action\?\S+", verif_mail["text_body"])
+            self.assertIsNotNone(match_url)
+            parsed_q = parse_qs(urlparse(match_url.group(0)).query)
+            verify_token = parsed_q["token"][0]
+            self.assertEqual(parsed_q["mode"][0], "verifyEmail")
+
+            # 2. Confirmar verificación con el token
+            verif_res = await auth_emails.confirm_verification_endpoint(
+                auth_emails.ConfirmVerificationRequest(token=verify_token)
+            )
+            self.assertTrue(verif_res["verified"])
+
+            # Token de un solo uso -> segundo intento debe fallar
+            with self.assertRaises(HTTPException) as reuse_err:
+                await auth_emails.confirm_verification_endpoint(
+                    auth_emails.ConfirmVerificationRequest(token=verify_token)
                 )
-            self.assertEqual(ctx400.exception.status_code, 400)
+            self.assertEqual(reuse_err.exception.status_code, 400)
 
-            # 4. Reset exitoso envía HTML personalizado en inglés si se pide lang="en"
-            res_reset = await auth_emails.send_password_reset_email_endpoint(
+            # GET /auth/me refleja email_verified=True
+            me = await auth_emails.get_current_session_user(authorization=f"Bearer {reg['token']}")
+            self.assertTrue(me["user"]["email_verified"])
+
+            # 3. Solicitar recuperación de contraseña
+            reset_req = await auth_emails.send_password_reset_email_endpoint(
                 auth_emails.SendPasswordResetRequest(
-                    email="javier@club.es",
+                    email="javier@clubbalonmano.es",
                     lang="en",
-                    origin="https://hand-stats.vercel.app",
+                    origin="http://localhost:5173",
                 )
             )
-            self.assertTrue(res_reset["sent"])
+            self.assertTrue(reset_req["sent"])
+            self.assertEqual(len(sent_emails), 2)
+            reset_mail = sent_emails[1]
+            self.assertEqual(reset_mail["email_type"], "password_reset")
+            self.assertIn("Javier", reset_mail["subject"])
 
-        self.assertEqual(len(captured_emails), 2)
-        verif_mail, reset_mail = captured_emails
-        self.assertEqual(verif_mail["email_type"], "email_verification")
-        self.assertIn("Javier", verif_mail["subject"])
-        self.assertIn("Javier Torrecilla", verif_mail["html_body"])
-        self.assertIn("https://hand-stats.vercel.app/auth/action?mode=verifyEmail&amp;oobCode=V_CODE", verif_mail["html_body"])
+            match_reset = re.search(r"http://localhost:5173/auth/action\?\S+", reset_mail["text_body"])
+            self.assertIsNotNone(match_reset)
+            reset_token = parse_qs(urlparse(match_reset.group(0)).query)["token"][0]
 
-        self.assertEqual(reset_mail["email_type"], "password_reset")
-        self.assertIn("Javier", reset_mail["subject"])
-        self.assertIn("Javier Torrecilla", reset_mail["html_body"])
-        self.assertIn("https://hand-stats.vercel.app/auth/action?mode=resetPassword&amp;oobCode=R_CODE", reset_mail["html_body"])
+            # 4. Validar token de reset y establecer nueva contraseña
+            valid_check = await auth_emails.verify_reset_token_endpoint(token=reset_token)
+            self.assertTrue(valid_check["valid"])
+            self.assertEqual(valid_check["email"], "javier@clubbalonmano.es")
+
+            confirm_reset = await auth_emails.confirm_password_reset_endpoint(
+                auth_emails.ConfirmPasswordResetRequest(token=reset_token, new_password="NuevaPassword99!")
+            )
+            self.assertTrue(confirm_reset["reset"])
+
+            # 5. Iniciar sesión con la nueva contraseña independiente
+            login_ok = await auth_emails.login_independent(
+                auth_emails.LoginRequest(email="javier@clubbalonmano.es", password="NuevaPassword99!")
+            )
+            self.assertTrue(login_ok["token"].startswith("hs_sess."))
+            self.assertTrue(login_ok["user"]["email_verified"])
+
+            # Contraseña antigua ya no sirve
+            with self.assertRaises(HTTPException) as bad_pw:
+                await auth_emails.login_independent(
+                    auth_emails.LoginRequest(email="javier@clubbalonmano.es", password="Password123!")
+                )
+            self.assertEqual(bad_pw.exception.status_code, 401)
 
 
 if __name__ == "__main__":

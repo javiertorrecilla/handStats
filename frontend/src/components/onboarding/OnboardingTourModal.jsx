@@ -185,7 +185,7 @@ function MockupReports() {
     <div className="tour-mockup-frame mockup-reports">
       <div className="mockup-pdf-preview-sheet">
         <div className="pdf-sheet-header">
-          <div className="pdf-logo-text">HANDSTATS // DOSSIER OFICIAL</div>
+          <div className="pdf-logo-text">HANDTIX // DOSSIER OFICIAL</div>
           <div className="pdf-date-tag">MATCH REPORT · JORNADA 14</div>
         </div>
         <div className="pdf-sheet-body">

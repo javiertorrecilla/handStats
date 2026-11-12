@@ -1,98 +1,64 @@
 /* ==========================================================
-   USER MANUAL PAGE — HANDSTATS DESIGN SYSTEM v2.0
+   USER MANUAL PAGE — HANDTIX DESIGN SYSTEM v2.0
    Estilos para el Manual de Usuario y Guía Táctica
    ========================================================== */
 
 .manual-page-container {
-  min-height: 100vh;
-  background: var(--bg-primary, #0b1120);
   color: var(--text-primary, #0f172a);
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: background-color var(--duration-slow, 0.25s) var(--easing, ease), color var(--duration-slow, 0.25s) var(--easing, ease);
+  width: 100%;
+  transition: color var(--duration-slow, 0.25s) var(--easing, ease);
 }
 
-/* Fondo con degradado táctico sutil */
-.manual-page-container::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 480px;
-  background: radial-gradient(ellipse at 50% -10%, var(--color-primary-subtle, rgba(234, 88, 12, 0.12)) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Header de Navegación */
-.manual-header-nav {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-dropdown, 100);
-  background: var(--bg-surface-alpha, rgba(15, 23, 42, 0.88));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-color, #334155);
-  padding: var(--space-12, 12px) var(--space-24, 24px);
-  transition: all var(--duration, 0.2s) var(--easing, ease);
-}
-
-.manual-header-content {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Encabezado integrado con el panel principal */
+.manual-page-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-16, 16px);
+  gap: var(--space-20, 20px);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-24, 24px);
+  margin-bottom: var(--space-28, 28px);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
-.manual-header-left {
+.manual-page-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.manual-page-title {
   display: flex;
   align-items: center;
-  gap: var(--space-16, 16px);
+  gap: 10px;
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.manual-brand-logo {
-  height: 28px;
-  width: auto;
-  object-fit: contain;
-  cursor: pointer;
-  transition: transform var(--duration, 0.2s) var(--easing, ease);
+.manual-page-title svg {
+  color: var(--color-primary, #2E7D4F);
+  flex-shrink: 0;
 }
 
-.manual-brand-logo:hover {
-  transform: scale(1.03);
-}
-
-.manual-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8, 8px);
-  padding: var(--space-8, 8px) var(--space-14, 14px);
-  border-radius: var(--radius-full, 9999px);
-  background: var(--bg-surface, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  color: var(--text-secondary, #475569);
-  font-size: var(--text-xs, 12px);
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all var(--duration, 0.2s) var(--easing, ease);
-}
-
-.manual-back-btn:hover {
-  color: var(--color-primary, #ea580c);
-  border-color: var(--color-primary, #ea580c);
-  transform: translateX(-2px);
-  background: var(--bg-inset, #f8fafc);
+.manual-page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary, #6b7280);
 }
 
 .manual-header-right {
   display: flex;
   align-items: center;
   gap: var(--space-10, 10px);
+  flex-wrap: wrap;
 }
 
 .manual-action-btn {
@@ -277,14 +243,14 @@
   color: var(--text-muted, #64748b);
 }
 
-/* Layout 2 Columnas */
+/* Layout 2 Columnas dentro de app-main (junto al Sidebar) */
 .manual-layout-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--space-24, 24px) var(--space-64, 64px);
+  width: 100%;
+  margin: 0;
+  padding: 0 0 var(--space-48, 48px);
   display: grid;
-  grid-template-columns: 290px 1fr;
-  gap: var(--space-36, 36px);
+  grid-template-columns: 250px 1fr;
+  gap: var(--space-24, 24px);
   position: relative;
   z-index: 1;
 }
@@ -296,7 +262,7 @@
 
 .manual-toc-card {
   position: sticky;
-  top: 90px;
+  top: 24px;
   background: var(--bg-surface, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: var(--radius-xl, 16px);
@@ -544,18 +510,21 @@
    RESPONSIVE DESIGN
    ========================================================== */
 
-@media (max-width: 960px) {
+@media (max-width: 1120px) {
   .manual-layout-wrapper {
     grid-template-columns: 1fr;
     gap: var(--space-24, 24px);
   }
 
   .manual-toc-sidebar {
-    display: none; /* En pantallas pequeñas se enfoca en la lectura */
+    display: none; /* En pantallas medianas/pequeñas con el sidebar abierto se enfoca en la lectura */
   }
+}
 
-  .btn-text-full {
-    display: none;
+@media (max-width: 768px) {
+  .manual-page-header {
+    padding-bottom: var(--space-16, 16px);
+    margin-bottom: var(--space-20, 20px);
   }
 
   .manual-chapter-card {
@@ -581,12 +550,7 @@
     color: #0f172a !important;
   }
 
-  .manual-page-container::before {
-    display: none !important;
-  }
-
-  .manual-header-nav,
-  .manual-hero-banner,
+  .manual-page-header,
   .manual-toc-sidebar,
   .manual-scroll-top-btn,
   .onboarding-tour-backdrop,

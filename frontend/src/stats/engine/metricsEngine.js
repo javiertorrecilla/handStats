@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — METRICS ENGINE
+   HANDTIX ANALYTICS — METRICS ENGINE
    Motor de cálculo estadístico para análisis en tiempo real
    ========================================================== */
 
@@ -171,11 +171,33 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
   const homeSteals = homeEvents.filter((e) => e.event_type === "steal").length;
   const awaySteals = awayEvents.filter((e) => e.event_type === "steal").length;
 
-  // Sanciones y 2 minutos
+  // Sanciones (Exclusiones 2' y Tarjetas Amarillas, Rojas y Azules)
   const homeSanctions = homeEvents.filter((e) => e.event_type === "sanction");
   const awaySanctions = awayEvents.filter((e) => e.event_type === "sanction");
-  const home2Min = homeSanctions.filter((e) => e.sanction_type === "2 Minutos").length;
-  const away2Min = awaySanctions.filter((e) => e.sanction_type === "2 Minutos").length;
+  const isTwoMinSanction = (e) => {
+    const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+    return st.includes("2 min") || st.includes("2min") || st.includes("exclusion") || st.includes("dos minutos");
+  };
+  const isYellowSanction = (e) => {
+    const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+    return st.includes("amarill") || st.includes("yellow");
+  };
+  const isBlueSanction = (e) => {
+    const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+    return st.includes("azul") || st.includes("blue");
+  };
+  const isRedSanction = (e) => {
+    const st = String(e.sanction_type || e.action_key || "").toLowerCase();
+    return (st.includes("roja") || st.includes("red") || st.includes("descalific")) && !isBlueSanction(e);
+  };
+  const home2Min = homeSanctions.filter(isTwoMinSanction).length;
+  const away2Min = awaySanctions.filter(isTwoMinSanction).length;
+  const homeYellowCards = homeSanctions.filter(isYellowSanction).length;
+  const awayYellowCards = awaySanctions.filter(isYellowSanction).length;
+  const homeRedCards = homeSanctions.filter(isRedSanction).length;
+  const awayRedCards = awaySanctions.filter(isRedSanction).length;
+  const homeBlueCards = homeSanctions.filter(isBlueSanction).length;
+  const awayBlueCards = awaySanctions.filter(isBlueSanction).length;
 
   // Golpes Franco
   const homeFreeThrows = homeEvents.filter((e) => e.event_type === "free_throw").length;
@@ -287,6 +309,12 @@ export function calculateMatchMetrics(match, activePossession, currentTimeSecond
       awaySteals,
       home2Min,
       away2Min,
+      homeYellowCards,
+      awayYellowCards,
+      homeRedCards,
+      awayRedCards,
+      homeBlueCards,
+      awayBlueCards,
       homeFreeThrows,
       awayFreeThrows,
       homeOffRebounds,

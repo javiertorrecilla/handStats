@@ -5,6 +5,8 @@ import html2canvas from "html2canvas";
 import { useAuth } from "../../../context/AuthContext";
 import { toast } from "../../../context/ToastContext";
 import userService from "../../../services/userService";
+import { trackEvent } from "../../../services/analyticsService";
+import { captureError } from "../../../services/errorTrackingService";
 import logoHorizontal from "../../../assets/logoHorizontal.png";
 import isotipo from "../../../assets/isotipo.png";
 import { HandballCourtGraphic } from "../charts/HandballCourtGraphic";
@@ -1877,13 +1879,11 @@ function PDFSingleTeamPlayersTable({ teamName, playersList, color, isAway, overv
 
 /**
  * Módulo Profesional de Creación y Configuración de Informes Técnicos PDF
- * Diseñado con estética integrada y alineada al Design System de HandStats.
+ * Diseñado con estética integrada y alineada al Design System de Handtix.
  */
 export function ReportStatsView({ metrics, match }) {
   const { t, i18n } = useTranslation();
-  if (!metrics) return null;
-
-  const { overview } = metrics;
+  const overview = metrics?.overview || {};
   const currentLocale = i18n.language || "es";
   const dateStr = match?.date ? new Date(match.date).toLocaleDateString(currentLocale, { day: "2-digit", month: "short", year: "numeric" }) : t("common.official_date", "Fecha oficial");
   const formattedLongDate = match?.date ? new Date(match.date).toLocaleDateString(currentLocale, { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : t("common.official_date", "Fecha oficial");
@@ -1966,26 +1966,14 @@ export function ReportStatsView({ metrics, match }) {
   const isHomeWinner = overview.homeGoals > overview.awayGoals;
   const isAwayWinner = overview.awayGoals > overview.homeGoals;
 
-  // Cálculo de estadísticas por las 6 zonas de lanzamiento requeridas
-  const teamZoneStats = getTeamShotZonesData(match, t);
-
-  // Cálculo de estadísticas por Fases de Juego (Posicional y 1ª Oleada)
-  const gamePhaseStats = getGamePhaseStatsData(match, t);
-
-  // Cálculo de estadísticas por Situaciones Numéricas (Igualdad, Superioridad e Inferioridad)
-  const situationStats = getNumericalSituationStatsData(match, t);
-
   // Estado de descarga automática
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  // Estado de secciones seleccionadas para el informe PDF
+  // Estado de secciones seleccionadas para el informe PDF (fijo, configurable solo desde este módulo)
   const [selectedSections, setSelectedSections] = useState({
-    // SECCIONES OBLIGATORIAS (Siempre activas y fijas)
     header: true,
     result: true,
     generalComparison: true,
-
-    // SECCIONES OPCIONALES (Seleccionables por el usuario)
     teamAnalysis: true,
     gamePhaseAnalysis: true,
     numericalSituationAnalysis: true,
@@ -1996,6 +1984,17 @@ export function ReportStatsView({ metrics, match }) {
   });
 
   const [activePresetId, setActivePresetId] = useState("all");
+
+  if (!metrics) return null;
+
+  // Cálculo de estadísticas por las 6 zonas de lanzamiento requeridas
+  const teamZoneStats = getTeamShotZonesData(match, t);
+
+  // Cálculo de estadísticas por Fases de Juego (Posicional y 1ª Oleada)
+  const gamePhaseStats = getGamePhaseStatsData(match, t);
+
+  // Cálculo de estadísticas por Situaciones Numéricas (Igualdad, Superioridad e Inferioridad)
+  const situationStats = getNumericalSituationStatsData(match, t);
 
   // Definición de plantillas: Título, icono y número de módulos
   const PRESETS = [
@@ -2290,7 +2289,7 @@ export function ReportStatsView({ metrics, match }) {
         pdf.setFontSize(8);
         pdf.setTextColor(156, 163, 175);
         pdf.text(
-          `Página ${i + 1} de ${cutPoints.length} • HandStats Official Report`,
+          `Página ${i + 1} de ${cutPoints.length} • Handtix Official Report`,
           pdfPageWidth / 2,
           pdfPageHeight - 4,
           { align: "center" }
@@ -2303,12 +2302,16 @@ export function ReportStatsView({ metrics, match }) {
       const homeClean = (overview?.homeTeam || "Local").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, "_");
       const awayClean = (overview?.awayTeam || "Visitante").replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, "_");
       const dateClean = match?.date ? new Date(match.date).toISOString().slice(0, 10) : "Oficial";
-      const filename = `HandStats_Informe_${homeClean}_vs_${awayClean}_${dateClean}.pdf`;
+      const filename = `Handtix_Informe_${homeClean}_vs_${awayClean}_${dateClean}.pdf`;
 
       pdf.save(filename);
+      trackEvent("match_report_pdf_downloaded", {
+        preset_id: activePresetId || "custom",
+        modules_count: Object.values(selectedSections || {}).filter(Boolean).length
+      });
       toast.success(t("pdf.report_download_success", "Informe táctico en PDF descargado con éxito."));
     } catch (err) {
-      console.error("Error al generar PDF con jsPDF:", err);
+      captureError(err, { source: "match_report_pdf" });
       toast.error(t("pdf.download_error", "Error al generar el documento PDF."));
       window.print();
     } finally {
@@ -2428,7 +2431,7 @@ export function ReportStatsView({ metrics, match }) {
             </span>
             <span className="hs-report-meta-tag">
               <IconCheck size={11} color="var(--brand-primary)" strokeWidth={3} />
-              {t("report.meta_cert", "Certificado Oficial HandStats")}
+              {t("report.meta_cert", "Certificado Oficial Handtix")}
             </span>
           </div>
         </div>
@@ -2517,10 +2520,10 @@ export function ReportStatsView({ metrics, match }) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                    {t("report.mod_header_title", "Cabecera HandStats")}
+                    {t("report.mod_header_title", "Cabecera Handtix")}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: "1.3" }}>
-                    {t("report.mod_header_desc", "Datos corporativos web (www.handstats.com) y metadatos.")}
+                    {t("report.mod_header_desc", "Datos corporativos web (www.handtix.com) y metadatos.")}
                   </div>
                 </div>
               </div>
@@ -2922,7 +2925,7 @@ export function ReportStatsView({ metrics, match }) {
             }}
           >
             <IconShield size={16} color="var(--brand-primary)" />
-            <span>{t("report.official_cert_msg", "Documento oficial de análisis estructurado por HandStats.")}</span>
+            <span>{t("report.official_cert_msg", "Documento oficial de análisis estructurado por Handtix.")}</span>
           </div>
         </div>
       </div>
@@ -2962,7 +2965,7 @@ export function ReportStatsView({ metrics, match }) {
               <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                 <img
                   src={logoHorizontal}
-                  alt="HandStats"
+                  alt="Handtix"
                   style={{
                     height: "44px",
                     width: "auto",
@@ -2971,7 +2974,7 @@ export function ReportStatsView({ metrics, match }) {
                 />
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   <span style={{ fontSize: "18px", fontWeight: 900, color: "#12843A", letterSpacing: "-0.3px", fontFamily: "'Raleway', 'Montserrat', sans-serif", lineHeight: "1.1" }}>
-                    HANDSTATS
+                    HANDTIX
                   </span>
                   <span style={{ fontSize: "9.5px", fontWeight: 800, color: "#4B5563", letterSpacing: "0.6px", textTransform: "uppercase" }}>
                     {t("report.app_tagline", "Plataforma Avanzada de Rendimiento y Análisis Técnico")}
@@ -2997,7 +3000,7 @@ export function ReportStatsView({ metrics, match }) {
                   {formattedLongDate}
                 </div>
                 <div style={{ fontSize: "9.5px", color: "#6B7280", fontWeight: 600 }}>
-                  HandStats Analytics • www.handstats.com
+                  Handtix Analytics • www.handtix.com
                 </div>
               </div>
             </div>
@@ -3264,7 +3267,7 @@ export function ReportStatsView({ metrics, match }) {
 
           {/* PIE DE PÁGINA */}
           <div style={{ marginTop: "12px", paddingTop: "8px", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", fontSize: "9.5px", color: "#9ca3af" }}>
-            <span>HandStats Analytics • www.handstats.com • {t("report.confidential_doc", "Documento Confidencial")}</span>
+            <span>Handtix Analytics • www.handtix.com • {t("report.confidential_doc", "Documento Confidencial")}</span>
             <span>{t("report.generated_on", "Generado el")} {new Date().toLocaleDateString(i18n.language === "es" ? "es-ES" : i18n.language === "en" ? "en-US" : i18n.language === "de" ? "de-DE" : i18n.language === "fr" ? "fr-FR" : i18n.language === "da" ? "da-DK" : "pl-PL")}</span>
           </div>
         </div>

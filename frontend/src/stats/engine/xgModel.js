@@ -1,5 +1,5 @@
 /* ==========================================================
-   HANDSTATS ANALYTICS — EXPECTED GOALS (xG) & SAVES (xSaves) MODEL
+   HANDTIX ANALYTICS — EXPECTED GOALS (xG) & SAVES (xSaves) MODEL
    Modelo estadístico probabilístico de probabilidad de gol y paradas
    Con soporte para autocalibración empírica por zonas 3x3 (+25% volumen)
    Fórmula xSaves = (1 - xG) + ModificadorZonaXSaves(z)
